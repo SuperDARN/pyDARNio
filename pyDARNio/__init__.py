@@ -29,6 +29,7 @@ from .dmap import superdarn_formats
 # importing utils
 from .utils.conversions import dict2dmap
 from .utils.conversions import dmap2dict
+from .utils import extractions
 
 # Importing pydarn dmap classes
 from .dmap.dmap import DmapRead
