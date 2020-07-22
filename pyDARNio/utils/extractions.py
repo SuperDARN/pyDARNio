@@ -74,9 +74,9 @@ def datetime_from_records(records: List[dict], yr_key='time.yr',
 
     # Build the time string and datetime objects for each dict
     dtimes = list()
-    for dmap_dict in dmap_records:
+    for rec_dict in records:
         # Get the datetime after building the time string
-        dtime_str = " ".join([str(dmap_dict[tkey]) for tkey in time_keys])
+        dtime_str = " ".join([str(rec_dict[tkey]) for tkey in time_keys])
         dtimes.append(dt.datetime.strptime(dtime_str, dtime_fmt))
 
     return dtimes
@@ -168,3 +168,48 @@ def time_series_from_records(records: List[dict], target_keys: List[str],
     return time_series
             
             
+
+def scans_from_records(records: List[dict]):
+    """ Set up scans for easy locating
+
+    Parameters
+    ----------
+    records : List[dict]
+        list of records contained in dictionaries
+
+    Returns
+    -------
+    scan_stime : List[dt.datetime]
+        list of datetimes corresponding to the start of each scan
+    scan_inds : List[list]
+        list of lists containing the indices for each scan
+
+    Raises
+    ------
+    ValueError
+        If records do not have a scan flag, which is used to identify the scans
+
+    """
+
+    # Get the times and scan flags from the records
+    scan_flags = time_series_from_records(records, ['scan'])
+    if 'scan' not in scan_flags.keys():
+        raise ValueError('input records do not have scan flags')
+
+    # Makes a list of lists that contain the record indices for each scan
+    istart = -1
+    scan_inds = list()
+    scan_stime = list()
+    for i, sflg in enumerate(scan_flags['scan']):
+        if abs(sflg) == 1:
+            # This is a new scan, increment the scan index and save the
+            # start time.
+            istart += 1
+            scan_inds.append([i])
+            scan_stime.append(scan_flags['rec_time'][i])
+        if sflg == 0:
+            # This record belongs to the current scan
+            scan_inds[istart].append(i)
+
+    # Return the scan start times and scan record indices
+    return scan_stime, scan_inds
