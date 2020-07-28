@@ -1,6 +1,6 @@
 # Getting SuperDARN Data 
 
-pyDARN does not provide an interface for downloading data. However, there are other means of getting access to the data. 
+pyDARNio does not provide an interface for downloading data. However, there are other means of getting access to the data. 
 
 The Data Distribution Working Group (DDWG) manages the checking and distribution of data. If you have any inquiries, please contact the chair Kevin Krieger at superdarn@usask.ca
 
