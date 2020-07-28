@@ -33,11 +33,11 @@ The following will convert a Borealis file (`my_borealis_array_file`) and write
 to an SDarn filename (`sdarn_file`):
 
 ```python
-import pydarn
+import pydarnio
 my_borealis_array_file = "path/to/file"
 sdarn_file = "path/to/write/to"
 
-converter = pydarn.BorealisConvert(my_borealis_file, "rawacf",
+converter = pydarnio.BorealisConvert(my_borealis_file, "rawacf",
     sdarn_file, 0, borealis_file_structure='array')
 ```
 
