@@ -19,7 +19,7 @@ from setuptools.command.install import install, orig
 
 # Setup information
 setup(
-    name="pyDARNio",
+    name="pydarnio",
     version="1.0.0",
     long_description=long_description,
     long_description_content_type='text/markdown',
