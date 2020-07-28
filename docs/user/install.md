@@ -1,11 +1,11 @@
 <!--Copyright (C) SuperDARN Canada, University of Saskatchewan 
 author(s) Marina Schmidt-->
-# Installing pyDARN 
+# Installing pyDARNio 
 ---
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) 
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/superdarn/pydarn)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/superdarn/pyDARNio)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3727270.svg)](https://doi.org/10.5281/zenodo.3727270)
 
 
@@ -25,7 +25,7 @@ You can check your python version with
 
 ## Dependencies
 
-pyDARN's setup will download the following dependencies: 
+pyDARNio's setup will download the following dependencies: 
 
 - [Git](https://git-scm.com/) (For developers)
 - [pip3](https://help.dreamhost.com/hc/en-us/articles/115000699011-Using-pip3-to-install-Python3-modules)
@@ -37,9 +37,9 @@ pyDARN's setup will download the following dependencies:
 - [h5py](https://www.h5py.org/)
 
 ## Virtual Environments
-It is recommended to install pyDARN in one of the suggested virtual environments if you have multiple python/pip 3 version on your computer, or do not want to affect the main system's python libraries. 
+It is recommended to install pyDARNio in one of the suggested virtual environments if you have multiple python/pip 3 version on your computer, or do not want to affect the main system's python libraries. 
 
-The following virtual environments have been tested by pyDARN developers:"
+The following virtual environments have been tested by pyDARNio developers:"
 
 ### pip Virtual Environment
 Instructions can be found here [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
@@ -47,7 +47,7 @@ Instructions can be found here [virtual environment](https://packaging.python.or
 1. `$ python3 -m pip install --user virtualenv`  
 2. `$ python3 -m virtualenv <environment name>`  
 * `$ source <environment name>/bin/activate`
-* `$ pip install pydarn`
+* `$ pip install pydarnio`
 
 !!! Note
     If you have multiple versions of python 3 on your machine, you can access a specific version by: `python<version number>`. 
@@ -58,7 +58,7 @@ Instructions can be found here [conda environment](https://uoa-eresearch.github.
 
 1. `$ conda create -n yourenvname python=3.7 anaconda`
 2. `$ conda activate yourenvname`
-* `$ pip install pydarn`
+* `$ pip install pydarnio`
 
 #### Adding the environment to PyCharm
 
@@ -73,15 +73,15 @@ To set the project interpreter to the anaconda environment:
 ## Local Install
 **pip3 install**
 
-`pip3 install --user pydarn`
+`pip3 install --user pydarnio`
 
 ## System Install 
-`sudo pip3 install pydarn`
+`sudo pip3 install pydarnio`
 
 ## Installing for Development 
-`$ git clone https://github.com/superdarn/pydarn`
+`$ git clone https://github.com/superdarn/pyDARNio`
 
-Change directories to pydarn 
+Change directories to pyDARNio
 
 `$ git checkout develop`
 
@@ -93,17 +93,17 @@ To install:
     If `pip --version` is pointing to python 3.6+ then you can use `pip install . --user` instead. 
 
 !!! Warning
-    Do not install pydarn with `python setup.py install` as this may install other libraries pydarn requires in a local directory causing issues down the road.
+    Do not install pyDARNio with `python setup.py install` as this may install other libraries pyDARNio requires in a local directory causing issues down the road.
     
 ## Troubleshooting
 
 ### Pip3 installation with Ubuntu 20.4/python 3.8.4
 
-Issue: `pip3 install --user git+https://github.com/superdarn/pydarn@develop` not working
+Issue: `pip3 install --user git+https://github.com/superdarn/pyDARNio@develop` not working
 
 Solution:
-1. check git is installed `apt install git` (for ubuntu)
-2. Check pip version `pip --version` - with newer distros of Linux/Virtual machines `pip` may point to pyhon3 and you will not need pip3. 
+1. Check git is installed `apt install git` (for ubuntu)
+2. Check pip version `pip --version` - with newer distros of Linux/Virtual machines `pip` may point to python3 and you will not need pip3. 
 3. Alternative virtual environment steps for getting python 3.8 working
 
 ```bash 
@@ -116,7 +116,7 @@ $ echo "source $HOME/venvs/py38/bin/activate" >> ~/.bashrc
 ```
 Then open a new terminal and you should see `(pyy38)` in the prompt. 
 
-Credit to this solution is Ashton Reimer, more details on the [issue #37](https://github.com/SuperDARN/pydarn/issues/37)
+Credit to this solution is Ashton Reimer, more details on the [issue #37](https://github.com/SuperDARN/pyDARNio/issues/37)
 
 
-> If you find any problems/solutions, please make a [github issue](https://github.com/superdarn/pydarn/issues/new) so the community can help you or add it to the documentation
+> If you find any problems/solutions, please make a [github issue](https://github.com/superdarn/pyDARNio/issues/new) so the community can help you or add it to the documentation
