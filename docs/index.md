@@ -1,14 +1,25 @@
 ![pydarn](imgs/pydarn_logo.png)
 
-PyDARN is an open source python library for 
-data visualization of SuperDARN data.
-support of Input/Output reading of SuperDARN DMAP format files. 
+PyDARNio is an open source python library for SuperDARN data reading, writing and converting.
+Currently the library support reading for DMAP files:
+- IQDAT
+- RAWACF
+- FITACF
+- GRID
+- MAP
+
+as well as Borealis HDF5 files:
+- IQDAT
+- BeamIQ
+- RAWACF
+
+There is also utilities for converting Borealis files to SuperDARN DMAP file structures. 
 
 ## Source Code 
 
-The library source code can be found on the [pyDARN GitHub](https://github.com/SuperDARN/pydarn) repository. 
+The library source code can be found on the [pyDARNio GitHub](https://github.com/SuperDARN/pyDARNio) repository. 
 
-If you have any questions or concerns please submit an **Issue** on the SuperDARN pyDARN repository. 
+If you have any questions or concerns please submit an **Issue** on the SuperDARN pyDARNio repository. 
 
 ## Table of Contents 
   - [Installation](user/install.md)
@@ -22,8 +33,3 @@ If you have any questions or concerns please submit an **Issue** on the SuperDAR
     - Convert
       - [Borealis to SuperDARN](user/Borealis2SuperDARN.md)
     - [Radar and Hardware Information](user/hardware.md)
-    - Plotting
-        - [Range-Time plots](user/range_time.md)
-        - [Time-Series plots](user/time_series.md)
-        - [Summary plots](user/summary.md)
-    - [Logging](user/logging.md)
