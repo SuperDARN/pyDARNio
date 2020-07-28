@@ -1,4 +1,4 @@
-If pyDARN contributes to a project that leads to a scientific publication, please acknowledge this fact by citing the software and SuperDARN.  
+If pyDARNio contributes to a project that leads to a scientific publication, please acknowledge this fact by citing the software and SuperDARN.  
 
 # How to cite SuperDARN
 
@@ -22,7 +22,7 @@ Possible services:
   - [FRDR](https://www.frdr.ca/repo/): Canadian resource 
   - [zenodo](https://help.zenodo.org/features/) 
 
-# Citing pyDARN
+# Citing pyDARNio
 
 ## Bibtex
 
@@ -37,7 +37,7 @@ Peters, D. GO. and
 Reimer, A. S. and 
 Sterne, K. T. and
 Thomas, E. G.}, 
-title={pyDARN},
+title={pyDARNio},
 month=jan,
 year=2020,
 doi=[],
@@ -51,7 +51,7 @@ url={}
 
 ## Acknowledgements
 
-pyDARN uses other python libraries and the SuperDARN community's help. 
+pyDARNio uses other python libraries and the SuperDARN community's help. 
 
 ### Python Library References 
 
