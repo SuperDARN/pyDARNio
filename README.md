@@ -1,4 +1,4 @@
-![pyDARNio](https://github.com/SuperDARN/pyDARNio/release-1.0/docs/imgs/pydarnio_logo.png)
+![pyDARNio](https://github.com/SuperDARN/pyDARNio/blob/release-1.0/docs/imgs/pydarnio_logo.png)
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) 
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) 
