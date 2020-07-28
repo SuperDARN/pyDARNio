@@ -15,7 +15,7 @@ site are written record-by-record, in a similar style to the SuperDARN standard
 dmap format. These files are named with a .site extension and are said to be
 `'site'` structured.
 
-After recording, the files are array restructured using pyDARN, for distribution.
+After recording, the files are array restructured using pyDARNio, for distribution.
 The restructuring is done to make the files more human-readable, and it also
 reduces the file size. After restructuring the files are said to be `'array'`
 structured.
@@ -52,7 +52,7 @@ for main array and interferometer array.
 The correlated data given as lags x ranges, for the two arrays.
 
 Borealis files can also be converted to the standard SuperDARN DMap formats
-using pyDARN.
+using pyDARNio.
 
 ## Reading with BorealisRead
 
@@ -69,10 +69,10 @@ that the file was not stored in, it will require some processing time.
 Here's an example:
 
 ```python
-import pydarn
+import pydarnio
 
 bfiq_site_filename = "path/to/bfiq_site_file"
-borealis_reader = pydarn.BorealisRead(bfiq_site_filename, 'bfiq', 'site')
+borealis_reader = pydarnio.BorealisRead(bfiq_site_filename, 'bfiq', 'site')
 
 # We can return the original data from the site file. This will be a dictionary
 # of dictionaries.
@@ -93,10 +93,10 @@ common structure available to the user), and following failure will attempt to
 read as site structured.
 
 ```python
-import pydarn
+import pydarnio
 
 rawacf_array_filename = "path/to/rawacf_array_file"
-borealis_reader = pydarn.BorealisRead(rawacf_array_filename, 'rawacf')
+borealis_reader = pydarnio.BorealisRead(rawacf_array_filename, 'rawacf')
 
 print(borealis_reader.borealis_file_structure) # confirm it was array structured
 
@@ -141,12 +141,12 @@ The BorealisWrite class takes 4 parameters:
 Here's an example that will write `my_rawacf_data` to `my_file`:
 
 ```python
-import pydarn
+import pydarnio
 
 my_rawacf_data = borealis_reader.arrays
 
 my_file = "path/to/file"
-writer = pydarn.BorealisWrite(my_file, my_rawacf_data, 'rawacf', 'array')
+writer = pydarnio.BorealisWrite(my_file, my_rawacf_data, 'rawacf', 'array')
 ```
 
 Similar to reading files, if you don't supply the borealis_file_structure
@@ -154,12 +154,12 @@ parameter, the writer will attempt to write the file as array structured first,
 and following failure will attempt to write as site structured.
 
 ```python
-import pydarn
+import pydarnio
 
 my_rawacf_data = borealis_reader.arrays
 
 my_file = "path/to/file"
-writer = pydarn.BorealisWrite(my_file, my_rawacf_data, 'rawacf')
+writer = pydarnio.BorealisWrite(my_file, my_rawacf_data, 'rawacf')
 
 print(writer.borealis_file_structure)  # to check the file structure written
 ```
