@@ -27,7 +27,7 @@ Possible services:
 ## Bibtex
 
 ```latex
-@Misc = [pydarn,
+@Misc = [pydarnio,
 author={Schmidt, M.T. and Detwiller, M.H. and
 Billet, D.D. and 
 Bland, E. C. and 
