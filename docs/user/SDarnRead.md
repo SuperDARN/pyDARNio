@@ -15,16 +15,16 @@ Types of files used by SuperDARN which are usually accessed in DMap format are:
 - GRID/GRD
 - MAP
 
-This tutorial will focus on reading in DMap structured files using Pydarn, including how to read compressed files and access common data fields.
+This tutorial will focus on reading in DMap structured files using pyDARN, including how to read compressed files and access common data fields.
 
 ## Reading with SDarnRead
 
 The basic code to read in a DMap structured file is as follows:
 ```python
-import pydarn
+import pydarnio
 
 file = "path/to/file"
-SDarn_read = pydarn.SDarnRead(file)
+SDarn_read = pydarnio.SDarnRead(file)
 ```
 which puts the file contents into a Python class called `SDarn_read`. 
 
@@ -40,13 +40,13 @@ To read a compressed file like **bz2** (commonly used for SuperDARN data product
 The `SDarnRead` class allows the user to provide the file data as a stream of data which is what the **bz2** returns when it reads a compressed file: 
 ```python
 import bz2
-import pydarn
+import pydarnio
 
 fitacf_file = path/to/file.bz2
 with bz2.open(fitacf_file) as fp:
       fitacf_stream = fp.read()
 
-reader = pydarn.SDarnRead(fitacf_stream, True)
+reader = pydarnio.SDarnRead(fitacf_stream, True)
 records = reader.read_fitacf()
 ```
 
@@ -55,24 +55,24 @@ To see the names of the variables you've loaded in and now have access to, try u
 ```python
 print(fitacf_data[0].keys())
 ```
-which will tell you all the variablies in the first [0th] record.
+which will tell you all the variables in the first [0th] record.
 
 Let's say you loaded in a MAP file, and wanted to grab the cross polar-cap potentials for each record:
 ```python
 file = "20150302.n.map"
-SDarn_read = pydarn.SDarnRead(file)
+SDarn_read = pydarnio.SDarnRead(file)
 map_data = SDarn_read.read_map()
 
 cpcps=[i['pot.drop'] for i in map_data]
 ```
 ## Other Examples
 
-Other examples of using pyDARN with file reading is for reading in multiple 2-hour files, sorting them, and concatenating the data together.
+Other examples of using pyDARNio with file reading is for reading in multiple 2-hour files, sorting them, and concatenating the data together.
 For example, you may do something like this, using the **glob** library:
 
 ```python
 import bz2 
-import pydarn 
+import pydarnio 
 
 from glob import glob
 
@@ -85,7 +85,7 @@ for fitacf_file in fitacf_files:
     with bz2.open(fitacf_file) as fp:
         fitacf_stream = fp.read()
 
-    reader = pydarn.SDarnRead(fitacf_stream, True)
+    reader = pydarnio.SDarnRead(fitacf_stream, True)
     records = reader.read_fitacf()
     data += records
 print("Reading complete...")
@@ -93,4 +93,4 @@ print("Reading complete...")
 
 ## DMapRead
 
-In pyDARN, there also exists a class called `DMapRead`, which you can use in place of SDarnRead to read in any generic DMap structured file. However, Pydarn won't test its integrety as it doesn't know what file it's supposed to be. If you're reading a SuperDARN file from one of the official data mirrors, then it is best to use SDarnRead in general.
+In pyDARNio, there also exists a class called `DMapRead`, which you can use in place of SDarnRead to read in any generic DMap structured file. However, pyDARNio won't test its integrity as it doesn't know what file it's supposed to be. If you're reading a SuperDARN file from one of the official data mirrors, then it is best to use SDarnRead in general.
