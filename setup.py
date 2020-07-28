@@ -3,7 +3,7 @@ Copyright 2018 SuperDARN Canada, University of Saskatchewan
 
 setup.py
 2018-11-05
-To setup pyDARN as a third party library. Include installing need libraries for
+To setup pyDARNio as a third party library. Include installing need libraries for
 running the files.
 
 author:
@@ -33,7 +33,6 @@ setup(
     python_requires='>=3.6',
     packages=find_packages(exclude=['docs', 'test']),
     author="SuperDARN",
-    # used to import the logging config file into pydarn.
     include_package_data=True,
     setup_requires=['pyyaml', 'numpy',
                     'h5py', 'deepdish', 'pathlib2'],

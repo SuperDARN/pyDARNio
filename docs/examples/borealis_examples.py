@@ -1,7 +1,7 @@
 # Copyright 2019 SuperDARN Canada, University of Saskatchewan
 # Author: Marci Detwiller
 """
-This file contains some functions that could be useful with 
+This file contains some functions that could be useful with
 Borealis file types.
 
 Exceptions
@@ -20,7 +20,7 @@ ConvertFileOverWriteError
 
 Functions
 ---------
-read_borealis_file: uses BorealisRead and returns records or 
+read_borealis_file: uses BorealisRead and returns records or
     arrays (as requested)
 write_borealis_file: uses BorealisWrite to write a file
 borealis_site_to_array_file: uses BorealisSiteRead and BorealisArrayWrite
@@ -55,10 +55,10 @@ import warnings
 from collections import OrderedDict
 from typing import Union, List
 
-from pydarn import (borealis_exceptions, BorealisRead,
+from pydarnio import (borealis_exceptions, BorealisRead,
                    BorealisWrite, BorealisConvert)
 
-pydarn_log = logging.getLogger('pydarn')
+pydarnio_log = logging.getLogger('pydarnio')
 
 
 def read_borealis_file(borealis_hdf5_file: str, borealis_filetype: str,
@@ -189,15 +189,15 @@ def borealis_site_to_array_file(read_filename: str, write_filename: str):
         raise borealis_exceptions.BorealisFileTypeError(read_filename,
             read_filename[-2:])
 
-    pydarn_log.info("Reading {} site file: {}".format(borealis_filetype, read_filename))
+    pydarnio_log.info("Reading {} site file: {}".format(borealis_filetype, read_filename))
     site_reader = BorealisRead(read_filename, borealis_filetype,
                                borealis_file_structure='site')
-    pydarn_log.info("Restructuring to array and writing to file: {}"\
+    pydarnio_log.info("Restructuring to array and writing to file: {}"\
         "".format(write_filename))
     array_writer = BorealisWrite(write_filename, site_reader.arrays,
                                  borealis_filetype,
                                  borealis_file_structure='array')
-    pydarn_log.info("Successfully restructured {} to {}"\
+    pydarnio_log.info("Successfully restructured {} to {}"\
                      "".format(read_filename, write_filename))
 
 
@@ -236,21 +236,21 @@ def borealis_array_to_site_file(read_filename: str, write_filename: str):
         raise borealis_exceptions.BorealisFileTypeError(read_filename,
             read_filename[-2:])
 
-    pydarn_log.info("Reading {} array file: {}".format(borealis_filetype,
+    pydarnio_log.info("Reading {} array file: {}".format(borealis_filetype,
                                              read_filename))
     array_reader = BorealisRead(read_filename, borealis_filetype,
                                 borealis_file_structure='array')
-    pydarn_log.info("Restructuring to site and writing to file: {}"\
+    pydarnio_log.info("Restructuring to site and writing to file: {}"\
         "".format(write_filename))
     site_writer = BorealisWrite(write_filename, array_reader.records,
                                 borealis_filetype,
                                 borealis_file_structure='site')
-    pydarn_log.info("Successfully restructured {} to {}"\
+    pydarnio_log.info("Successfully restructured {} to {}"\
                      "".format(read_filename, write_filename))
 
 
 def borealis_write_to_dmap(borealis_hdf5_file: str, borealis_filetype: str,
-                           slice_id: int, sdarn_filename: str, 
+                           slice_id: int, sdarn_filename: str,
                            site_flag: bool = False):
     """
     Convert a Borealis hdf5 file to a DARN filetype.
@@ -298,11 +298,11 @@ def borealis_write_to_dmap(borealis_hdf5_file: str, borealis_filetype: str,
     else:
         structure = 'array'
 
-    converter = BorealisConvert(borealis_hdf5_file, borealis_filetype, 
-                                sdarn_filename, slice_id, 
+    converter = BorealisConvert(borealis_hdf5_file, borealis_filetype,
+                                sdarn_filename, slice_id,
                                 borealis_file_structure=structure)
 
-    pydarn_log.info("Borealis file {filename} written to {sdarn_filename} "
+    pydarnio_log.info("Borealis file {filename} written to {sdarn_filename} "
           "without errors.".format(filename=borealis_hdf5_file,
                           sdarn_filename=sdarn_filename))
 
@@ -343,7 +343,7 @@ def bfiq2darniqdat(borealis_hdf5_file: str, sdarn_filename: str,
     --------
     borealis_write_to_dmap
     """
-    borealis_write_to_dmap(borealis_hdf5_file, 'bfiq', slice_id, 
+    borealis_write_to_dmap(borealis_hdf5_file, 'bfiq', slice_id,
                            sdarn_filename, site_flag=site_flag)
 
 
@@ -383,5 +383,5 @@ def rawacf2darnrawacf(borealis_hdf5_file: str, sdarn_filename: str,
     --------
     borealis_write_to_dmap
     """
-    borealis_write_to_dmap(borealis_hdf5_file, 'rawacf', slice_id, 
+    borealis_write_to_dmap(borealis_hdf5_file, 'rawacf', slice_id,
                            sdarn_filename, site_flag=site_flag)

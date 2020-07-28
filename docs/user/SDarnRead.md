@@ -11,7 +11,7 @@ Types of files used by SuperDARN which are usually accessed in DMap format are:
 - GRID/GRD
 - MAP
 
-This tutorial will focus on reading in DMap structured files using pyDARN, including how to read compressed files and access common data fields.
+This tutorial will focus on reading in DMap structured files using pyDARNio, including how to read compressed files and access common data fields.
 
 ## Reading with SDarnRead
 

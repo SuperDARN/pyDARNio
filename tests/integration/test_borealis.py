@@ -26,9 +26,9 @@ from collections import OrderedDict
 
 from borealis_rawacf_data_sets import borealis_array_rawacf_data
 from borealis_bfiq_data_sets import borealis_array_bfiq_data
-import pydarn
+import pydarnio
 
-pydarn_logger = logging.getLogger('pydarn')
+pydarnio_logger = logging.getLogger('pydarnio')
 
 # Site Test files
 borealis_site_bfiq_file = "../test_files/20190909.2200.02.sas.0.bfiq.hdf5.site"
@@ -105,13 +105,13 @@ class IntegrationBorealis(unittest.TestCase):
             - records that pass the read from a file can then be written
             - records written and then read are the same as original
         """
-        dm = pydarn.BorealisRead(self.source_rawacf_site_file, 'rawacf',
+        dm = pydarnio.BorealisRead(self.source_rawacf_site_file, 'rawacf',
                                  'site')
         records = dm.records
-        _ = pydarn.BorealisWrite(self.write_rawacf_site_file,
+        _ = pydarnio.BorealisWrite(self.write_rawacf_site_file,
                                  records, 'rawacf', 'site')
         self.assertTrue(os.path.isfile(self.write_rawacf_site_file))
-        dm2 = pydarn.BorealisRead(self.write_rawacf_site_file, 'rawacf',
+        dm2 = pydarnio.BorealisRead(self.write_rawacf_site_file, 'rawacf',
                                   'site')
         new_records = dm2.records
         dictionaries_are_same = self.check_dictionaries_are_same(records,
@@ -129,14 +129,14 @@ class IntegrationBorealis(unittest.TestCase):
             - arrays that pass the read from a file can then be written
             - arrays written and then read are the same as original
         """
-        dm = pydarn.BorealisRead(self.source_rawacf_array_file, 'rawacf',
+        dm = pydarnio.BorealisRead(self.source_rawacf_array_file, 'rawacf',
                                  'array')
         arrays = dm.arrays
-        _ = pydarn.BorealisWrite(self.write_rawacf_array_file,
+        _ = pydarnio.BorealisWrite(self.write_rawacf_array_file,
                                  arrays, 'rawacf',
                                  'array')
         self.assertTrue(os.path.isfile(self.write_rawacf_array_file))
-        dm2 = pydarn.BorealisRead(self.write_rawacf_array_file, 'rawacf',
+        dm2 = pydarnio.BorealisRead(self.write_rawacf_array_file, 'rawacf',
                                   'array')
         new_arrays = dm2.arrays
         dictionaries_are_same = self.check_dictionaries_are_same(arrays,
@@ -156,17 +156,17 @@ class IntegrationBorealis(unittest.TestCase):
             - records restructured, written as arrays, read as arrays,
                 restructured back to records are the same as original records
         """
-        dm = pydarn.BorealisRead(self.source_rawacf_site_file, 'rawacf',
+        dm = pydarnio.BorealisRead(self.source_rawacf_site_file, 'rawacf',
                                  'site')
         records = dm.records
 
         arrays = dm.arrays  # restructuring happens here
-        _ = pydarn.BorealisWrite(self.write_rawacf_array_file,
+        _ = pydarnio.BorealisWrite(self.write_rawacf_array_file,
                                  arrays, 'rawacf',
                                  'array')
         del dm, arrays
         self.assertTrue(os.path.isfile(self.write_rawacf_array_file))
-        dm2 = pydarn.BorealisRead(self.write_rawacf_array_file, 'rawacf',
+        dm2 = pydarnio.BorealisRead(self.write_rawacf_array_file, 'rawacf',
                                   'array')
 
         new_records = dm2.records  # restructuring happens here
@@ -187,16 +187,16 @@ class IntegrationBorealis(unittest.TestCase):
             - arrays restructured, written as records, read as records,
                 restructured back to arrays are the same as original arrays
         """
-        dm = pydarn.BorealisRead(self.source_rawacf_array_file, 'rawacf',
+        dm = pydarnio.BorealisRead(self.source_rawacf_array_file, 'rawacf',
                                  'array')
         arrays = dm.arrays
 
         records = dm.records  # restructuring happens here
-        _ = pydarn.BorealisWrite(self.write_rawacf_site_file, records,
+        _ = pydarnio.BorealisWrite(self.write_rawacf_site_file, records,
                                  'rawacf', 'site')
         del dm, records
         self.assertTrue(os.path.isfile(self.write_rawacf_site_file))
-        dm2 = pydarn.BorealisRead(self.write_rawacf_site_file, 'rawacf',
+        dm2 = pydarnio.BorealisRead(self.write_rawacf_site_file, 'rawacf',
                                   'site')
 
         new_arrays = dm2.arrays  # restructuring happens here
@@ -215,14 +215,14 @@ class IntegrationBorealis(unittest.TestCase):
             - records that pass the read from a file can then be written
             - records written and then read are the same as original
         """
-        dm = pydarn.BorealisRead(self.source_bfiq_site_file, 'bfiq',
+        dm = pydarnio.BorealisRead(self.source_bfiq_site_file, 'bfiq',
                                  'site')
         records = dm.records
-        _ = pydarn.BorealisWrite(self.write_bfiq_site_file,
+        _ = pydarnio.BorealisWrite(self.write_bfiq_site_file,
                                  records, 'bfiq',
                                  'site')
         self.assertTrue(os.path.isfile(self.write_bfiq_site_file))
-        dm2 = pydarn.BorealisRead(self.write_bfiq_site_file, 'bfiq',
+        dm2 = pydarnio.BorealisRead(self.write_bfiq_site_file, 'bfiq',
                                   'site')
         new_records = dm2.records
         dictionaries_are_same = self.check_dictionaries_are_same(records,
@@ -240,14 +240,14 @@ class IntegrationBorealis(unittest.TestCase):
             - arrays that pass the read from a file can then be written
             - arrays written and then read are the same as original
         """
-        dm = pydarn.BorealisRead(self.source_bfiq_array_file, 'bfiq',
+        dm = pydarnio.BorealisRead(self.source_bfiq_array_file, 'bfiq',
                                  'array')
         arrays = dm.arrays
-        _ = pydarn.BorealisWrite(self.write_bfiq_array_file,
+        _ = pydarnio.BorealisWrite(self.write_bfiq_array_file,
                                  arrays, 'bfiq',
                                  'array')
         self.assertTrue(os.path.isfile(self.write_bfiq_array_file))
-        dm2 = pydarn.BorealisRead(self.write_bfiq_array_file, 'bfiq',
+        dm2 = pydarnio.BorealisRead(self.write_bfiq_array_file, 'bfiq',
                                   'array')
         new_arrays = dm2.arrays
         dictionaries_are_same = self.check_dictionaries_are_same(arrays,
@@ -267,17 +267,17 @@ class IntegrationBorealis(unittest.TestCase):
             - records restructured, written as arrays, read as arrays,
                 restructured back to records are the same as original records
         """
-        dm = pydarn.BorealisRead(self.source_bfiq_site_file, 'bfiq',
+        dm = pydarnio.BorealisRead(self.source_bfiq_site_file, 'bfiq',
                                  'site')
         records = dm.records
 
         arrays = dm.arrays  # restructuring happens here
-        _ = pydarn.BorealisWrite(self.write_bfiq_array_file,
+        _ = pydarnio.BorealisWrite(self.write_bfiq_array_file,
                                  arrays, 'bfiq',
                                  'array')
         del dm, arrays
         self.assertTrue(os.path.isfile(self.write_bfiq_array_file))
-        dm2 = pydarn.BorealisRead(self.write_bfiq_array_file, 'bfiq',
+        dm2 = pydarnio.BorealisRead(self.write_bfiq_array_file, 'bfiq',
                                   'array')
 
         new_records = dm2.records  # restructuring happens here
@@ -298,17 +298,17 @@ class IntegrationBorealis(unittest.TestCase):
             - arrays restructured, written as records, read as records,
                 restructured back to arrays are the same as original arrays
         """
-        dm = pydarn.BorealisRead(self.source_bfiq_array_file, 'bfiq',
+        dm = pydarnio.BorealisRead(self.source_bfiq_array_file, 'bfiq',
                                  'array')
         arrays = dm.arrays
 
         records = dm.records  # restructuring happens here
-        _ = pydarn.BorealisWrite(self.write_bfiq_site_file,
+        _ = pydarnio.BorealisWrite(self.write_bfiq_site_file,
                                  records, 'bfiq',
                                  'site')
         del dm, records
         self.assertTrue(os.path.isfile(self.write_bfiq_site_file))
-        dm2 = pydarn.BorealisRead(self.write_bfiq_site_file, 'bfiq',
+        dm2 = pydarnio.BorealisRead(self.write_bfiq_site_file, 'bfiq',
                                   'site')
 
         new_arrays = dm2.arrays  # restructuring happens here
@@ -327,15 +327,15 @@ class IntegrationBorealis(unittest.TestCase):
             - records that pass the read from a file can then be written
             - records written and then read are the same as original
         """
-        dm = pydarn.BorealisRead(self.source_antennas_iq_site_file,
+        dm = pydarnio.BorealisRead(self.source_antennas_iq_site_file,
                                  'antennas_iq',
                                  'site')
         records = dm.records
-        _ = pydarn.BorealisWrite(self.write_antennas_iq_site_file,
+        _ = pydarnio.BorealisWrite(self.write_antennas_iq_site_file,
                                  records, 'antennas_iq',
                                  'site')
         self.assertTrue(os.path.isfile(self.write_antennas_iq_site_file))
-        dm2 = pydarn.BorealisRead(self.write_antennas_iq_site_file,
+        dm2 = pydarnio.BorealisRead(self.write_antennas_iq_site_file,
                                   'antennas_iq',
                                   'site')
         new_records = dm2.records
@@ -355,15 +355,15 @@ class IntegrationBorealis(unittest.TestCase):
             - arrays that pass the read from a file can then be written
             - arrays written and then read are the same as original
         """
-        dm = pydarn.BorealisRead(self.source_antennas_iq_array_file,
+        dm = pydarnio.BorealisRead(self.source_antennas_iq_array_file,
                                  'antennas_iq',
                                  'array')
         arrays = dm.arrays
-        _ = pydarn.BorealisWrite(self.write_antennas_iq_array_file,
+        _ = pydarnio.BorealisWrite(self.write_antennas_iq_array_file,
                                  arrays, 'antennas_iq',
                                  'array')
         self.assertTrue(os.path.isfile(self.write_antennas_iq_array_file))
-        dm2 = pydarn.BorealisRead(self.write_antennas_iq_array_file,
+        dm2 = pydarnio.BorealisRead(self.write_antennas_iq_array_file,
                                   'antennas_iq',
                                   'array')
         new_arrays = dm2.arrays
@@ -384,7 +384,7 @@ class IntegrationBorealis(unittest.TestCase):
             - records restructured, written as arrays, read as arrays,
                 restructured back to records are the same as original records
         """
-        dm = pydarn.BorealisRead(self.source_antennas_iq_site_file,
+        dm = pydarnio.BorealisRead(self.source_antennas_iq_site_file,
                                  'antennas_iq',
                                  'site')
         records = dm.records
@@ -392,13 +392,13 @@ class IntegrationBorealis(unittest.TestCase):
         arrays = dm.arrays  # restructuring happens here
         del dm
         gc.collect()
-        writer = pydarn.BorealisWrite(self.write_antennas_iq_array_file,
+        writer = pydarnio.BorealisWrite(self.write_antennas_iq_array_file,
                                       arrays, 'antennas_iq',
                                       'array')
         del arrays, writer
         gc.collect()
         self.assertTrue(os.path.isfile(self.write_antennas_iq_array_file))
-        dm2 = pydarn.BorealisRead(self.write_antennas_iq_array_file,
+        dm2 = pydarnio.BorealisRead(self.write_antennas_iq_array_file,
                                   'antennas_iq',
                                   'array')
 
@@ -420,18 +420,18 @@ class IntegrationBorealis(unittest.TestCase):
             - arrays restructured, written as records, read as records,
                 restructured back to arrays are the same as original arrays
         """
-        dm = pydarn.BorealisRead(self.source_antennas_iq_array_file,
+        dm = pydarnio.BorealisRead(self.source_antennas_iq_array_file,
                                  'antennas_iq',
                                  'array')
         arrays = dm.arrays
 
-        writer = pydarn.BorealisWrite(self.write_antennas_iq_site_file,
+        writer = pydarnio.BorealisWrite(self.write_antennas_iq_site_file,
                                       dm.records, 'antennas_iq',
                                       'site')
         del dm, writer
         gc.collect()
         self.assertTrue(os.path.isfile(self.write_antennas_iq_site_file))
-        dm2 = pydarn.BorealisRead(self.write_antennas_iq_site_file,
+        dm2 = pydarnio.BorealisRead(self.write_antennas_iq_site_file,
                                   'antennas_iq',
                                   'site')
 
@@ -477,18 +477,18 @@ class IntegrationBorealisSDARN(unittest.TestCase):
         self.iqdat_array_darn_file = './test_iqdat_array_file.dmap'
         self.rawacf_array_darn_file = './test_rawacf_array_file.dmap'
 
-        _ = pydarn.BorealisWrite(self.bfiq_file,
+        _ = pydarnio.BorealisWrite(self.bfiq_file,
                                  self.bfiq_array_data, 'bfiq', 'array')
 
-        bfiq_reader = pydarn.BorealisRead(self.bfiq_file, 'bfiq', 'array')
+        bfiq_reader = pydarnio.BorealisRead(self.bfiq_file, 'bfiq', 'array')
         self.bfiq_site_data = bfiq_reader.records
         self.iqdat_site_darn_file = './test_iqdat_site_file.dmap'
 
-        _ = pydarn.BorealisWrite(self.rawacf_file,
+        _ = pydarnio.BorealisWrite(self.rawacf_file,
                                  self.rawacf_array_data, 'rawacf',
                                  'array')
 
-        rawacf_reader = pydarn.BorealisRead(self.rawacf_file, 'rawacf',
+        rawacf_reader = pydarnio.BorealisRead(self.rawacf_file, 'rawacf',
                                             'array')
         self.rawacf_site_data = rawacf_reader.records
         self.rawacf_site_darn_file = './test_rawacf_site_file.dmap'
@@ -503,23 +503,23 @@ class IntegrationBorealisSDARN(unittest.TestCase):
         """
         # self.bfiq_file already written in setUp
         array_converter =\
-            pydarn.BorealisConvert(self.bfiq_file, "bfiq",
+            pydarnio.BorealisConvert(self.bfiq_file, "bfiq",
                                    self.iqdat_array_darn_file, 0,
                                    borealis_file_structure='array')
         self.assertTrue(os.path.isfile(self.iqdat_array_darn_file))
-        darn_reader = pydarn.SDarnRead(self.iqdat_array_darn_file)
+        darn_reader = pydarnio.SDarnRead(self.iqdat_array_darn_file)
         iqdat_array_records = darn_reader.read_iqdat()
         os.remove(self.iqdat_array_darn_file)
         os.remove(self.bfiq_file)
 
-        _ = pydarn.BorealisWrite(self.bfiq_file,
+        _ = pydarnio.BorealisWrite(self.bfiq_file,
                                  self.bfiq_site_data, 'bfiq', 'site')
         site_converter =\
-            pydarn.BorealisConvert(self.bfiq_file, "bfiq",
+            pydarnio.BorealisConvert(self.bfiq_file, "bfiq",
                                    self.iqdat_site_darn_file, 0,
                                    borealis_file_structure='site')
         self.assertTrue(os.path.isfile(self.iqdat_site_darn_file))
-        darn_reader = pydarn.SDarnRead(self.iqdat_site_darn_file)
+        darn_reader = pydarnio.SDarnRead(self.iqdat_site_darn_file)
         iqdat_site_records = darn_reader.read_iqdat()
         os.remove(self.iqdat_site_darn_file)
         os.remove(self.bfiq_file)
@@ -543,23 +543,23 @@ class IntegrationBorealisSDARN(unittest.TestCase):
         """
         # self.rawacf_file already written in setUp
         array_converter =\
-            pydarn.BorealisConvert(self.rawacf_file, "rawacf",
+            pydarnio.BorealisConvert(self.rawacf_file, "rawacf",
                                    self.rawacf_array_darn_file, 0,
                                    borealis_file_structure='array')
         self.assertTrue(os.path.isfile(self.rawacf_array_darn_file))
-        darn_reader = pydarn.SDarnRead(self.rawacf_array_darn_file)
+        darn_reader = pydarnio.SDarnRead(self.rawacf_array_darn_file)
         rawacf_array_records = darn_reader.read_rawacf()
         os.remove(self.rawacf_array_darn_file)
         os.remove(self.rawacf_file)
 
-        _ = pydarn.BorealisWrite(self.rawacf_file,
+        _ = pydarnio.BorealisWrite(self.rawacf_file,
                                  self.rawacf_site_data, 'rawacf', 'site')
         site_converter =\
-            pydarn.BorealisConvert(self.rawacf_file, "rawacf",
+            pydarnio.BorealisConvert(self.rawacf_file, "rawacf",
                                    self.rawacf_site_darn_file, 0,
                                    borealis_file_structure='site')
         self.assertTrue(os.path.isfile(self.rawacf_site_darn_file))
-        darn_reader = pydarn.SDarnRead(self.rawacf_site_darn_file)
+        darn_reader = pydarnio.SDarnRead(self.rawacf_site_darn_file)
         rawacf_site_records = darn_reader.read_rawacf()
         os.remove(self.rawacf_site_darn_file)
         os.remove(self.rawacf_file)
@@ -580,6 +580,6 @@ if __name__ == '__main__':
     """
     Runs the above class in a unittest system.
     """
-    pydarn_logger.info("Starting Borealis unit testing")
+    pydarnio_logger.info("Starting Borealis unit testing")
 
     unittest.main()

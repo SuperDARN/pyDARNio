@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 from collections import OrderedDict
 
-import pydarn
+import pydarnio
 
 
 class Test_Conversions(unittest.TestCase):
@@ -53,18 +53,18 @@ class Test_Conversions(unittest.TestCase):
                            'list test': [np.int64(1), np.int64(2),
                                          np.int64(34), np.int64(45)]}]
         self.dmap_records = \
-            [OrderedDict([('stid', pydarn.DmapScalar('stid', 1, 3, 'i')),
-                          ('channel', pydarn.DmapScalar('channel', 0, 3, 'i')),
-                          ('ptab', pydarn.DmapArray('ptab',
+            [OrderedDict([('stid', pydarnio.DmapScalar('stid', 1, 3, 'i')),
+                          ('channel', pydarnio.DmapScalar('channel', 0, 3, 'i')),
+                          ('ptab', pydarnio.DmapArray('ptab',
                                                     np.array([0, 9, 12, 20, 22,
                                                               26, 27],
                                                              dtype=np.int64),
                                                     10, 'q', 1, [7]))]),
-             OrderedDict([('bmnum', pydarn.DmapScalar('bmnum', 15, 2, 'h')),
-                          ('combf', pydarn.DmapScalar('combf',
+             OrderedDict([('bmnum', pydarnio.DmapScalar('bmnum', 15, 2, 'h')),
+                          ('combf', pydarnio.DmapScalar('combf',
                                                       "$Id: twofsound", 9,
                                                       's')),
-                          ('pwr0', pydarn.DmapArray('pwr0',
+                          ('pwr0', pydarnio.DmapArray('pwr0',
                                                     np.array([58.081821,
                                                               52.241421,
                                                               32.936508,
@@ -80,47 +80,47 @@ class Test_Conversions(unittest.TestCase):
                                                              dtype=np.float32),
                                                     4, 'f', 1, [12]))]),
              OrderedDict([('radar.revision.major',
-                           pydarn.DmapScalar('radar.revision.major',
+                           pydarnio.DmapScalar('radar.revision.major',
                                              np.int8(1), 1, 'c')),
                           ('radar.revision.minor',
-                           pydarn.DmapScalar('radar.revision.minor',
+                           pydarnio.DmapScalar('radar.revision.minor',
                                              np.int8(18), 1, 'c')),
                           ('float test',
-                           pydarn.DmapScalar('float test',
+                           pydarnio.DmapScalar('float test',
                                              float(3.5), 4, 'f')),
                           ('float2 test',
-                           pydarn.DmapScalar('float2 test', 3.65, 4, 'f')),
-                          ('channel', pydarn.DmapScalar('channel', 'a', 9,
+                           pydarnio.DmapScalar('float2 test', 3.65, 4, 'f')),
+                          ('channel', pydarnio.DmapScalar('channel', 'a', 9,
                                                         's')),
                           ('double test',
-                           pydarn.DmapArray('double test',
+                           pydarnio.DmapArray('double test',
                                             np.array([[2.305015, 2.0251],
                                                      [16548548, 78687686]],
                                                      dtype=np.float64), 8,
                                             'd', 2, [2, 2]))]),
-             OrderedDict([('time.us', pydarn.DmapScalar('time.us', 508473,
+             OrderedDict([('time.us', pydarnio.DmapScalar('time.us', 508473,
                                                         3, 'i')),
                           ('negative int',
-                           pydarn.DmapScalar('negative int', -42, 3, 'i')),
+                           pydarnio.DmapScalar('negative int', -42, 3, 'i')),
                           ('long int',
-                           pydarn.DmapScalar('long int',
+                           pydarnio.DmapScalar('long int',
                                              np.int64(215610516132151613),
                                              10, 'q')),
-                          ('unsigned char', pydarn.DmapScalar('unsigned char',
+                          ('unsigned char', pydarnio.DmapScalar('unsigned char',
                                                               np.uint8(3),
                                                               16, 'B')),
                           ('unsigned short',
-                           pydarn.DmapScalar('unsigned short', np.uint16(45),
+                           pydarnio.DmapScalar('unsigned short', np.uint16(45),
                                              17, 'H')),
                           ('unsigned int',
-                           pydarn.DmapScalar('unsigned int', np.uint32(100),
+                           pydarnio.DmapScalar('unsigned int', np.uint32(100),
                                              18, 'I')),
                           ('unsigned long',
-                           pydarn.DmapScalar('unsigned long',
+                           pydarnio.DmapScalar('unsigned long',
                                              np.uint64(1250000000000),
                                              19, 'Q')),
                           ('list test',
-                           pydarn.DmapArray('list test',
+                           pydarnio.DmapArray('list test',
                                             np.array([1, 2, 34, 45],
                                                      dtype=np.int64),
                                             10, 'q', 1, [4]))])]
@@ -140,7 +140,7 @@ class Test_Conversions(unittest.TestCase):
             diff_fields2 = set(record2) - set(record1)
             self.assertEqual(len(diff_fields2), 0)
             for field, val_obj in record1.items():
-                if isinstance(val_obj, pydarn.DmapScalar):
+                if isinstance(val_obj, pydarnio.DmapScalar):
                     self.assertEqual(record2[field], val_obj)
                 else:
                     self.compare_dmap_array(record2[field], val_obj)
@@ -160,7 +160,7 @@ class Test_Conversions(unittest.TestCase):
         """
         From utils package, testing dict2dmap function
         """
-        dmap_records_test = pydarn.dict2dmap(self.dmap_list)
+        dmap_records_test = pydarnio.dict2dmap(self.dmap_list)
         self.dmap_compare(dmap_records_test, self.dmap_records)
 
     def test_dmap2dict(self):
@@ -169,7 +169,7 @@ class Test_Conversions(unittest.TestCase):
         """
         # need to break up the list of dictionaries to properly
         # compare each field value
-        dmap_list_test = pydarn.dmap2dict(self.dmap_records)
+        dmap_list_test = pydarnio.dmap2dict(self.dmap_records)
         for j in range(len(dmap_list_test)):
             for key, value in dmap_list_test[j].items():
                 if isinstance(value, np.ndarray):
