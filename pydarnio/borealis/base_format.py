@@ -939,7 +939,7 @@ class BaseFormat():
                     else:  # not an array, num_records is the only dimension
                         empty_array[rec_idx] = data_dict[k][field]
                 except Exception as e:
-                    raise BorealisRestructureError(
+                    raise borealis_exceptions.BorealisRestructureError(
                         'Record {}, field {} error {}'.format(k, field, e)) from e
 
         new_data_dict.update(temp_array_dict)
@@ -1024,7 +1024,7 @@ class BaseFormat():
                         index_slice = tuple(index_slice)
                         timestamp_dict[key][field] = data_dict[field][index_slice]
                 except Exception as e:
-                    raise BorealisRestructureError(
+                    raise borealis_exceptions.BorealisRestructureError(
                         'Record {}, field {} error {}'.format(key, field, e)) from e
 
         timestamp_dict = cls.flatten_site_arrays(timestamp_dict)
