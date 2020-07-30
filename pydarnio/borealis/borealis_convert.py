@@ -463,19 +463,20 @@ class BorealisConvert(BorealisRead):
         -------
         dmap_recs, the records converted to DMap format
         """
-        try:
-            recs = []
-            for record in self.borealis_records.items():
+        recs = []
+        for record in self.borealis_records.items():
+            try:
                 sdarn_record_dict = \
                         self.__convert_bfiq_record(self.borealis_slice_id,
                                                    record,
                                                    self.borealis_filename,
                                                    self.scaling_factor)
                 recs.append(sdarn_record_dict)
-            self._sdarn_dict = recs
-            self._sdarn_dmap_records = dict2dmap(recs)
-        except Exception as e:
-            raise borealis_exceptions.BorealisConvert2IqdatError(e) from e
+            except Exception as e:
+                raise borealis_exceptions.BorealisConvert2IqdatError(
+                    'In record {} error: {}'.format(record[0], e)) from e
+        self._sdarn_dict = recs
+        self._sdarn_dmap_records = dict2dmap(recs)
 
     @staticmethod
     def __convert_bfiq_record(borealis_slice_id: int,
@@ -713,19 +714,21 @@ class BorealisConvert(BorealisRead):
         -------
         dmap_recs, the records converted to DMap format
         """
-        try:
-            recs = []
-            for record in self.borealis_records.items():
+
+        recs = []
+        for record in self.borealis_records.items():
+            try:
                 sdarn_record_dict = \
                         self.__convert_rawacf_record(self.borealis_slice_id,
                                                      record,
                                                      self.borealis_filename,
                                                      self.scaling_factor)
                 recs.append(sdarn_record_dict)
-            self._sdarn_dict = recs
-            self._sdarn_dmap_records = dict2dmap(recs)
-        except Exception as e:
-            raise borealis_exceptions.BorealisConvert2RawacfError(e) from e
+            except Exception as e:
+                raise borealis_exceptions.BorealisConvert2RawacfError(
+                    'In record {} error: {}'.format(record[0], e)) from e
+        self._sdarn_dict = recs
+        self._sdarn_dmap_records = dict2dmap(recs)
 
     @staticmethod
     def __convert_rawacf_record(borealis_slice_id: int,
