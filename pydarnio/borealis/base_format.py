@@ -923,20 +923,24 @@ class BaseFormat():
         # fields
         for rec_idx, k in enumerate(data_dict.keys()):
             for field in cls.unshared_fields():  # all unshared fields
-                empty_array = temp_array_dict[field]
-                if type(data_dict[first_key][field]) == np.ndarray:
-                    # only fill the correct length, appended NaNs occur for
-                    # dims with a determined max value
-                    data_buffer = data_dict[k][field]
-                    buffer_shape = data_buffer.shape
-                    index_slice = [slice(0, i) for i in buffer_shape]
-                    # insert record index at start of array's slice list
-                    index_slice.insert(0, rec_idx)
-                    index_slice = tuple(index_slice)
-                    # place data buffer in the correct place
-                    empty_array[index_slice] = data_buffer
-                else:  # not an array, num_records is the only dimension
-                    empty_array[rec_idx] = data_dict[k][field]
+                try:
+                    empty_array = temp_array_dict[field]
+                    if type(data_dict[first_key][field]) == np.ndarray:
+                        # only fill the correct length, appended NaNs occur for
+                        # dims with a determined max value
+                        data_buffer = data_dict[k][field]
+                        buffer_shape = data_buffer.shape
+                        index_slice = [slice(0, i) for i in buffer_shape]
+                        # insert record index at start of array's slice list
+                        index_slice.insert(0, rec_idx)
+                        index_slice = tuple(index_slice)
+                        # place data buffer in the correct place
+                        empty_array[index_slice] = data_buffer
+                    else:  # not an array, num_records is the only dimension
+                        empty_array[rec_idx] = data_dict[k][field]
+                except Exception as e:
+                    raise BorealisRestructureError(
+                        'Record {}, field {} error {}'.format(k, field, e)) from e
 
         new_data_dict.update(temp_array_dict)
 
@@ -1002,22 +1006,26 @@ class BaseFormat():
                     )[field](data_dict, record_num)
 
             for field in cls.unshared_fields():
-                if field in cls.single_element_types():
-                    datatype = cls.single_element_types()[field]
-                    # field is not an array, single element per record.
-                    # unshared_field_dims_site should give empty list.
-                    timestamp_dict[key][field] = datatype(data_dict[field]
-                                                          [record_num])
-                else:  # field in array_dtypes
-                    datatype = cls.array_dtypes()[field]
-                    # need to get the dims correct, not always equal to the max
-                    site_dims = [dimension_function(data_dict, record_num)
-                                 for dimension_function in
-                                 cls.unshared_fields_dims_site()[field]]
-                    index_slice = [slice(0, i) for i in site_dims]
-                    index_slice.insert(0, record_num)
-                    index_slice = tuple(index_slice)
-                    timestamp_dict[key][field] = data_dict[field][index_slice]
+                try:
+                    if field in cls.single_element_types():
+                        datatype = cls.single_element_types()[field]
+                        # field is not an array, single element per record.
+                        # unshared_field_dims_site should give empty list.
+                        timestamp_dict[key][field] = datatype(data_dict[field]
+                                                              [record_num])
+                    else:  # field in array_dtypes
+                        datatype = cls.array_dtypes()[field]
+                        # need to get the dims correct, not always equal to the max
+                        site_dims = [dimension_function(data_dict, record_num)
+                                     for dimension_function in
+                                     cls.unshared_fields_dims_site()[field]]
+                        index_slice = [slice(0, i) for i in site_dims]
+                        index_slice.insert(0, record_num)
+                        index_slice = tuple(index_slice)
+                        timestamp_dict[key][field] = data_dict[field][index_slice]
+                except Exception as e:
+                    raise BorealisRestructureError(
+                        'Record {}, field {} error {}'.format(key, field, e)) from e
 
         timestamp_dict = cls.flatten_site_arrays(timestamp_dict)
 
