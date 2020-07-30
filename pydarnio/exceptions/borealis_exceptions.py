@@ -307,8 +307,7 @@ class BorealisRestructureError(Exception):
     """
 
     def __init__(self, error_str: str):
-        self.message = "The file cannot be restructured due to the "\
-            " following error: {error_str}"\
+        self.message = "{error_str}"\
             "".format(error_str=error_str)
         pyDARNio_logger.error(self.message)
         Exception.__init__(self, self.message)
