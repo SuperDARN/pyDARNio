@@ -37,7 +37,7 @@ Peters, D. GO. and
 Reimer, A. S. and 
 Sterne, K. T. and
 Thomas, E. G.}, 
-title={pyDARNio},
+title={py{DARN}io},
 month=jan,
 year=2020,
 doi=[],
@@ -64,7 +64,6 @@ Stéfan van der Walt, S. Chris Colbert and Gaël Varoquaux. The NumPy Array: A S
 #### H5PY
 
 A. Collette, Python and HDF5, O'Reilly (2014) (http://shop.oreilly.com/product/0636920030249.do)
-
 
 
 
