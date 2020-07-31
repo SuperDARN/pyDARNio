@@ -40,7 +40,7 @@ import logging
 from typing import Union, List
 
 from pydarnio import (DmapRead, DmapWrite, superdarn_exceptions,
-                    superdarn_formats, dmap2dict)
+                      superdarn_formats, dmap2dict)
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 
@@ -233,7 +233,8 @@ class SDarnUtilities():
             complete_dict.update(file_struct)
         incorrect_types_check = {param: complete_dict[param]
                                  for param in record.keys()
-                                 if record[param].data_type_fmt != complete_dict[param]}
+                                 if record[param].data_type_fmt !=
+                                 complete_dict[param]}
         if len(incorrect_types_check) > 0:
             raise superdarn_exceptions.\
                 SuperDARNDataFormatTypeError(incorrect_types_check, rec_num)

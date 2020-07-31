@@ -40,7 +40,8 @@ import struct
 
 from typing import List, Union
 
-from pydarnio import dmap_exceptions, DmapArray, DmapScalar, dmap2dict, dict2dmap
+from pydarnio import (dmap_exceptions, DmapArray, DmapScalar,
+                      dmap2dict, dict2dmap)
 
 # Keeping these global definitions for readability purposes
 # Data types use in s
@@ -439,7 +440,7 @@ class DmapRead():
         block_size = self.read_data('i', 4)
 
         pyDARNio_log.debug("Reading Record {record}"
-                         .format(record=len(self._dmap_records)))
+                           .format(record=len(self._dmap_records)))
 
         # adding 8 bytes because code+size are part of the record.
         # 4 is the number bytes for int format
