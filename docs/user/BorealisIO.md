@@ -38,7 +38,7 @@ produced and only would be done by request.
 
 
 - `'antennas_iq'`
-Decimated and filtered data from individual antennas, i and q samples.
+Downsampled data from individual antennas, i and q samples.
 
 
 - `'bfiq'`
