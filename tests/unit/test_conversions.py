@@ -2,8 +2,9 @@
 # Author: Marina Schmidt
 
 
-import unittest
 import numpy as np
+import unittest
+
 from collections import OrderedDict
 
 import pydarnio
