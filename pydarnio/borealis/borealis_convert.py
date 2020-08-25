@@ -19,10 +19,6 @@ BorealisConversionTypesError
 BorealisConvert2IqdatError
 BorealisConvert2RawacfError
 
-Notes
------
-BorealisConvert makes use of SDARNWrite to write to SuperDARN file types
-
 See Also
 --------
 BorealisRead
@@ -31,6 +27,10 @@ BorealisSiteRead
 BorealisSiteWrite
 BorealisArrayRead
 BorealisArrayWrite
+
+Notes
+-----
+BorealisConvert makes use of SDARNWrite to write to SuperDARN file types
 
 For more information on Borealis data files and how they convert to dmap,
 see: https://borealis.readthedocs.io/en/master/
@@ -41,7 +41,6 @@ Update noise values in SDarn fields when these can be calculated.
 
 """
 import logging
-import math
 import numpy as np
 
 from datetime import datetime
@@ -216,14 +215,14 @@ class BorealisConvert(BorealisRead):
         try:
             first_key = list(self.records.keys())[0]
             self._borealis_slice_id = self.records[first_key]['slice_id']
-        except KeyError as e:
+        except KeyError as kerr:
             if borealis_slice_id is not None:
                 self._borealis_slice_id = int(borealis_slice_id)
             else:
                 raise borealis_exceptions.BorealisStructureError(
                     'The slice_id could not be found in the file: Borealis '
                     'files produced before Borealis v0.5 must provide the '
-                    'slice_id value to the BorealisConvert class.') from e
+                    'slice_id value to the BorealisConvert class.') from kerr
 
         self._sdarn_dmap_records = {}
         self._sdarn_dict = {}
@@ -352,7 +351,7 @@ class BorealisConvert(BorealisRead):
 
         Returns
         -------
-        True if convertible
+        True if convertible to the IQDAT format
         """
         if self.borealis_filetype != 'bfiq':
             raise borealis_exceptions.BorealisConversionTypesError(
@@ -405,7 +404,7 @@ class BorealisConvert(BorealisRead):
 
         Returns
         -------
-        True if convertible
+        True if convertible to the RAWACF format
         """
         if self.borealis_filetype != 'rawacf':
             raise borealis_exceptions.\
@@ -629,8 +628,8 @@ class BorealisConvert(BorealisRead):
                 # Borealis
                 'offset': np.int16(0),
                 'rxrise': np.int16(0),
-                'intt.sc': np.int16(math.floor(record_dict['int_time'])),
-                'intt.us': np.int32(math.fmod(record_dict['int_time'], 1.0) * \
+                'intt.sc': np.int16(np.floor(record_dict['int_time'])),
+                'intt.us': np.int32(np.fmod(record_dict['int_time'], 1.0) * \
                                     1e6),
                 'txpl': np.int16(record_dict['tx_pulse_len']),
                 'mpinc': np.int16(record_dict['tau_spacing']),
@@ -675,10 +674,10 @@ class BorealisConvert(BorealisRead):
                 'ptab': record_dict['pulses'].astype(np.int16),
                 'ltab': record_dict['lags'].astype(np.int16),
                 # timestamps in ms, convert to seconds and us.
-                'tsc': np.array([math.floor(x/1e3) for x in
+                'tsc': np.array([np.floor(x/1e3) for x in
                                  record_dict['sqn_timestamps']],
                                 dtype=np.int32),
-                'tus': np.array([math.fmod(x, 1000.0) * 1e3 for x in
+                'tus': np.array([np.fmod(x, 1000.0) * 1e3 for x in
                                  record_dict['sqn_timestamps']],
                                 dtype=np.int32),
                 'tatten': np.array([0] * record_dict['num_sequences'],
@@ -889,8 +888,8 @@ class BorealisConvert(BorealisRead):
                 # Borealis
                 'offset': np.int16(0),
                 'rxrise': np.int16(0),
-                'intt.sc': np.int16(math.floor(record_dict['int_time'])),
-                'intt.us': np.int32(math.fmod(record_dict['int_time'], 1.0) * \
+                'intt.sc': np.int16(np.floor(record_dict['int_time'])),
+                'intt.us': np.int32(np.fmod(record_dict['int_time'], 1.0) * \
                                     1e6),
                 'txpl': np.int16(record_dict['tx_pulse_len']),
                 'mpinc': np.int16(record_dict['tau_spacing']),

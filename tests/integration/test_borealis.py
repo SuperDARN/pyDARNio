@@ -62,23 +62,6 @@ class IntegrationBorealis(unittest.TestCase):
     restructuring code.
     """
 
-    # RESTRUCTURING TESTS
-    def check_dictionaries_are_same(self, dict1, dict2):
-
-        self.assertEqual(sorted(list(dict1.keys())),
-                         sorted(list(dict2.keys())))
-        for key1, value1 in dict1.items():
-            if isinstance(value1, dict) or isinstance(value1, OrderedDict):
-                self.check_dictionaries_are_same(value1, dict2[key1])
-            elif isinstance(value1, np.ndarray):
-                self.assertTrue((value1 == dict2[key1]).all())
-            elif key1 == 'experiment_comment':
-                continue  # combf has filename inside, can differ
-            else:
-                self.assertEqual(value1, dict2[key1])
-
-        return True
-
     def setUp(self):
         self.source_rawacf_site_file = borealis_site_rawacf_file
         self.write_rawacf_site_file = 'test_rawacf.rawacf.hdf5.site'
@@ -96,6 +79,23 @@ class IntegrationBorealis(unittest.TestCase):
         self.source_antennas_iq_array_file = borealis_array_antennas_iq_file
         self.write_antennas_iq_array_file =\
             'test_antennas_iq.antennas_iq.hdf5.array'
+
+    # RESTRUCTURING TESTS
+    def check_dictionaries_are_same(self, dict1, dict2):
+
+        self.assertEqual(sorted(list(dict1.keys())),
+                         sorted(list(dict2.keys())))
+        for key1, value1 in dict1.items():
+            if isinstance(value1, dict) or isinstance(value1, OrderedDict):
+                self.check_dictionaries_are_same(value1, dict2[key1])
+            elif isinstance(value1, np.ndarray):
+                self.assertTrue((value1 == dict2[key1]).all())
+            elif key1 == 'experiment_comment':
+                continue  # combf has filename inside, can differ
+            else:
+                self.assertEqual(value1, dict2[key1])
+
+        return True
 
     def test_read_write_site_rawacf(self):
         """
@@ -450,21 +450,6 @@ class IntegrationBorealisSDARN(unittest.TestCase):
     SDarnRead.
     """
 
-    # RESTRUCTURING TESTS
-    def check_dictionaries_are_same(self, dict1, dict2):
-
-        self.assertEqual(sorted(list(dict1.keys())),
-                         sorted(list(dict2.keys())))
-        for key1, value1 in dict1.items():
-            if isinstance(value1, dict) or isinstance(value1, OrderedDict):
-                self.check_dictionaries_are_same(value1, dict2[key1])
-            elif isinstance(value1, np.ndarray):
-                self.assertTrue((value1 == dict2[key1]).all())
-            else:
-                self.assertEqual(value1, dict2[key1])
-
-        return True
-
     def setUp(self):
         self.rawacf_array_data = copy.deepcopy(
             borealis_array_rawacf_data)
@@ -492,6 +477,21 @@ class IntegrationBorealisSDARN(unittest.TestCase):
                                             'array')
         self.rawacf_site_data = rawacf_reader.records
         self.rawacf_site_darn_file = './test_rawacf_site_file.dmap'
+
+    # RESTRUCTURING TESTS
+    def check_dictionaries_are_same(self, dict1, dict2):
+
+        self.assertEqual(sorted(list(dict1.keys())),
+                         sorted(list(dict2.keys())))
+        for key1, value1 in dict1.items():
+            if isinstance(value1, dict) or isinstance(value1, OrderedDict):
+                self.check_dictionaries_are_same(value1, dict2[key1])
+            elif isinstance(value1, np.ndarray):
+                self.assertTrue((value1 == dict2[key1]).all())
+            else:
+                self.assertEqual(value1, dict2[key1])
+
+        return True
 
     # CONVERT TESTS
     def test_bfiq2darniqdat(self):
