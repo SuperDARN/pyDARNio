@@ -4,12 +4,12 @@
 This file contains classes to reading and writing of  formats used by
 SuperDARN.
 
-Classes:
+Classes
 --------
-DmapRead : Reads s
-DmapWrite : writes DMap record structure into a
+DmapRead : Reads DMap files
+DmapWrite : writes DMap records into a file
 
-Exceptions:
+Exceptions
 -----------
 EmptyFileError
 CursorError
@@ -85,7 +85,7 @@ pyDARNio_log = logging.getLogger('pyDARNio')
 
 class DmapRead():
     """
-    Reading and testing the integrity of s/stream.
+    Reading and testing the integrity of the file/stream.
     DMap is describe in the RST documentation:
     - https://superdarn.github.io/rst/superdarn/src.doc/rfc/0006.html
     - https://radar-software-toolkit-rst.readthedocs.io/en/latest/
