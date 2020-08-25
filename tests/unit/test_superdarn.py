@@ -327,6 +327,7 @@ class TestSDarnRead(unittest.TestCase):
 class TestDarnUtilities(unittest.TestCase):
     """
     Testing DarnUtilities class.
+    
     Note
     ----
     All methods in this class are static so there is no constructor testing
