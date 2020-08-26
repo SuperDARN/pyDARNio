@@ -112,8 +112,8 @@ class SDarnUtilities():
         dict_list : list
             list of dictionaries
 
-        Return
-        ------
+        Returns
+        -------
         complete_set : set
             set containing all dictionary key from the list of dicts
         """
