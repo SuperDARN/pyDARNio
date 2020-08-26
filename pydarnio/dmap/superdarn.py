@@ -91,8 +91,8 @@ class SDarnUtilities():
         dict2 : dict or set
             dictionary or set subtracting from dict1
 
-        Return
-        ------
+        Returns
+        -------
         dict_diff : set
             difference between dict1 and dict2 keys or the sets
         """
