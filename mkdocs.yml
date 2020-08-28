@@ -1,5 +1,5 @@
-site_name: PyDARN Documentation
-repo_url: https://github.com/superdarn/pydarn
+site_name: pyDARNio Documentation
+repo_url: https://github.com/superdarn/pyDARNio
 theme: readthedocs
 markdown_extensions:
     - extra
