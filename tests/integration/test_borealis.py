@@ -31,18 +31,18 @@ import pydarnio
 pydarnio_logger = logging.getLogger('pydarnio')
 
 # Site Test files
-borealis_site_bfiq_file = "../test_files/20190909.2200.02.sas.0.bfiq.hdf5.site"
+borealis_site_bfiq_file = "../test_files/20200819.2200.00.sas.0.bfiq.hdf5.site"
 borealis_site_rawacf_file =\
-        "../test_files/20190909.2200.02.sas.0.rawacf.hdf5.site"
+        "../test_files/20200819.2200.00.sas.0.rawacf.hdf5.site"
 borealis_site_antennas_iq_file =\
-        "../test_files/20190909.2200.02.sas.0.antennas_iq.hdf5.site"
+        "../test_files/20200819.2200.00.sas.0.antennas_iq.hdf5.site"
 borealis_site_rawrf_file = ""
 
 # Array Test files
-borealis_array_bfiq_file = "../test_files/20190909.2200.02.sas.0.bfiq.hdf5"
-borealis_array_rawacf_file = "../test_files/20190909.2200.02.sas.0.rawacf.hdf5"
+borealis_array_bfiq_file = "../test_files/20200819.2200.00.sas.0.bfiq.hdf5"
+borealis_array_rawacf_file = "../test_files/20200819.2200.00.sas.0.rawacf.hdf5"
 borealis_array_antennas_iq_file =\
-        "../test_files/20190909.2200.02.sas.0.antennas_iq.hdf5"
+        "../test_files/20200819.2200.00.sas.0.antennas_iq.hdf5"
 
 # Problem files TODO
 borealis_site_extra_field_file = ""
@@ -89,11 +89,28 @@ class IntegrationBorealis(unittest.TestCase):
             if isinstance(value1, dict) or isinstance(value1, OrderedDict):
                 self.check_dictionaries_are_same(value1, dict2[key1])
             elif isinstance(value1, np.ndarray):
-                self.assertTrue((value1 == dict2[key1]).all())
+                try:
+                    if value1.dtype.type == np.unicode_:
+                        self.assertTrue((value1 == dict2[key1]).all())
+                    else:
+                        # NaN==NaN will return False, so only index 
+                        # where not NaN.
+                        not_nan_array = np.logical_not(np.isnan(value1))
+                        other_not_nan_array = np.logical_not(np.isnan(dict2[key1]))
+                        self.assertTrue((not_nan_array == other_not_nan_array).all())
+                        self.assertTrue((value1[not_nan_array] == dict2[key1][not_nan_array]).all())
+                        
+                except (AssertionError, TypeError, AttributeError):
+                    print(key1, value1.dtype)
+                    raise
             elif key1 == 'experiment_comment':
                 continue  # combf has filename inside, can differ
             else:
-                self.assertEqual(value1, dict2[key1])
+                try:
+                    self.assertEqual(value1, dict2[key1])
+                except AssertionError:
+                    print(key1, value1, dict2[key1])
+                    raise
 
         return True
 
@@ -119,7 +136,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_rawacf_site_file)
-        del dm, dm2, records, new_records
+        del _, dm, dm2, records, new_records
 
     def test_read_write_array_rawacf(self):
         """
@@ -144,7 +161,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_rawacf_array_file)
-        del dm, dm2, arrays, new_arrays
+        del _, dm, dm2, arrays, new_arrays
 
     def test_read_site_write_array_rawacf(self):
         """
@@ -175,7 +192,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_rawacf_array_file)
-        del dm2, records, new_records
+        del _, dm2, records, new_records
 
     def test_read_array_write_site_rawacf(self):
         """
@@ -205,7 +222,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_rawacf_site_file)
-        del dm2, arrays, new_arrays
+        del _, dm2, arrays, new_arrays
 
     def test_read_write_site_bfiq(self):
         """
@@ -230,7 +247,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_bfiq_site_file)
-        del dm, dm2, records, new_records
+        del _, dm, dm2, records, new_records
 
     def test_read_write_array_bfiq(self):
         """
@@ -255,7 +272,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_bfiq_array_file)
-        del dm, dm2, arrays, new_arrays
+        del _, dm, dm2, arrays, new_arrays
 
     def test_read_site_write_array_bfiq(self):
         """
@@ -286,7 +303,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_bfiq_array_file)
-        del dm2, records, new_records
+        del _, dm2, records, new_records
 
     def test_read_array_write_site_bfiq(self):
         """
@@ -317,7 +334,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_bfiq_site_file)
-        del dm2, arrays, new_arrays
+        del _, dm2, arrays, new_arrays
 
     def test_read_write_site_antennas_iq(self):
         """
@@ -344,7 +361,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_antennas_iq_site_file)
-        del dm, dm2, records, new_records
+        del _, dm, dm2, records, new_records
 
     def test_read_write_array_antennas_iq(self):
         """
@@ -372,7 +389,7 @@ class IntegrationBorealis(unittest.TestCase):
         self.assertTrue(dictionaries_are_same)
 
         os.remove(self.write_antennas_iq_array_file)
-        del dm, dm2, arrays, new_arrays
+        del _, dm, dm2, arrays, new_arrays
 
     def test_read_site_write_array_antennas_iq(self):
         """
