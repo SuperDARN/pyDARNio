@@ -298,8 +298,8 @@ class BorealisConvert(BorealisRead):
 
     def _write_to_sdarn(self) -> str:
         """
-        Write the Borealis records as SDARN DMap records to a file using pyDARNio
-        IO.
+        Write the Borealis records as SDARN DMap records to a file using
+        pyDARNio.
 
         Returns
         -------
@@ -424,10 +424,10 @@ class BorealisConvert(BorealisRead):
                                 ' record {} blanked_samples {} does not equate'
                                 ' to pulses array converted to sample number '
                                 '{} * {}'.format(record_key,
-                                          record['blanked_samples'],
-                                          record['pulses'],
-                                          int(record['tau_spacing'] /
-                                              record['tx_pulse_len'])))
+                                                 record['blanked_samples'],
+                                                 record['pulses'],
+                                                 int(record['tau_spacing'] /
+                                                     record['tx_pulse_len'])))
 
         return True
 
@@ -770,13 +770,13 @@ class BorealisConvert(BorealisRead):
         if 'intf_acfs' in record_dict.keys():
             shaped_data['intf_acfs'] = record_dict['intf_acfs'].reshape(
                 record_dict['correlation_dimensions']).astype(np.complex64) *\
-                ((np.iinfo(np.int16).max**2  * scaling_factor) /
+                ((np.iinfo(np.int16).max**2 * scaling_factor) /
                  (record_dict['data_normalization_factor']**2))
         if 'xcfs' in record_dict.keys():
             shaped_data['xcfs'] = record_dict['xcfs'].reshape(
                 record_dict['correlation_dimensions']).astype(np.complex64) *\
                 ((np.iinfo(np.int16).max**2 * scaling_factor) /
-                (record_dict['data_normalization_factor']**2))
+                 (record_dict['data_normalization_factor']**2))
 
         # Borealis git tag version numbers. If not a tagged version,
         # then use 255.255

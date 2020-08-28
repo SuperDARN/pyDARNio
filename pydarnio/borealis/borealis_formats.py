@@ -550,7 +550,7 @@ class BorealisBfiqv0_4(BaseFormat):
         BorealisBfiq has the data field flattened in the
         site structured files.
         """
-        new_records=copy.deepcopy(records)
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['data']:
                 new_records[key][field] = new_records[key][field].flatten()

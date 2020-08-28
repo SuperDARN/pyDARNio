@@ -252,14 +252,14 @@ class BorealisRead():
                 borealis_exceptions.BorealisFieldMissingError,
                 borealis_exceptions.BorealisStructureError):
             pyDARNio_log.info('{} is not array restructured. Attempting site'
-                            ' read.'.format(borealis_hdf5_file))
+                              ' read.'.format(borealis_hdf5_file))
             try:
                 reader = BorealisSiteRead(borealis_hdf5_file,
                                           borealis_filetype)
                 return reader, 'site'
             except Exception as err:
                 pyDARNio_log.info('{} is not site structured. Raising reader'
-                                ' errors.'.format(borealis_hdf5_file))
+                                  ' errors.'.format(borealis_hdf5_file))
                 raise err
 
 
@@ -492,13 +492,13 @@ class BorealisWrite():
                 borealis_exceptions.BorealisFieldMissingError,
                 borealis_exceptions.BorealisStructureError):
             pyDARNio_log.info('Data provided is not array restructured. '
-                            'Attempting site write to file {}.'
-                            ''.format(filename))
+                              'Attempting site write to file {}.'
+                              ''.format(filename))
             try:
                 writer = BorealisSiteWrite(filename, data,
                                            borealis_filetype, **kwargs)
                 return writer, 'site'
             except Exception as err:
                 pyDARNio_log.info('Data provided is not site structured. '
-                                'Raising writer error.')
+                                  'Raising writer error.')
                 raise err

@@ -234,8 +234,8 @@ class BorealisArrayRead():
         BaseFormat
         """
         pyDARNio_log.info("Reading Borealis {} {} file: {}"
-                        "".format(self.software_version,
-                                  self.borealis_filetype, self.filename))
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
 
         attribute_types = self.format.array_single_element_types()
         dataset_types = self.format.array_array_dtypes()
@@ -471,8 +471,8 @@ class BorealisArrayWrite():
         """
 
         pyDARNio_log.info("Writing Borealis {} {} file: {}"
-                        "".format(self.software_version,
-                                  self.borealis_filetype, self.filename))
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
 
         attribute_types = self.format.array_single_element_types()
         dataset_types = self.format.array_array_dtypes()
