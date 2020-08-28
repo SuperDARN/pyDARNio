@@ -37,6 +37,7 @@ Notes
 """
 
 from datetime import datetime
+import copy
 import numpy as np
 
 from collections import OrderedDict
@@ -467,7 +468,8 @@ class BaseFormat():
         have this issue, in which case this function does not need to be
         updated by the child class.
         """
-        return records
+        new_records = copy.deepcopy(records)
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -499,7 +501,8 @@ class BaseFormat():
         may not have this issue, in which case this function does not need to
         be updated by the child class.
         """
-        return records
+        new_records = copy.deepcopy(records)
+        return new_records
 
     # CLASS METHODS COMMON ACROSS FORMATS
     # i.e. class methods that build off the other class methods so generally
