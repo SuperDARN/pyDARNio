@@ -8,7 +8,7 @@ import numpy as np
 
 from collections import OrderedDict
 
-from pydarn import DmapScalar, DmapArray
+from pydarnio import DmapScalar, DmapArray
 iqdat_data = [OrderedDict([
     ('radar.revision.major', DmapScalar(name='radar.revision.major',
                                         value=1, data_type=1,
