@@ -127,12 +127,12 @@ def time_series_from_records(records: List[dict], target_keys: List[str],
     time_series[time_key] = list()
 
     # For each record, get the desire data values
-    for irec, dmap_dict in enumerate(records):
+    for irec, rec_data in enumerate(records):
         # Get the shape of the records at this time, also test that all
         # data keys are present.  If not, do not save data from this record
         try:
-            rec_lens = np.unique([1 if np.asarray(dmap_dict[tkey]).shape == ()
-                                  else np.asarray(dmap_dict[tkey]).shape[0]
+            rec_lens = np.unique([1 if np.asarray(rec_data[tkey]).shape == ()
+                                  else np.asarray(rec_data[tkey]).shape[0]
                                   for tkey in target_keys])
         except KeyError as kerr:
             pyDARNio_log.info("missing key(s) at record {:d}: {:}".format(
@@ -146,13 +146,13 @@ def time_series_from_records(records: List[dict], target_keys: List[str],
         # Save the output data in lists the length of the maximum record length
         for tkey in target_keys:
             if max_rec == 1:
-                time_series[tkey].append(dmap_dict[tkey])
+                time_series[tkey].append(rec_data[tkey])
             else:
                 if rec_data[tkey].shape == ():
-                    time_series[tkey].extend([dmap_dict[tkey]
+                    time_series[tkey].extend([rec_data[tkey]
                                               for i in range(max_rec)])
                 else:
-                    time_series[tkey].extend(list(dmap_dict[tkey]))
+                    time_series[tkey].extend(list(rec_data[tkey]))
 
         # Save the time data for this record
         if max_rec == 1:
