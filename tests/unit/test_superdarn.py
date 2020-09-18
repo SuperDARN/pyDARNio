@@ -19,10 +19,9 @@ import collections
 import logging
 import numpy as np
 import os
-import pytest
 import unittest
 
-import pydarnio
+import pyDARNio
 
 import map_data_sets
 import grid_data_sets
@@ -32,127 +31,86 @@ import rawacf_data_sets
 
 pydarnio_logger = logging.getLogger('pydarnio')
 
-# Test files
-rawacf_stream = "../testfiles/20170410.1801.00.sas.stream.rawacf.bz2"
-rawacf_file = "../testfiles/20170410.1801.00.sas.rawacf"
-fitacf_file = "../testfiles/20160331.2201.00.mcm.a.fitacf"
-map_file = "../testfiles/20170114.map"
-iqdat_file = "../testfiles/20160316.1945.01.rkn.iqdat"
-grid_file = "../testfiles/20180220.C0.rkn.grid"
-# Black listed files
-corrupt_file1 = "../testfiles/20070117.1001.00.han.rawacf"
-corrupt_file2 = "../testfiles/20090320.1601.00.pgr.rawacf"
+# Define the test files and directory
+#
+# If these files change, the unit tests will need to be updated
+test_dir = os.path.join("..", "testfiles")
+rawacf_stream = "20170410.1801.00.sas.stream.rawacf.bz2"
+test_file_dict = {"rawacf": "20170410.1801.00.sas.rawacf",
+                  "fitacf": "20160331.2201.00.mcm.a.fitacf",
+                  "map": "20170114.map",
+                  "iqdat": "20160316.1945.01.rkn.iqdat",
+                  "grid": "20180220.C0.rkn.grid"}
+corrupt_files = ["20070117.1001.00.han.rawacf", "20090320.1601.00.pgr.rawacf"]
 
 
-@pytest.mark.skip
+@unittest.skipIf(not os.path.isdir(test_dir),
+                 'test directory is not included with pyDARNio')
 class TestSDarnRead(unittest.TestCase):
     """
     Testing class for SDarnRead class
     """
     def setUp(self):
-        pass
+        self.test_file = "somefile.rawacf"
+        self.data = None
+        self.rec = None
 
-    """
-    Testing SDarnRead constructor
-    """
-    def test_incorrect_path(self):
-        """
-        Testing SDarnRead constructor with an nonexistent folder.
+    def tearDown(self):
+        del self.test_file, self.data, self.rec
 
-        Expected behaviour: raise FileNotFoundError
+    def test_incorrect_filepath(self):
         """
-        self.assertRaises(FileNotFoundError, pydarnio.SDarnRead,
-                          './dog/somefile.rawacf')
+        Test raise FileNotFoundError with bad filename or path
+        """
+        for tdir in ["bad_dir", test_dir]:
+            with self.subTest(val=tdir):
+                # Create a test filename with path
+                self.test_file = os.path.join(val, self.test_file)
 
-    def test_incorrect_file(self):
-        """
-        Tests if SDarnRead constructor with an non-existent file
-
-        Expected behaviour: raises FileNotFoundError
-        """
-        self.assertRaises(FileNotFoundError, pydarnio.SDarnRead,
-                          '../testfiles/somefile.rawacf')
+                # Assert correct error and message for bad filename
+                self.assertRaises(FileNotFoundError, pydarnio.SDarnRead,
+                                  self.test_file)
 
     def test_empty_file(self):
         """
-        Tests if SDarnRead constructor with an empty file
-
-        Expected behaviour: raise EmptyFileError
+        Tests raise EmptyFileError with an empty file
         """
+        self.test_file = os.path.join(test_dir, "empty.rawacf")
         self.assertRaises(pydarnio.dmap_exceptions.EmptyFileError,
-                          pydarnio.SDarnRead, '../testfiles/empty.rawacf')
+                          pydarnio.SDarnRead, self.test_file)
 
-    def test_open_rawacf(self):
+    def test_good_open_file(self):
         """
-        Tests SDarnRead constructor on opening a rawacf.
-        It should be able to open the file, read it and convert to bytearray.
+        Test SDarn file opening, reading, and converting to a bytearray
 
         Checks:
             - bytearray instance is created from reading in the file
             - bytearray is not empty
         """
-        file_path = rawacf_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
+        for tfile in test_file_dict.values():
+            with self.subTest(val=tfile):
+                # Create a test filename with path
+                self.test_file = os.path.join(test_dir, val)
 
-    def test_open_fitacf(self):
+                # Load the file
+                self.data = pydarnio.SDarnRead(self.test_file)
+
+                # Test the file data
+                self.assertIsInstance(self.data.dmap_bytearr, bytearray)
+                self.assertGreater(self.data.dmap_end_bytes, 0)
+
+    def load_test_file_record(self, file_type=''):
+        """ Load a test file data record
         """
-        Tests SDarnRead constructor on opening a fitacf.
-        It should be able to open the file, read it and convert to bytearray.
+        # Build the filename and load the data
+        self.test_file = os.path.join(test_dir, test_file_dict[file_type])
+        self.data = pydarnio.SDarnRead(self.test_file)
 
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = fitacf_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
+        # Read the data
+        read_func = getattr(self.data, "read_{:s}".format(file_type))
+        _ = read_func()
+        self.rec = self.data.get_dmap_records
 
-    def test_open_map(self):
-        """
-        Tests SDarnRead constructor on opening a map.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = map_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    def test_open_grid(self):
-        """
-        Tests SDarnRead constructor on opening a grid.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = grid_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    def test_open_iqdat(self):
-        """
-        Tests SDarnRead constructor on opening a iqdat.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = iqdat_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    # TODO: potential issue if files change and the values are not the same :/
     def test_read_iqdat(self):
         """
         Test reading records from iqdat.
@@ -161,18 +119,18 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = iqdat_file
-        dm = pydarnio.SDarnRead(file_path)
-        _ = dm.read_iqdat()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[0]['rxrise'], pydarnio.DmapScalar)
-        self.assertIsInstance(dm_records[3]['tsc'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[5]['mppul'].value, int)
-        self.assertIsInstance(dm_records[6]['tnoise'].value, np.ndarray)
-        self.assertEqual(dm_records[7]['channel'].value, 0)
-        self.assertEqual(dm_records[10]['data'].dimension, 1)
+        # Load the data and read in the first record
+        load_test_file_record(file_type='iqdat')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[0]['rxrise'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[3]['tsc'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[5]['mppul'].value, int)
+        self.assertIsInstance(self.rec[6]['tnoise'].value, np.ndarray)
+        self.assertEqual(self.rec[7]['channel'].value, 0)
+        self.assertEqual(self.rec[10]['data'].dimension, 1)
 
     def test_read_rawacf(self):
         """
@@ -182,17 +140,17 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = rawacf_file
-        dm = pydarnio.SDarnRead(file_path)
-        dm_records = dm.read_rawacf()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['channel'], pydarnio.DmapScalar)
-        self.assertIsInstance(dm_records[1]['ptab'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[7]['channel'].value, int)
-        self.assertIsInstance(dm_records[2]['xcfd'].value, np.ndarray)
-        self.assertEqual(dm_records[0]['xcfd'].dimension, 3)
+        # Load the data and read in the first record
+        load_test_file_record(file_type='rawacf')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[4]['channel'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[7]['channel'].value, int)
+        self.assertIsInstance(self.rec[2]['xcfd'].value, np.ndarray)
+        self.assertEqual(self.rec[0]['xcfd'].dimension, 3)
 
     def test_read_fitacf(self):
         """
@@ -202,17 +160,17 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = fitacf_file
-        dm = pydarnio.SDarnRead(file_path)
-        dm_records = dm.read_fitacf()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['bmnum'], pydarnio.DmapScalar)
-        self.assertIsInstance(dm_records[1]['ptab'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[7]['channel'].value, int)
-        self.assertIsInstance(dm_records[2]['ltab'].value, np.ndarray)
-        self.assertEqual(dm_records[0]['ptab'].dimension, 1)
+        # Load the data and read in the first record
+        load_test_file_record(file_type='fitacf')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[4]['bmnum'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[7]['channel'].value, int)
+        self.assertIsInstance(self.rec[2]['ltab'].value, np.ndarray)
+        self.assertEqual(self.rec[0]['ptab'].dimension, 1)
 
     def test_read_grid(self):
         """
@@ -222,17 +180,17 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = grid_file
-        dm = pydarnio.SDarnRead(file_path)
-        _ = dm.read_grid()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['start.year'], pydarnio.DmapScalar)
-        self.assertIsInstance(dm_records[1]['v.max'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[7]['end.day'].value, int)
-        self.assertIsInstance(dm_records[2]['stid'].value, np.ndarray)
-        self.assertEqual(dm_records[0]['nvec'].dimension, 1)
+        # Load the data and read in the first record
+        load_test_file_record(file_type='grid')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[4]['start.year'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['v.max'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[7]['end.day'].value, int)
+        self.assertIsInstance(self.rec[2]['stid'].value, np.ndarray)
+        self.assertEqual(self.rec[0]['nvec'].dimension, 1)
 
     def test_read_map(self):
         """
@@ -242,46 +200,38 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = map_file
-        dm = pydarnio.SDarnRead(file_path)
-        _ = dm.read_map()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[2]['IMF.flag'],
+        # Load the data and read in the first record
+        load_test_file_record(file_type='map')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[2]['IMF.flag'],
                               pydarnio.io.datastructures.DmapScalar)
-        self.assertIsInstance(dm_records[3]['stid'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[8]['IMF.flag'].value, int)
-        self.assertIsInstance(dm_records[10]['stid'].value, np.ndarray)
-        self.assertEqual(dm_records[3]['stid'].dimension, 1)
+        self.assertIsInstance(self.rec[3]['stid'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[8]['IMF.flag'].value, int)
+        self.assertIsInstance(self.rec[10]['stid'].value, np.ndarray)
+        self.assertEqual(self.rec[3]['stid'].dimension, 1)
         # this will be file dependent... future working test project.
-        self.assertEqual(dm_records[0]['stid'].shape[0], 14)
+        self.assertEqual(self.rec[0]['stid'].shape[0], 14)
 
-    def test_read_corrupt_file1(self):
+    def test_read_corrupt_files(self):
         """
-        Test read_records on a corrupt file
-
-        Expected behaviour: raises pydmap exception
+        Test raises a dmap_exceptions Error when readig a corrupt file
         """
-        dmap = pydarnio.SDarnRead(corrupt_file1)
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataTypeError):
-            dmap.read_rawacf()
-
-    def test_read_currupt_file2(self):
-        """
-        Test read_records on a corrupt file
-
-        Expected behaviour: raises pydmap exception
-        """
-        dmap = pydarnio.SDarnRead(corrupt_file2)
-        with self.assertRaises(pydarnio.dmap_exceptions.NegativeByteError):
-            dmap.read_rawacf()
+        for val in [(corrupt_files[0],
+                     pydarnio.dmap_exceptions.DmapDataTypeError),
+                    (corrupt_files[1],
+                     pydarnio.dmap_exceptions.NegativeByteError)]:
+            with self.subTest(val=val):
+                self.test_file = os.path.join(test_dir, val[0])
+                self.data = pydarnio.SDarnRead(self.test_file)
+                with self.assertRaises(val[1]):
+                    dmap.read_rawacf()
 
     def test_dmap_read_stream(self):
         """
-        Test read_records on dmap data stream.
-        The dmap data stream is formed from compressed
-        bzip2 file that returns a bytes object.
+        Test read_records on dmap data stream formed from a bzip2 file
 
          Checks:
             - returns correct data structures
@@ -289,18 +239,21 @@ class TestSDarnRead(unittest.TestCase):
         """
         # bz2 opens the compressed file into a data
         # stream of bytes without actually uncompressing the file
-        with bz2.open(rawacf_stream) as fp:
+        self.test_file = os.path.join(test_dir, rawacf_stream)
+        with bz2.open(self.test_file) as fp:
             dmap_stream = fp.read()
-        dmap = pydarnio.SDarnRead(dmap_stream, True)
-        dmap_data = dmap.read_rawacf()
-        dmap_data = dmap.get_dmap_records
-        self.assertIsInstance(dmap_data, collections.deque)
-        self.assertIsInstance(dmap_data[0], collections.OrderedDict)
-        self.assertIsInstance(dmap_data[4]['channel'], pydarnio.DmapScalar)
-        self.assertIsInstance(dmap_data[1]['ptab'], pydarnio.DmapArray)
-        self.assertIsInstance(dmap_data[7]['channel'].value, int)
-        self.assertIsInstance(dmap_data[2]['xcfd'].value, np.ndarray)
-        self.assertEqual(dmap_data[0]['xcfd'].dimension, 3)
+        self.data = pydarnio.SDarnRead(dmap_stream, True)
+        _ = self.data.read_rawacf()
+        self.rec = self.data.get_dmap_records
+
+        # Test thee output of the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[4]['channel'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[7]['channel'].value, int)
+        self.assertIsInstance(self.rec[2]['xcfd'].value, np.ndarray)
+        self.assertEqual(self.rec[0]['xcfd'].dimension, 3)
 
     def test_dmap_read_corrupt_stream(self):
         """
@@ -310,17 +263,21 @@ class TestSDarnRead(unittest.TestCase):
 
         Expected behaviour: raises pydmap exception
         """
-        with bz2.open(rawacf_stream) as fp:
+        # Open the data stream
+        self.test_file = os.path.join(test_dir, rawacf_stream)
+        with bz2.open(self.test_filee) as fp:
             dmap_stream = fp.read()
 
-        # need to convert to byte array for mutability
+        # Load and corrupt data, converting to byte array for mutability
         # since bytes are immutable.
-        corrupt_stream = bytearray(dmap_stream[0:36])
-        corrupt_stream[36:40] = bytearray(str(os.urandom(4)).encode('utf-8'))
-        corrupt_stream[40:] = dmap_stream[37:]
-        dmap = pydarnio.SDarnRead(corrupt_stream, True)
+        self.data = bytearray(dmap_stream[0:36])
+        self.data[36:40] = bytearray(str(os.urandom(4)).encode('utf-8'))
+        self.data[40:] = dmap_stream[37:]
+        self.rec = pydarnio.SDarnRead(self.data, True)
+
+        # Assert data from corrupted stream is corrupted
         with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
-            dmap.read_rawacf()
+            self.rec.read_rawacf()
 
 
 @pytest.mark.skip
