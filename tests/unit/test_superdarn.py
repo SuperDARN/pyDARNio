@@ -1,5 +1,5 @@
 # Copyright (C) 2019 SuperDARN Canada, University of Saskatchewan
-# Author: Marina Schmidt
+# Author: Marina Schmidt, Angeline Burrell
 """
 This test suite is to test the implementation for the following classes:
     SDarnRead
@@ -257,11 +257,11 @@ class TestSDarnRead(unittest.TestCase):
 
     def test_dmap_read_corrupt_stream(self):
         """
-        Test read_records on a corrupt stream. Read in compressed
-        file which returns a byte object, then insert some random
-        bytes to produce a corrupt stream.
+        Test raises pydmap exception when reading a corrupted stream from
+        a compressed file
 
-        Expected behaviour: raises pydmap exception
+        Method - Reead in a compressed file from a good stream, then insert
+        some random bytes to produce a corrupt stream.
         """
         # Open the data stream
         self.test_file = os.path.join(test_dir, rawacf_stream)
@@ -280,98 +280,88 @@ class TestSDarnRead(unittest.TestCase):
             self.rec.read_rawacf()
 
 
-@pytest.mark.skip
+@unittest.skip('skipping for unknown reason')
 class TestDarnUtilities(unittest.TestCase):
     """
     Testing DarnUtilities class.
-    Note
-    ----
+
+    Notes
+    -----
     All methods in this class are static so there is no constructor testing
     """
     def SetUp(self):
-        pass
+        self.tdicts = [{'a': 's', 'c': 'i', 'd': 'f'},
+                       {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]},
+                       {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}]
+        self.out = None
+
+    def TearDown(self):
+        del self.tdicts, self.out
 
     def test_dict_key_diff(self):
         """
-        Testing dict_key_diff - returns the difference in keys between two sets
-        dictionaries
-
-        Expected behaviour
-        ------------------
-        Returns the set difference between two dictionaries
+        Test the difference in keys between two dictionaries, order dependent
         """
-        a = {'a': 4, 'c': 5, 'd': 4}
-        b = {'1': 'a', 'c': 'd', 'd': 4, 'z': 'dog'}
-        solution_a_b = {'a'}
-        solution_b_a = {'1', 'z'}
-        diff_set = pydarnio.SDarnUtilities.dict_key_diff(a, b)
-        self.assertEqual(diff_set, solution_a_b)
-        diff_set = pydarnio.SDarnUtilities.dict_key_diff(b, a)
-        self.assertEqual(diff_set, solution_b_a)
+        self.tdicts[1] = {'1': 'a', 'c': 2, 'z': 'fun': 'd': 'dog'}
+
+        for val in [(self.tdicts[0], self.tdicts[1], {'a'}),
+                    (self.tdicts[1], self.tdicts[0], {'1', 'z'})]:
+            with self.subTest(val=val):
+                self.out = pydarnio.SDarnUtilities.dict_key_diff(val[0],
+                                                                 val[1])
+                self.assertEqual(val[2], self.out)
 
     def test_dict_list2set(self):
         """
-        Tests the dict_list2set method - this method converts lists of
-        dictionaries to concatenated full sets
+        Test conversion of lists of dictionaries into concatenated full sets
 
         Expected behaviour
         ------------------
         Returns only a single set the comprises of the dictionary keys
         given in the list
         """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-
-        complete_set = {'a', 'b', 'c',
-                        'rst', 'stid', 'vel',
-                        'fitacf', 'rawacf', 'map'}
-        dict_set = pydarnio.SDarnUtilities.dict_list2set([dict1, dict2, dict3])
-        self.assertEqual(dict_set, complete_set)
+        dict_keys = ('a', 'c', 'd', 'rst', 'stid', 'vel', 'fitacf', 'rawacf',
+                     'map')
+        self.out = pydarnio.SDarnUtilities.dict_list2set(self.tdicts)
+        self.assertEqual(dict_keys, self.out)
 
     def test_extra_field_check_pass(self):
         """
-        Test the extra_field_check method - this method checks if there are
-        differences in the key sets of dictionaries that when passed a record
-        and field names it will indicate if there is an extra field in the
-        record key set
+        Test extra_field_check success
+
+        Method - this method checks if there are differences in the key sets of
+        dictionaries that when passed a record and field names it will indicate
+        if there is an extra field in the record key set
 
         Expected behaviour
         ------------------
-        Nothing - if there are no differences in the key set then
-        nothing returns
+        Silent success - if there are no differences in the key set then
+        nothing is returned or raised
         """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-        test_dict = {'a': 3, 'b': 3, 'c': 3, 'rst': 1, 'vel': 'd'}
-        pydarnio.SDarnUtilities.extra_field_check([dict1, dict2, dict3],
-                                                test_dict, 1)
+        self.out = {'a': 3, 'c': 3, 'd': 3, 'rst': 1, 'vel': 'd'}
+        pydarnio.SDarnUtilities.extra_field_check(self.tdicts, self.out, 1)
 
     def test_extra_field_check_fail(self):
         """
-        Test the extra_field_check method - this method checks if there are
-        differences in the key sets of dictionaries that when passed a record
-        and field names it will indicate if there is an extra field in the
-        record key set
+        Test extra_field_check failur raises SuperDARNExtraFieldError
+
+        Method - this method checks if there are  differences in the key sets
+        of dictionaries that when passed a record and field names it will
+        indicate if there is an extra field in the record key set
 
         Expected behaviour
         -----------------
         Raises SuperDARNExtraFieldError because there are differences between
         the two dictionary sets
         """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        self.out = {'a': 3, 'b': 3, 'c': 2, 'd': 3, 'rst': 1, 'vel': 'd'}
+        with self.assertRaises(
+                pydarnio.superdarn_exceptions.SuperDARNExtraFieldError) as err:
+            pydarnio.SDarnUtilities.extra_field_check(self.tdicts, self.out, 1)
 
-        test_dict = {'a': 3, 'b': 3, 'c': 2, 'd': 3, 'rst': 1, 'vel': 'd'}
-        try:
-            pydarnio.SDarnUtilities.extra_field_check([dict1, dict2, dict3],
-                                                    test_dict, 1)
-        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
-            self.assertEqual(err.fields, {'d'})
+        self.assertEqual(err.exception.fields, {'b'})
 
-    def test_missing_field_check_pass_mixed_dict(self):
+    def test_missing_field_check_pass(self):
         """
         Testing missing_field_check - Reverse idea of the extra_field_check,
         should find missing fields in a record when compared to a key set of
@@ -381,45 +371,16 @@ class TestDarnUtilities(unittest.TestCase):
         ------------------
         Nothing - if there is not differences then nothing happens
         """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-        test_dict = {}
-        test_dict.update(dict1)
-        test_dict.update(dict3)
-        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2,
-                                                  dict3],
-                                                  test_dict, 1)
-
-    def test_missing_field_check_pass_mixed_subset(self):
-        """
-        Testing missing_field_check - Reverse idea of the extra_field_check,
-        should find missing fields in a record when compared to a key set of
-        SuperDARN field names
-
-        Expected behaviour
-        ------------------
-        Nothing - the missing_field_check should be able to handle subsets of
-        of complete sets. Meaning it will not raise an error if it contains
-        the full subsets of the dictionary keys but the full overall set.
-        This is needed for Fitacf, Gird and Map files as they do not write
-        all the fields in if data is bad or users do not use certain
-        commands/options when processing the data.
-        """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-
-        test_dict = {'a': 3, 'b': 3, 'c': 2, 'd': 2,
-                     'stid': 's', 'rst': 1, 'vel': 'd'}
-
-        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
-                                                  test_dict, 1)
-        test_dict = {}
-        test_dict.update(dict1)
-        test_dict.update(dict3)
-        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
-                                                  test_dict, 1)
+        self.out = [{},
+                    {'a': 3, 'c': 2, 'd': 2, 'stid': 's', 'rst': 1, 'vel': 'd'},
+                    {}]
+        self.out[0].update(self.tdicts[0])
+        self.out[0].update(self.tdict[-1])
+        self.out[2].update(self.tdicts[1])
+        self.out[2].update(self.tdicts[2])
+        for val in self.out:
+            with subTest(val=val):
+                pydarnio.SDarnUtilities.missing_field_check(self.tdicts, val, 1)
 
     def test_missing_field_check_fail2(self):
         """
@@ -433,19 +394,15 @@ class TestDarnUtilities(unittest.TestCase):
         between dictionary key sets
         """
 
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        self.out = {'a': 3, 'b': 3, 'd': 2, 'stid': 's', 'vel': 'd'}
 
-        test_dict = {'a': 3, 'b': 3, 'd': 2,
-                     'stid': 's', 'vel': 'd',
-                     'fitacf': 3, 'map': 4}
+        with (self.assertRaises(
+                pydarnio.superdarn_exceptions.SuperDARNFieldMissingError)
+              as err):
+            pydarnio.SDarnUtilities.missing_field_check(self.tdicts, self.out,
+                                                        1)
 
-        try:
-            pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
-                                                      test_dict, 1)
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'c', 'rst', 'rawacf'})
+        self.assertEqual(err.exception.fields, {'b'})
 
     def test_missing_field_check_fail(self):
         """
@@ -459,19 +416,16 @@ class TestDarnUtilities(unittest.TestCase):
         between dictionary key sets
         """
 
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        self.out = {'a': 3, 'b': 3, 'd': 2, 'stid': 's', 'rst': 1, 'vel': 'd',
+                    'fitacf': 3, 'map': 4}
 
-        test_dict = {'a': 3, 'b': 3, 'd': 2,
-                     'stid': 's', 'rst': 1, 'vel': 'd',
-                     'fitacf': 3, 'map': 4}
+        with (self.assertRaises(
+                pydarnio.superdarn_exceptions.SuperDARNFieldMissingError)
+              as err):
+            pydarnio.SDarnUtilities.missing_field_check(self.tdicts,
+                                                        self.out, 1)
 
-        try:
-            pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
-                                                      test_dict, 1)
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'c', 'rawacf'})
+        self.assertEqual(err.exception.fields, {'c', 'rawacf'})
 
     def test_incorrect_types_check_pass(self):
         """
@@ -487,19 +441,20 @@ class TestDarnUtilities(unittest.TestCase):
         Nothing - should not return or raise anything if the fields
         are the correct data format type
         """
-        dict1 = {'a': 's', 'b': 'i', 'c': 'f'}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        self.out = {'a': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['a']),
+                    'b': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['b']),
+                    'c': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
+                                            self.tdicts[0]['c'], 1, [3]),
+                    'fitacf': pydarnio.DmapScalar('a', 1, 1,
+                                                  self.tdicts[-1]['fitacf']),
+                    'rawacf': pydarnio.DmapScalar('a', 1, 1,
+                                                  self.tdicts[-1]['rawacf']),
+                    'map': pydarnio.DmapScalar('a', 1, 1,
+                                               self.tdicts[-1]['map'])}
 
-        test_dict = {'a': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'b': pydarnio.DmapScalar('a', 1, 1, 'i'),
-                     'c': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
-                                           'f', 1, [3]),
-                     'fitacf': pydarnio.DmapScalar('a', 1, 1, 'f'),
-                     'rawacf': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'map': pydarnio.DmapScalar('a', 1, 1, 'm')}
-
-        pydarnio.SDarnUtilities.incorrect_types_check([dict1, dict3],
-                                                    test_dict, 1)
+        pydarnio.SDarnUtilities.incorrect_types_check([self.tdicts[0],
+                                                       self.tdicts[-1]],
+                                                      self.out, 1)
 
     def test_incorrect_types_check_fail(self):
         """
@@ -515,25 +470,29 @@ class TestDarnUtilities(unittest.TestCase):
         Raises SuperDARNDataFormatTypeError - because the field format types
         should not be the same.
         """
+        self.out = {'a': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['a']),
+                    'b': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['b']),
+                    'c': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
+                                            self.tdicts[0]['c'], 1, [3]),
+                    'fitacf': pydarnio.DmapScalar('a', 1, 1,
+                                                  self.tdicts[-1]['rawacf']),
+                    'rawacf': pydarnio.DmapScalar('a', 1, 1,
+                                                  self.tdicts[-1]['rawacf']),
+                    'map': pydarnio.DmapScalar('a', 1, 1,
+                                               self.tdicts[-1]['map'])}
 
-        dict1 = {'a': 's', 'b': 'i', 'c': 'f'}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        with (self.assertRaises(
+                pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError)
+              as err):
+            pydarnio.SDarnUtilities.incorrect_types_check([self.tdicts[0],
+                                                           self.tdicts[-1]],
+                                                          self.out, 1)
 
-        test_dict = {'a': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'b': pydarnio.DmapScalar('a', 1, 1, 'i'),
-                     'c': pydarnio.DmapArray('a', np.array([2.4, 2.4]),
-                                           1, 'f', 1, [3]),
-                     'fitacf': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'rawacf': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'map': pydarnio.DmapScalar('a', 1, 1, 'm')}
-        try:
-            pydarnio.SDarnUtilities.incorrect_types_check([dict1, dict3],
-                                                        test_dict, 1)
-        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
-            self.assertEqual(err.incorrect_params, {'fitacf': 'f'})
+        self.assertEqual(err.exception.incorrect_params, {'fitacf': 'f'})
 
 
-@pytest.mark.skip
+@unittest.skipIf(not os.path.isdir(test_dir),
+                 'test directory is not included with pyDARNio')
 class TestSDarnWrite(unittest.TestCase):
     """
     Tests SDarnWrite class
@@ -977,12 +936,3 @@ class TestSDarnWrite(unittest.TestCase):
         except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
             self.assertEqual(err.incorrect_params.keys(), {'v.min'})
             self.assertEqual(err.record_number, 2)
-
-
-if __name__ == '__main__':
-    """
-    Runs the above class in a unittest system.
-    Roughly takes 467 seconds.
-    """
-    pydarnio_logger.info("Starting SuperDARN io testing")
-    unittest.main()
