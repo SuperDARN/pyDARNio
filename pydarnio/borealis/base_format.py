@@ -41,7 +41,7 @@ import numpy as np
 
 from collections import OrderedDict
 
-from pydarnio import borealis_exceptions
+from pyDARNio import borealis_exceptions
 
 
 class BaseFormat():

@@ -40,7 +40,9 @@ import struct
 
 from typing import List, Union
 
-from pydarnio import dmap_exceptions, DmapArray, DmapScalar, dmap2dict, dict2dmap
+from pyDARNio import dmap_exceptions
+from pyDARNio import DmapArray, DmapScalar
+from pyDARNio import dmap2dict, dict2dmap
 
 # Keeping these global definitions for readability purposes
 # Data types use in s

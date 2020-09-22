@@ -34,7 +34,7 @@ import sys
 from functools import reduce
 from typing import Union, List
 
-from pydarnio import borealis_exceptions
+from pyDARNio import borealis_exceptions
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 

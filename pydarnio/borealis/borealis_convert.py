@@ -47,7 +47,7 @@ import numpy as np
 from datetime import datetime
 from typing import Union
 
-from pydarnio import (borealis_exceptions, BorealisRead, SDarnWrite, dict2dmap)
+from pyDARNio import (borealis_exceptions, BorealisRead, SDarnWrite, dict2dmap)
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 
