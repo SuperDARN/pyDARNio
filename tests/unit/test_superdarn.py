@@ -29,6 +29,7 @@ import grid_data_sets
 import fitacf_data_sets
 import iqdat_data_sets
 import rawacf_data_sets
+import tfile_utils
 
 pydarnio_logger = logging.getLogger('pydarnio')
 
@@ -36,14 +37,6 @@ pydarnio_logger = logging.getLogger('pydarnio')
 #
 # If these files change, the unit tests will need to be updated
 test_dir = os.path.join("..", "testfiles")
-rawacf_stream = "20170410.1801.00.sas.stream.rawacf.bz2"
-test_file_dict = {"rawacf": "20170410.1801.00.sas.rawacf",
-                  "fitacf": "20160331.2201.00.mcm.a.fitacf",
-                  "map": "20170114.map",
-                  "iqdat": "20160316.1945.01.rkn.iqdat",
-                  "grid": "20180220.C0.rkn.grid"}
-corrupt_files = ["20070117.1001.00.han.rawacf", "20090320.1601.00.pgr.rawacf"]
-
 
 @unittest.skipIf(not os.path.isdir(test_dir),
                  'test directory is not included with pyDARNio')
@@ -88,13 +81,11 @@ class TestSDarnRead(unittest.TestCase):
             - bytearray instance is created from reading in the file
             - bytearray is not empty
         """
+        test_file_dict = tfile_utils.get_test_files("good", test_dir=test_dir)
         for val in test_file_dict.values():
             with self.subTest(val=val):
-                # Create a test filename with path
-                self.test_file = os.path.join(test_dir, val)
-
                 # Load the file
-                self.data = pyDARNio.SDarnRead(self.test_file)
+                self.data = pyDARNio.SDarnRead(val)
 
                 # Test the file data
                 self.assertIsInstance(self.data.dmap_bytearr, bytearray)
@@ -103,8 +94,7 @@ class TestSDarnRead(unittest.TestCase):
     def load_test_file_record(self, file_type=''):
         """ Load a test file data record
         """
-        # Build the filename and load the data
-        self.test_file = os.path.join(test_dir, test_file_dict[file_type])
+        # Load the data with the current test file
         self.data = pyDARNio.SDarnRead(self.test_file)
 
         # Read the data
@@ -220,12 +210,15 @@ class TestSDarnRead(unittest.TestCase):
         """
         Test raises a dmap_exceptions Error when readig a corrupt file
         """
+        corrupt_files = tfile_utils.get_test_files("corrupt",
+                                                   test_dir=test_dir)
+
         for val in [(corrupt_files[0],
                      pyDARNio.dmap_exceptions.DmapDataTypeError),
                     (corrupt_files[1],
                      pyDARNio.dmap_exceptions.NegativeByteError)]:
             with self.subTest(val=val):
-                self.test_file = os.path.join(test_dir, val[0])
+                self.test_file = val[0]
                 self.data = pyDARNio.SDarnRead(self.test_file)
                 with self.assertRaises(val[1]):
                     dmap.read_rawacf()
@@ -240,7 +233,8 @@ class TestSDarnRead(unittest.TestCase):
         """
         # bz2 opens the compressed file into a data
         # stream of bytes without actually uncompressing the file
-        self.test_file = os.path.join(test_dir, rawacf_stream)
+        self.test_file = tfile_utils.get_test_files("stream",
+                                                    test_dir=test_dir)[0]
         with bz2.open(self.test_file) as fp:
             dmap_stream = fp.read()
         self.data = pyDARNio.SDarnRead(dmap_stream, True)
@@ -265,8 +259,9 @@ class TestSDarnRead(unittest.TestCase):
         some random bytes to produce a corrupt stream.
         """
         # Open the data stream
-        self.test_file = os.path.join(test_dir, rawacf_stream)
-        with bz2.open(self.test_filee) as fp:
+        self.test_file = tfile_utils.get_test_files("stream",
+                                                    test_dir=test_dir)[0]
+        with bz2.open(self.test_file) as fp:
             dmap_stream = fp.read()
 
         # Load and corrupt data, converting to byte array for mutability
@@ -526,6 +521,7 @@ class TestSDarnWrite(unittest.TestCase):
         ------------------
         Contains file name of the data if given to it.
         """
+        test_file_dict = tfile_utils.get_test_files("good")
         for val in test_file_dict.keys():
             with self.subTest(val=val):
                 self.data_type = val
@@ -547,6 +543,7 @@ class TestSDarnWrite(unittest.TestCase):
         """
         Test raises FilenameRequiredError when no filename is given to write
         """
+        test_file_dict = tfile_utils.get_test_files("good")
         for val in test_file_dict.keys():
             with self.subTest(val=val):
                 self.data_type = val
@@ -562,6 +559,7 @@ class TestSDarnWrite(unittest.TestCase):
         """
         Test successful file writing and removal of temporary file
         """
+        test_file_dict = tfile_utils.get_test_files("good")
         for val in test_file_dict.keys():
             with self.subTest(val=val):
                 self.data_type = val
@@ -609,6 +607,7 @@ class TestSDarnWrite(unittest.TestCase):
         extra_name = "dummy"
         extra_field = pyDARNio.DmapArray(extra_name, np.array([1, 2]), chr(1),
                                          'c', 1, [2])
+        test_file_dict = tfile_utils.get_test_files("good")
 
         for val in test_file_dict.keys():
             with self.subTest(val=val):
@@ -637,7 +636,7 @@ class TestSDarnWrite(unittest.TestCase):
         incorrect_type = {"rawacf": "c", "fitacf": "s", "iqdat": "d",
                           "map": "i", "grid": "d"}
             
-        for val in test_file_dict.keys():
+        for val in incorrect_type.keys():
             with self.subTest(val=val):
                 # Set up the data, adding and extra data field
                 self.data_type = val
