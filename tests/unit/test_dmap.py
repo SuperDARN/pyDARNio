@@ -1,5 +1,5 @@
 # Copyright (C) 2019 SuperDARN Canada, University of Saskatchewan
-# Author: Marina Schmidt
+# Author: Marina Schmidt, Angeline Burrell
 
 import bz2
 import collections
@@ -7,90 +7,32 @@ import copy
 import logging
 import numpy as np
 import os
-import pytest
 import unittest
 
-import pydarnio
+import pyDARNio
 
 import dmap_data_sets
+import tfile_utils
 
-pydarnio_logger = logging.getLogger('pydarnio')
-
-# Test files
-rawacf_stream = "../testfiles/20170410.1801.00.sas.stream.rawacf.bz2"
-rawacf_file = "../testfiles/20170410.1801.00.sas.rawacf"
-fitacf_file = "../testfiles/20180220.C0.rkn.fitacf"
-map_file = "../testfiles/20170114.map"
-iqdat_file = "../testfiles/20160316.1945.01.rkn.iqdat"
-grid_file = "../testfiles/20180220.C0.rkn.grid"
-# Black listed files
-corrupt_file1 = "../testfiles/20070117.1001.00.han.rawacf"
-corrupt_file2 = "../testfiles/20090320.1601.00.pgr.rawacf"
+pyDARNio_logger = logging.getLogger('pyDARNio')
 
 
-@pytest.mark.skip
-class TestDmapRead(unittest.TestCase):
+class TestDmapRead(tfile_utils.TestRead):
     """
     Testing class for DmapRead class
     """
     def setUp(self):
-        pass
+        self.test_file = "somefile.rawacf"
+        self.test_dir = os.path.join("..", "testfiles")
+        self.data = None
+        self.rec = None
+        self.read_func = pyDARNio.DmapRead
+        self.file_types = ["rawacf", "fitacf"]
+        self.corrupt_read_type = "records"
 
-    """
-    Testing DmapRead's constructor
-    """
-    def test_incorrect_path(self):
-        """
-        Testing DmapRead's constructor with an non-existant folder.
-
-        Expected behaviour: raise FileNotFoundError
-        """
-        self.assertRaises(FileNotFoundError, pydarnio.DmapRead,
-                          './dog/somefile.rawacf')
-
-    def test_incorrect_file(self):
-        """
-        Tests if DmapRead's constructor with an non-existant file
-
-        Expected bahaviour: raises FileNotFoundError
-        """
-        self.assertRaises(FileNotFoundError, pydarnio.DmapRead,
-                          '../testfiles/somefile.rawacf')
-
-    def test_empty_file(self):
-        """
-        Tests if DmapRead's constructor with an empty file
-
-        Expected behaviour: raise EmptyFileError
-        """
-        self.assertRaises(pydarnio.dmap_exceptions.EmptyFileError,
-                          pydarnio.DmapRead, '../testfiles/empty.rawacf')
-
-    def test_open_dmap_file(self):
-        """
-        Tests DmapRead's constructor on opening a rawacf.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = fitacf_file
-        dm = pydarnio.DmapRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    def test_integrity_check_dmap_file(self):
-        """
-        Tests DmapRead test_initial_data_integrity
-        It should be able to read through the bytearray quickly
-        ensureing no curruption has occured in the file.
-
-        Behaviours: raising no exceptions
-        """
-        file_path = rawacf_file
-        dm = pydarnio.DmapRead(file_path)
-        dm.test_initial_data_integrity()
+    def tearDown(self):
+        del self.test_file, self.test_dir, self.data, self.rec
+        del self.read_func, self.file_types, self.corrupt_read_type
 
     def test_read_dmap_file(self):
         """
@@ -98,107 +40,27 @@ class TestDmapRead(unittest.TestCase):
 
         Behaviour: raising no exceptions
         """
-        file_path = fitacf_file
-        dm = pydarnio.DmapRead(file_path)
-        dmap_records = dm.read_records()
-        dmap_records = dm.get_dmap_records
-        self.assertIsInstance(dmap_records, collections.deque)
-        self.assertIsInstance(dmap_records[0], collections.OrderedDict)
-        self.assertIsInstance(dmap_records[4]['bmnum'], pydarnio.DmapScalar)
-        self.assertIsInstance(dmap_records[1]['ptab'], pydarnio.DmapArray)
-        self.assertIsInstance(dmap_records[7]['channel'].value, int)
-        self.assertIsInstance(dmap_records[2]['ltab'].value, np.ndarray)
-        self.assertEqual(dmap_records[0]['ptab'].dimension, 1)
-        self.assertEqual(dmap_records[50]['gflg'].value[1], 0)
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
 
-    # TODO: Again dependent on the file used :/
-    def test_integrity_check_corrupt_file1(self):
-        """
-        Test test_initial_data_integrity on a corrupt file
+        # Load the data and read in the first record
+        test_file_dict = get_test_files("good", test_dir=self.test_dir)
+        self.test_file = test_file_dict['fitacf']
+        self.load_file_record(file_type='records')
 
-        Expected bahaviour: raises pydmap expection
-        """
-        dmap = pydarnio.DmapRead(corrupt_file1)
-        with self.assertRaises(pydarnio.dmap_exceptions.MismatchByteError):
-            dmap.test_initial_data_integrity()
-
-    def test_read_corrupt_file1(self):
-        """
-        Test read_records on a corrupt file
-
-        Expected bahaviour: raises pydmap expection
-        """
-        dmap = pydarnio.DmapRead(corrupt_file1)
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataTypeError):
-            dmap.read_records()
-
-    def test_integrity_check_corrupt_file2(self):
-        """
-        Test test_initial_data_integrity on a corrupt file
-
-        Expected bahaviour: raises pydmap expection
-        """
-        dmap = pydarnio.DmapRead(corrupt_file2)
-        with self.assertRaises(pydarnio.dmap_exceptions.NegativeByteError):
-            dmap.test_initial_data_integrity()
-
-    def test_read_currupt_file2(self):
-        """
-        Test read_records on a corrupt file
-
-        Expected bahaviour: raises pydmap expection
-        """
-        dmap = pydarnio.DmapRead(corrupt_file2)
-        with self.assertRaises(pydarnio.dmap_exceptions.NegativeByteError):
-            dmap.read_records()
-
-    def test_dmap_read_stream(self):
-        """
-        Test read_records on dmap data stream.
-        The dmap data stream is formed from compressed
-        bzip2 file that returns a bytes object.
-
-         Checks:
-            - returns correct data structures
-            - returns excpected values
-        """
-        # bz2 opens the compressed file into a data
-        # stream of bytes without actually uncompressing the file
-        with bz2.open(rawacf_stream) as fp:
-            dmap_stream = fp.read()
-        dmap = pydarnio.DmapRead(dmap_stream, True)
-        dmap_data = dmap.read_records()
-        dmap_data = dmap.get_dmap_records
-        self.assertIsInstance(dmap_data, collections.deque)
-        self.assertIsInstance(dmap_data[0], collections.OrderedDict)
-        self.assertIsInstance(dmap_data[4]['channel'], pydarnio.DmapScalar)
-        self.assertIsInstance(dmap_data[1]['ptab'], pydarnio.DmapArray)
-        self.assertIsInstance(dmap_data[7]['channel'].value, int)
-        self.assertIsInstance(dmap_data[2]['xcfd'].value, np.ndarray)
-        self.assertEqual(dmap_data[0]['xcfd'].dimension, 3)
-
-    def test_dmap_read_corrupt_stream(self):
-        """
-        Test read_records on a corrupt stream. Read in compressed
-        file which returns a byte object, then insert some random
-        bytes to produce a corrupt stream.
-
-        Expected bahaviour: raises pydmap expection
-        """
-        with bz2.open(rawacf_stream) as fp:
-            dmap_stream = fp.read()
-
-        # need to convert to byte array for mutability
-        # since bytes are immutable.
-        corrupt_stream = bytearray(dmap_stream[0:36])
-        corrupt_stream[36:40] = bytearray(str(os.urandom(4)).encode('utf-8'))
-        corrupt_stream[40:] = dmap_stream[37:]
-        dmap = pydarnio.DmapRead(corrupt_stream, True)
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
-            dmap.read_records()
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[4]['bmnum'], pyDARNio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pyDARNio.DmapArray)
+        self.assertIsInstance(self.rec[7]['channel'].value, int)
+        self.assertIsInstance(self.rec[2]['ltab'].value, np.ndarray)
+        self.assertEqual(self.rec[0]['ptab'].dimension, 1)
+        self.assertEqual(self.rec[50]['gflg'].value[1], 0)
 
 
-@pytest.mark.skip
+
+@unittest.skip('skipping for no reason')
 class TestDmapWrite(unittest.TestCase):
     """ Testing DmapWrite class"""
     def setUp(self):
@@ -214,8 +76,8 @@ class TestDmapWrite(unittest.TestCase):
         constructor
         """
         rawacf_data = copy.deepcopy(dmap_data_sets.dmap_data)
-        dmap_data = pydarnio.DmapWrite(rawacf_data)
-        with self.assertRaises(pydarnio.dmap_exceptions.FilenameRequiredError):
+        dmap_data = pyDARNio.DmapWrite(rawacf_data)
+        with self.assertRaises(pyDARNio.dmap_exceptions.FilenameRequiredError):
             dmap_data.write_dmap()
 
     def test_empty_data_check(self):
@@ -226,8 +88,8 @@ class TestDmapWrite(unittest.TestCase):
         ------------------
         Raise DmapDataError - no data is given to write
         """
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
-            dmap_write = pydarnio.DmapWrite(filename="test.test")
+        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
+            dmap_write = pyDARNio.DmapWrite(filename="test.test")
             dmap_write.write_dmap()
 
     def test_writing_dmap(self):
@@ -239,7 +101,7 @@ class TestDmapWrite(unittest.TestCase):
         File is produced
         """
         dmap_data = copy.deepcopy(dmap_data_sets.dmap_data)
-        dmap = pydarnio.DmapWrite(dmap_data)
+        dmap = pyDARNio.DmapWrite(dmap_data)
 
         # Integration testing will test the integrity of the
         # writing procedure.
@@ -256,9 +118,9 @@ class TestDmapWrite(unittest.TestCase):
         Dmap cannot write characters as they are treated as strings and not
         int8 - RST standard for char types.
         """
-        scalar = pydarnio.DmapScalar('channel', 'c', 1, 'c')
-        dmap_write = pydarnio.DmapWrite([{'channel': scalar}])
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapCharError):
+        scalar = pyDARNio.DmapScalar('channel', 'c', 1, 'c')
+        dmap_write = pyDARNio.DmapWrite([{'channel': scalar}])
+        with self.assertRaises(pyDARNio.dmap_exceptions.DmapCharError):
             dmap_write.dmap_scalar_to_bytes(scalar)
 
     def test_String_array(self):
@@ -269,10 +131,10 @@ class TestDmapWrite(unittest.TestCase):
         DmapWrite doesn't support writing string arrays because DmapRead does
         not support string arrays.
         """
-        array = pydarnio.DmapArray('xcf', np.array(['dog', 'cat', 'mouse']),
+        array = pyDARNio.DmapArray('xcf', np.array(['dog', 'cat', 'mouse']),
                                  9, 's', 1, [3])
-        dmap_write = pydarnio.DmapWrite([{'xcf': array}])
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
+        dmap_write = pyDARNio.DmapWrite([{'xcf': array}])
+        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
             dmap_write.dmap_array_to_bytes(array)
 
     def test_character_array(self):
@@ -281,18 +143,8 @@ class TestDmapWrite(unittest.TestCase):
 
         Behaviour: Raised DmapCharError
         """
-        array = pydarnio.DmapArray('channel', np.array(['d', 'c', 'm']),
+        array = pyDARNio.DmapArray('channel', np.array(['d', 'c', 'm']),
                                  1, 'c', 1, [3])
-        dmap_write = pydarnio.DmapWrite([{'channel': array}])
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapCharError):
+        dmap_write = pyDARNio.DmapWrite([{'channel': array}])
+        with self.assertRaises(pyDARNio.dmap_exceptions.DmapCharError):
             dmap_write.dmap_array_to_bytes(array)
-
-
-if __name__ == '__main__':
-    """
-    Runs the above class in a unittest system.
-    Roughly takes 467 seconds.
-    """
-    pydarnio_logger.info("Starting DMAP testing")
-
-    unittest.main()
