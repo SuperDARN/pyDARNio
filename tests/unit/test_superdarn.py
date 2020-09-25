@@ -13,7 +13,6 @@ Support for the following SuperDARN file types:
     map
 """
 
-import copy
 import collections
 import logging
 import numpy as np
@@ -23,11 +22,6 @@ import unittest
 import pyDARNio
 from pyDARNio import superdarn_exceptions as sdarn_exp
 
-import map_data_sets
-import grid_data_sets
-import fitacf_data_sets
-import iqdat_data_sets
-import rawacf_data_sets
 import file_utils
 
 pydarnio_logger = logging.getLogger('pydarnio')
@@ -371,115 +365,26 @@ class TestSDarnUtilities(unittest.TestCase):
         self.assertEqual(err.exception.incorrect_params, {'fitacf': 'f'})
 
 
-class TestSDarnWrite(unittest.TestCase):
+class TestSDarnWrite(file_utils.TestWrite):
     """
     Tests SDarnWrite class
     """
     def setUp(self):
         """ Runs before every test to create the test environment
         """
+        self.write_class = pyDARNio.SDarnWrite
         self.write_func = None
         self.data_type = None
-        self.data = None
+        self.data = []
         self.temp_file = "not_a_file.acf"
+        self.file_types = ["rawacf", "fitacf", "iqdat", "grid", "map"]
 
     def tearDown(self):
         """ Runs after every test to clean up the test environment
         """
         self.remove_temp_file()
-        del self.temp_file, self.data, self.data_type, self.write_func
-
-    def load_data_w_filename(self):
-        """ Utility for loading data and constructing a temporary filename
-        """
-        if self.data_type == "rawacf":
-            self.data = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        elif self.data_type == "fitacf":
-            self.data = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        elif self.data_type == "iqdat":
-            self.data = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        elif self.data_type == "grid":
-            self.data = copy.deepcopy(grid_data_sets.grid_data)
-        elif self.data_type == "map":
-            self.data = copy.deepcopy(map_data_sets.map_data)
-
-        self.temp_file = "{:s}_test.{:s}".format(self.data_type,
-                                                 self.data_type)
-
-    def remove_temp_file(self):
-        """ Utility for removing temporary files
-        """
-        if os.path.isfile(self.temp_file):
-            os.remove(self.temp_file)
-            return True
-        else:
-            return False
-
-    def set_write_func(self):
-        """ Utility to retrieve the writing function
-        """
-        darn = pyDARNio.SDarnWrite(self.data)
-        self.write_func = getattr(darn, "write_{:s}".format(self.data_type))
-
-    def test_darn_write_constructor(self):
-        """
-        Tests SDarnWrite constructor for different file types
-
-        Expected behaviour
-        ------------------
-        Contains file name of the data if given to it.
-        """
-        test_file_dict = file_utils.get_test_files("good")
-        for val in test_file_dict.keys():
-            with self.subTest(val=val):
-                self.data_type = val
-                self.load_data_w_filename()
-                darn = pyDARNio.SDarnWrite(self.data, self.temp_file)
-                self.assertEqual(darn.filename, self.temp_file)
-                self.assertFalse(self.remove_temp_file())
-
-    def test_empty_record(self):
-        """
-        Test raises DmapDataError if an empty record is given
-
-        TODO: Change this for real-time implementation
-        """
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
-            pyDARNio.SDarnWrite([], self.temp_file)
-
-    def test_incorrect_filename_input_using_write_methods(self):
-        """
-        Test raises FilenameRequiredError when no filename is given to write
-        """
-        test_file_dict = file_utils.get_test_files("good")
-        for val in test_file_dict.keys():
-            with self.subTest(val=val):
-                self.data_type = val
-                self.load_data_w_filename()
-
-                # Attempt to write data without a filename
-                self.set_write_func()
-                with self.assertRaises(
-                        pyDARNio.dmap_exceptions.FilenameRequiredError):
-                    self.write_func()
-
-    def test_writing_success(self):
-        """
-        Test successful file writing and removal of temporary file
-        """
-        test_file_dict = file_utils.get_test_files("good")
-        for val in test_file_dict.keys():
-            with self.subTest(val=val):
-                self.data_type = val
-                self.load_data_w_filename()
-                self.set_write_func()
-
-                # Only testing the file is created since it should only be
-                # created at the last step after all checks have passed.
-                # Testing the integrity of the insides of the file will be part
-                # of integration testing since we need SDarnRead for that.
-                self.write_func(self.temp_file)
-                self.assertTrue(self.remove_temp_file())
+        del self.write_class, self.write_func, self.data_type, self.data
+        del self.temp_file, self.file_types
 
     def test_SDarnWrite_missing_field(self):
         """

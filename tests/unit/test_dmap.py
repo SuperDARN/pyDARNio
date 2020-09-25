@@ -1,17 +1,13 @@
 # Copyright (C) 2019 SuperDARN Canada, University of Saskatchewan
 # Author: Marina Schmidt, Angeline Burrell
 
-import bz2
 import collections
-import copy
 import logging
 import numpy as np
 import os
-import unittest
 
 import pyDARNio
 
-import dmap_data_sets
 import file_utils
 
 pyDARNio_logger = logging.getLogger('pyDARNio')
@@ -44,7 +40,8 @@ class TestDmapRead(file_utils.TestRead):
             self.skipTest('test directory is not included with pyDARNio')
 
         # Load the data and read in the first record
-        test_file_dict = get_test_files("good", test_dir=self.test_dir)
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
         self.test_file = test_file_dict['fitacf']
         self.load_file_record(file_type='records')
 
@@ -59,92 +56,46 @@ class TestDmapRead(file_utils.TestRead):
         self.assertEqual(self.rec[50]['gflg'].value[1], 0)
 
 
-
-@unittest.skip('skipping for no reason')
-class TestDmapWrite(unittest.TestCase):
+class TestDmapWrite(file_utils.TestWrite):
     """ Testing DmapWrite class"""
     def setUp(self):
-        pass
+        self.write_class = pyDARNio.DmapWrite
+        self.write_func = None
+        self.data_type = None
+        self.data = []
+        self.temp_file = "not_a_file.acf"
+        self.file_types = ["dmap"]
 
-    def test_incorrect_filename_input_using_write_methods(self):
+    def tearDown(self):
+        self.remove_temp_file()
+        del self.write_class, self.write_func, self.data_type, self.data
+        del self.temp_file, self.file_types
+
+    def test_bad_scalar_to_bytes(self):
         """
-        Testing if a filename is not given to DmapWrite
-
-        Expected behaviour
-        ------------------
-        Raises FilenameRequiredError - no filename was given to write and
-        constructor
+        Test raises DmapCharError when attempting to write char instead of int8
         """
-        rawacf_data = copy.deepcopy(dmap_data_sets.dmap_data)
-        dmap_data = pyDARNio.DmapWrite(rawacf_data)
-        with self.assertRaises(pyDARNio.dmap_exceptions.FilenameRequiredError):
-            dmap_data.write_dmap()
-
-    def test_empty_data_check(self):
-        """
-        Testing if no data is given to DmapWrite
-
-        Expected behaviour
-        ------------------
-        Raise DmapDataError - no data is given to write
-        """
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
-            dmap_write = pyDARNio.DmapWrite(filename="test.test")
-            dmap_write.write_dmap()
-
-    def test_writing_dmap(self):
-        """
-        Testing write_dmap method
-
-        Expected behaviour
-        ------------------
-        File is produced
-        """
-        dmap_data = copy.deepcopy(dmap_data_sets.dmap_data)
-        dmap = pyDARNio.DmapWrite(dmap_data)
-
-        # Integration testing will test the integrity of the
-        # writing procedure.
-        dmap.write_dmap("test_dmap.dmap")
-        self.assertTrue(os.path.isfile("test_dmap.dmap"))
-
-        os.remove("test_dmap.dmap")
-
-    def test_scalar(self):
-        """
-        Test DmapWrite writing a character scalar type.
-
-        Behaviour: Raised DmapCharError
-        Dmap cannot write characters as they are treated as strings and not
-        int8 - RST standard for char types.
-        """
-        scalar = pyDARNio.DmapScalar('channel', 'c', 1, 'c')
-        dmap_write = pyDARNio.DmapWrite([{'channel': scalar}])
+        self.data = [{'channel': pyDARNio.DmapScalar('channel', 'c', 1, 'c')}]
+        darn = self.write_clas(self.data)
         with self.assertRaises(pyDARNio.dmap_exceptions.DmapCharError):
-            dmap_write.dmap_scalar_to_bytes(scalar)
+            darn.dmap_scalar_to_bytes(self.data[0]['channel'])
 
-    def test_String_array(self):
+    def test_bad_array_to_byes(self):
         """
-        Test DmapWrite writing string arrays
+        Test raises appropriate Dmap Error when writing unsupported array types
+        """
 
-        Behaviour: Raised DmapDataError
-        DmapWrite doesn't support writing string arrays because DmapRead does
-        not support string arrays.
-        """
-        array = pyDARNio.DmapArray('xcf', np.array(['dog', 'cat', 'mouse']),
-                                 9, 's', 1, [3])
-        dmap_write = pyDARNio.DmapWrite([{'xcf': array}])
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
-            dmap_write.dmap_array_to_bytes(array)
-
-    def test_character_array(self):
-        """
-        Test DmapWrite writing character arrays.
-
-        Behaviour: Raised DmapCharError
-        """
-        array = pyDARNio.DmapArray('channel', np.array(['d', 'c', 'm']),
-                                 1, 'c', 1, [3])
-        dmap_write = pyDARNio.DmapWrite([{'channel': array}])
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapCharError):
-            dmap_write.dmap_array_to_bytes(array)
+        self.data = [{'xcf': pyDARNio.DmapArray('xcf', np.array(['dog', 'cat',
+                                                                 'rat']),
+                                                9, 's', 1, [3])},
+                     {'channel': pyDARNio.DmapArray('channel',
+                                                    np.array(['d', 'c', 'r']),
+                                                    1, 'c', 1, [3])}]
+        errors = [pyDARNio.dmap_exceptions.DmapDataError,
+                  pyDARNio.dmap_exceptions.DmapCharError]
+        for i, val in enumerate(errors):
+            with self.subTest(val=val):
+                array = [dat_val for dat_val in self.data[i].values()][0]
+                darn = self.write_class([self.data[i]])
+                with self.assertRaises(val):
+                    darn.dmap_array_to_bytes(array)
