@@ -61,7 +61,7 @@ class TestDmapWrite(file_utils.TestWrite):
     def setUp(self):
         self.write_class = pyDARNio.DmapWrite
         self.write_func = None
-        self.data_type = None
+        self.data_type = "dmap"
         self.data = []
         self.temp_file = "not_a_file.acf"
         self.file_types = ["dmap"]
@@ -76,7 +76,7 @@ class TestDmapWrite(file_utils.TestWrite):
         Test raises DmapCharError when attempting to write char instead of int8
         """
         self.data = [{'channel': pyDARNio.DmapScalar('channel', 'c', 1, 'c')}]
-        darn = self.write_clas(self.data)
+        darn = self.write_class(self.data)
         with self.assertRaises(pyDARNio.dmap_exceptions.DmapCharError):
             darn.dmap_scalar_to_bytes(self.data[0]['channel'])
 

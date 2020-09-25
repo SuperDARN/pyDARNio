@@ -374,7 +374,7 @@ class TestSDarnWrite(file_utils.TestWrite):
         """
         self.write_class = pyDARNio.SDarnWrite
         self.write_func = None
-        self.data_type = None
+        self.data_type = "rawacf"
         self.data = []
         self.temp_file = "not_a_file.acf"
         self.file_types = ["rawacf", "fitacf", "iqdat", "grid", "map"]
