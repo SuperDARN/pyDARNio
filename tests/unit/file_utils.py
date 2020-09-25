@@ -17,7 +17,8 @@ def get_test_files(test_file_type, test_dir=os.path.join("..", "testfiles")):
     Parameters
     ----------
     test_file_type : str
-        Accepts 'good', 'stream', 'empty', and 'corrupt'
+        Accepts 'good', 'stream', 'empty', and 'corrupt', along with
+        'borealis-vXX_' or 'borealis-vXX-site_' as a prefix to these options
     test_dir : str
         Directory containing the test files
         (default=os.path.join('..', 'testfiles'))
@@ -32,13 +33,43 @@ def get_test_files(test_file_type, test_dir=os.path.join("..", "testfiles")):
     # Ensure the test file type is lowercase
     test_file_type = test_file_type.lower()
 
+    # See if this is a borealis test
+    test_subdir = test_file_type.split('_')
+    if len(test_subdir) > 1:
+        # Only the last bit specifies test_file_type
+        test_file_type = test_subdir[-1]
+
+        # Keep the first part of the specifier intact and extend the
+        # test directory
+        test_dir = os.path.join(test_dir, '_'.join(test_subdir[:-1]))
+
     # Get a list of the available test files
     files = glob("ls {:s}".format(os.path.join(test_dir, test_file_type, "*")))
 
     # Prepare the test files in the necessary output format
     if test_file_type == "good":
-        test_files = {fname.split(".")[-1]: fname for fname in files}
+        test_files = dict()
+        for fname in files:
+            # Split the filename by periods to get the SuperDARN file extention
+            split_fname = fname.split(".")
+
+            # HDF5 and netCDF versions of these files will have the SuperDARN
+            # file type as the second to the last element in the split list
+            # and Borealis site files have the SuperDARN file type as the
+            # third element
+            if split_fname[-1] in ['hd5f', 'h5', 'nc']:
+                ext = split_fname[-2]
+            elif(split_fname[-1] == 'site'
+                 and split_fname[-2] in ['hd5f', 'h5', 'nc']):
+                ext = "_".join(["site", split_fname[-3]])
+            else:
+                ext = split_fname[-1]
+
+            # Save the filename, with keys organizing them by SuperDARN
+            # file extension
+            test_files[ext] = fname
     else:
+        # The files don't need to be organized, just return in a list
         test_files = files
 
     return test_files

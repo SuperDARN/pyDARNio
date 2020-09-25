@@ -12,12 +12,12 @@ import unittest
 import pyDARNio
 
 import dmap_data_sets
-import tfile_utils
+import file_utils
 
 pyDARNio_logger = logging.getLogger('pyDARNio')
 
 
-class TestDmapRead(tfile_utils.TestRead):
+class TestDmapRead(file_utils.TestRead):
     """
     Testing class for DmapRead class
     """

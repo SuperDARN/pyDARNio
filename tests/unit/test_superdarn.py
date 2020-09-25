@@ -28,12 +28,12 @@ import grid_data_sets
 import fitacf_data_sets
 import iqdat_data_sets
 import rawacf_data_sets
-import tfile_utils
+import file_utils
 
 pydarnio_logger = logging.getLogger('pydarnio')
 
 
-class TestSDarnRead(tfile_utils.TestRead):
+class TestSDarnRead(file_utils.TestRead):
     """
     Testing class for SDarnRead class
     """
@@ -62,8 +62,8 @@ class TestSDarnRead(tfile_utils.TestRead):
             self.skipTest('test directory is not included with pyDARNio')
 
         # Load the data and read in the first record
-        test_file_dict = tfile_utils.get_test_files("good",
-                                                    test_dir=self.test_dir)
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
         self.test_file = test_file_dict['iqdat']
         self.load_file_record(file_type='iqdat')
 
@@ -89,8 +89,8 @@ class TestSDarnRead(tfile_utils.TestRead):
             self.skipTest('test directory is not included with pyDARNio')
 
         # Load the data and read in the first record
-        test_file_dict = tfile_utils.get_test_files("good",
-                                                    test_dir=self.test_dir)
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
         self.test_file = test_file_dict['rawacf']
         self.load_file_record(file_type='rawacf')
 
@@ -115,8 +115,8 @@ class TestSDarnRead(tfile_utils.TestRead):
             self.skipTest('test directory is not included with pyDARNio')
 
         # Load the data and read in the first record
-        test_file_dict = tfile_utils.get_test_files("good",
-                                                    test_dir=self.test_dir)
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
         self.test_file = test_file_dict['fitacf']
         self.load_file_record(file_type='fitacf')
 
@@ -141,8 +141,8 @@ class TestSDarnRead(tfile_utils.TestRead):
             self.skipTest('test directory is not included with pyDARNio')
 
         # Load the data and read in the first record
-        test_file_dict = tfile_utils.get_test_files("good",
-                                                    test_dir=self.test_dir)
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
         self.test_file = test_file_dict['grid']
         self.load_file_record(file_type='grid')
 
@@ -167,8 +167,8 @@ class TestSDarnRead(tfile_utils.TestRead):
             self.skipTest('test directory is not included with pyDARNio')
 
         # Load the data and read in the first record
-        test_file_dict = tfile_utils.get_test_files("good",
-                                                    test_dir=self.test_dir)
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
         self.test_file = test_file_dict['map']
         self.load_file_record(file_type='map')
 
@@ -429,7 +429,7 @@ class TestSDarnWrite(unittest.TestCase):
         ------------------
         Contains file name of the data if given to it.
         """
-        test_file_dict = tfile_utils.get_test_files("good")
+        test_file_dict = file_utils.get_test_files("good")
         for val in test_file_dict.keys():
             with self.subTest(val=val):
                 self.data_type = val
@@ -451,7 +451,7 @@ class TestSDarnWrite(unittest.TestCase):
         """
         Test raises FilenameRequiredError when no filename is given to write
         """
-        test_file_dict = tfile_utils.get_test_files("good")
+        test_file_dict = file_utils.get_test_files("good")
         for val in test_file_dict.keys():
             with self.subTest(val=val):
                 self.data_type = val
@@ -467,7 +467,7 @@ class TestSDarnWrite(unittest.TestCase):
         """
         Test successful file writing and removal of temporary file
         """
-        test_file_dict = tfile_utils.get_test_files("good")
+        test_file_dict = file_utils.get_test_files("good")
         for val in test_file_dict.keys():
             with self.subTest(val=val):
                 self.data_type = val
@@ -515,7 +515,7 @@ class TestSDarnWrite(unittest.TestCase):
         extra_name = "dummy"
         extra_field = pyDARNio.DmapArray(extra_name, np.array([1, 2]), chr(1),
                                          'c', 1, [2])
-        test_file_dict = tfile_utils.get_test_files("good")
+        test_file_dict = file_utils.get_test_files("good")
 
         for val in test_file_dict.keys():
             with self.subTest(val=val):
