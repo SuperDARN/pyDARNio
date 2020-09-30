@@ -11,7 +11,7 @@ from typing import List
 import numpy as np
 from collections import OrderedDict
 
-from pydarn import DmapArray, DmapScalar
+from pyDARNio import DmapArray, DmapScalar
 
 # key is the format char type defined by python,
 # item is the DMAP int value for the type
