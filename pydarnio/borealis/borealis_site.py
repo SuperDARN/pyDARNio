@@ -369,7 +369,7 @@ class BorealisSiteWrite():
         self.borealis_filetype = borealis_filetype
         self.filename = filename
         self.compression = hdf5_compression
-        self._record_names = sorted(list(borealis_records.keys()))
+        self._record_names = sorted([bkey for bkey in borealis_records.keys()])
 
         # get the version of the file - split by the dash, first part should be
         # 'vX.X'
