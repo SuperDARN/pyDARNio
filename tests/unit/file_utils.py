@@ -7,6 +7,7 @@ import copy
 from glob import glob
 import numpy as np
 import os
+import tables
 import unittest
 
 import pyDARNio
@@ -240,7 +241,7 @@ class TestRead(unittest.TestCase):
         Test raises pydmap exception when reading a corrupted stream from
         a compressed file
 
-        Method - Reead in a compressed file from a good stream, then insert
+        Method - Read in a compressed file from a good stream, then insert
         some random bytes to produce a corrupt stream.
         """
         if not os.path.isdir(self.test_dir):
@@ -260,6 +261,186 @@ class TestRead(unittest.TestCase):
         # Assert data from corrupted stream is corrupted
         with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
             self.local_file_record(self.corrupt_read_type, stream=True)
+
+
+class TestReadBorealis(unittest.TestCase):
+    """
+    Testing class for reading Borealis data
+    """
+
+    def setUp(self):
+        self.test_file = "fake.file"
+        self.test_dir = os.path.join("..", "testdir")
+        self.data = None
+        self.rec = None
+        self.arr = None
+        self.read_func = pyDARNio.BorealisRead
+        self.file_types = ["rawacf", "bfiq", "antennas_iq", "rawrf"]
+        self.file_struct = "site"
+        self.version = 4
+
+    def tearDown(self):
+        del self.test_file, self.test_dir, self.data, self.rec, self.arr
+        del self.read_func, self.file_types, self.file_struct, self.version
+
+    def get_borealis_type(self, file_type):
+        """ Helper function to build input needed for get_test_files
+
+        Parameters
+        ----------
+        file_type : str
+            Standard file_type input for get_test_files
+
+        Returns
+        -------
+        borealis_type : str
+            Borealis-style input for get_test_files
+        """
+        borealis_type = "borealis-v{:02d}{:s}_{:s}".format(
+            self.version,
+            "" if self.file_struct == "array" else self.file_struct,
+            file_type)
+        return borealis_type
+
+    def load_file_record(self, file_type=''):
+        """ Load a test file data record or array
+
+        Parameters
+        ----------
+        file_type : str
+            One of self.file_types
+        """
+        # Load the data with the current test file
+        self.data = self.read_func(self.test_file, file_type, self.file_struct)
+
+        # Read the data
+        self.rec = self.data.records
+        self.arr = self.data.arrays
+
+    def test_return_reader(self):
+        """
+        Test ability of return_reader function to determin the file structure
+        """
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        test_file_dict = get_test_files(self.get_borealis_type("good"),
+                                        test_dir=self.test_dir)
+
+        for val in self.file_types:
+            with self.subTest(val=val):
+                self.test_file = test_file_dict[val]
+                self.load_file_record(val)
+
+                # Site information and data arrays require different commands
+                if self.file_struct == "site":
+                    dkey = [rkey for rkey in self.rec.keys()][0]
+                    self.assertIsInstance(self.rec[dkey]['num_slices'],
+                                          np.int64)
+                else:
+                    self.assertIsInstance(self.arr['num_slices'], np.ndarray)
+
+    def test_incorrect_filepath(self):
+        """
+        Test raise OSError with bad filename or path
+        """
+        for val in ["bad_dir", self.test_dir]:
+            with self.subTest(val=val):
+                # Create a test filename with path
+                self.test_file = os.path.join(val, self.test_file)
+
+                # Assert correct error and message for bad filename
+                self.assertRaises(OSError, self.read_func,
+                                  self.test_file, self.file_types[0],
+                                  self.file_struct)
+
+    def test_empty_file(self):
+        """
+        Tests raise OSError or HDF5ExtError with an empty file
+        """
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        self.test_file = get_test_files("empty", test_dir=self.test_dir)[0]
+        self.assertRaises((OSError, tables.exceptions.HDF5ExtError),
+                          self.read_func, self.test_file, self.file_types[0],
+                          self.file_struct)
+
+    def test_wrong_borealis_filetype(self):
+        """
+        Test raises Borealis Error when specifying the wrong filetype.
+        """
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        wrong_filetype_exceptions = (
+            pyDARNio.borealis_exceptions.BorealisExtraFieldError,
+            pyDARNio.borealis_exceptions.BorealisFieldMissingError,
+            pyDARNio.borealis_exceptions.BorealisDataFormatTypeError)
+        test_file_dict = get_test_files(self.get_borealis_type("good"),
+                                        test_dir=self.test_dir)
+
+        for i, val in enumerate(self.file_types):
+            with self.subTest(val=val):
+                # Use a file that is not of the current file type
+                self.test_file = test_file_dict[self.file_types[i - 1]]
+
+                # Load the file, specifying the current file type
+                with self.assertRaises(wrong_filetype_exceptions):
+                    self.load_file_record(val)
+
+    def test_wrong_borealis_file_structure(self):
+        """
+        Test raises BorealisStructureError when specifying wrong file structure
+        """
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        # Load the good files with the current file structure
+        test_file_dict = get_test_files(self.get_borealis_type("good"),
+                                        test_dir=self.test_dir)
+
+        # Change the file structure
+        if self.file_struct == "site":
+            self.file_struct = "array"
+        else:
+            self.file_struct = "site"
+
+        # Cycle through the different file types
+        for val in self.file_types:
+            with self.subTest(val=val):
+                self.test_file = test_file_dict[val]
+
+                # Attempt to load the test file with the wrong structure
+                with self.assertRaises(
+                        pyDARNio.borealis_exceptions.BorealisStructureError):
+                    self.load_file_record(val)
+
+    def test_read_good_data(self):
+        """ Test successful reading of Borealis data
+        """
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        test_file_dict = get_test_files(self.get_borealis_type("good"),
+                                        test_dir=self.test_dir)
+
+        for val in self.file_types:
+            with self.subTest(val=val):
+                # Set and load the test file data
+                self.test_file = test_file_dict[val]
+                self.load_file_record(val)
+
+                # Test the first data record
+                first_record = self.rec[self.data.record_names[0]]
+                self.assertIsInstance(self.rec, collections.OrderedDict)
+                self.assertIsInstance(first_record, dict)
+                self.assertIsInstance(first_record['num_slices'], np.int64)
+
+                # Tset the first data array
+                self.assertIsInstance(self.arr, dict)
+                self.assertIsInstance(self.arr['num_slices'], np.ndarray)
+                self.assertIsInstance(self.arr['num_slices'][0], np.int64)
 
 
 class TestWrite(unittest.TestCase):
