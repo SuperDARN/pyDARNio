@@ -11,6 +11,7 @@ import tables
 import unittest
 
 import pyDARNio
+import pyDARNio.exceptions.borealis_exceptions as bor_exc
 
 import dmap_data_sets
 import fitacf_data_sets
@@ -18,6 +19,9 @@ import grid_data_sets
 import iqdat_data_sets
 import map_data_sets
 import rawacf_data_sets
+import borealis_rawacf_data_sets as borealis_rawacf
+import borealis_bfiq_data_sets as borealis_bfiq
+import borealis_antennas_iq_data_sets as borealis_antennas_iq
 
 
 def get_test_files(test_file_type, test_dir=os.path.join("..", "testfiles")):
@@ -373,10 +377,9 @@ class TestReadBorealis(unittest.TestCase):
         if not os.path.isdir(self.test_dir):
             self.skipTest('test directory is not included with pyDARNio')
 
-        wrong_filetype_exceptions = (
-            pyDARNio.borealis_exceptions.BorealisExtraFieldError,
-            pyDARNio.borealis_exceptions.BorealisFieldMissingError,
-            pyDARNio.borealis_exceptions.BorealisDataFormatTypeError)
+        wrong_filetype_exceptions = (bor_exc.BorealisExtraFieldError,
+                                     bor_exc.BorealisFieldMissingError,
+                                     bor_exc.BorealisDataFormatTypeError)
         test_file_dict = get_test_files(self.get_borealis_type("good"),
                                         test_dir=self.test_dir)
 
@@ -412,8 +415,7 @@ class TestReadBorealis(unittest.TestCase):
                 self.test_file = test_file_dict[val]
 
                 # Attempt to load the test file with the wrong structure
-                with self.assertRaises(
-                        pyDARNio.borealis_exceptions.BorealisStructureError):
+                with self.assertRaises(bor_exc.BorealisStructureError):
                     self.load_file_record(val)
 
     def test_read_good_data(self):
@@ -548,3 +550,229 @@ class TestWrite(unittest.TestCase):
                 # of integration testing since we need SDarnRead for that.
                 self.write_func(self.temp_file)
                 self.assertTrue(self.remove_temp_file())
+
+
+class TestWriteBorealis(unittest.TestCase):
+    """ Testing class for writing classes
+    """
+    def setUp(self):
+        self.write_func = None
+        self.read_func = None
+        self.data_type = None
+        self.data = []
+        self.temp_data = []
+        self.nrec = 0
+        self.temp_file = "not_a_file.acf"
+        self.file_types = ["rawacf", "bfiq", "antennas_iq", "rawrf"]
+        self.file_struct = "site"
+
+    def tearDown(self):
+        self.remove_temp_file()
+        del self.write_func, self.data_type, self.data
+        del self.temp_file, self.file_types, self.file_struct, self.nrec
+
+    def remove_temp_file(self):
+        """ Utility for removing temporary files
+        """
+        if os.path.isfile(self.temp_file):
+            os.remove(self.temp_file)
+            return True
+        else:
+            return False
+
+    def load_data_w_filename(self):
+        """ Utility for loading data and constructing a temporary filename
+        """
+        if self.data_type == "bfiq":
+            self.nrec = borealis_bfiq.num_records
+            if self.file_struct == "site":
+                self.data = copy.deepcopy(
+                    borealis_bfiq.borealis_site_bfiq_data)
+            else:
+                self.dataa = copy.deepcopy(
+                    borealis_bfiq.borealis_array_bfiq_data)
+        elif self.data_type == "antennas_iq":
+            self.nrec = borealis_antennas_iq.num_records
+            if self.file_struct == "site":
+                self.data = copy.deepcopy(
+                    borealis_antennas_iq.borealis_site_antennas_iq_data)
+            else:
+                self.data = copy.deepcopy(
+                    borealis_antennas_iq.borealis_array_antennas_iq_data)
+        elif self.data_type == "rawacf":
+            self.nrec = borealis_rawacf.num_records
+            if self.file_struct == "site":
+                self.data = copy.deepcopy(
+                    borealis_rawacf.borealis_site_rawacf_data)
+            else:
+                self.dataa = copy.deepcopy(
+                    borealis_rawacf.borealis_array_rawacf_data)
+
+        self.temp_file = "{:s}_{:s}_test.hdf5".format(self.data_type,
+                                                      self.file_struct,
+                                                      self.data_type)
+
+    def load_temp_file(self, file_type=''):
+        """ Load a test file data record or array
+
+        Parameters
+        ----------
+        file_type : str
+            One of self.file_types
+        """
+        # Load the data with the current test file
+        self.temp_data = self.read_func(self.temp_file, self.data_type,
+                                        self.file_struct)
+
+    def test_writing_success(self):
+        """
+        Tests Borealis file writing and reading
+        """
+        for val in self.file_types:
+            with self.subTest(val=val):
+                # Load the sample data
+                self.data_type = val
+                self.load_data_w_filename()
+
+                # Write the temporary file
+                self.write_func(self.temp_file, self.data, val,
+                                self.file_struct)
+                self.assertTrue(os.path.isfile(self.temp_file))
+
+                # Read the temporary file
+                self.load_temp_file(file_type=val)
+
+                # Test that the data sets are the same
+                self.assertListEqual(
+                    sorted([dkey for dkey in self.data.keys()]),
+                    sorted([dkey for dkey in self.temp_data.keys()]))
+
+                for dkey, temp_val in self.temp_data.items():
+                    if isinstance(temp_val, dict):
+                        self.assertDictEqual(temp_val, self.data[dkey])
+                    elif isinstance(temp_val, OrderedDict):
+                        self.assertDictEqual(dict(temp_val),
+                                             dict(self.data[dkey]))
+                    elif isinstance(temp_val, np.ndarray):
+                        self.assertTrue((temp_val == self.data[dkey]).all())
+                    else:
+                        self.assertEqual(temp_val, self.data[dkey])
+
+    def test_missing_field(self):
+        """
+        Test raises BorealisFieldMissingError when missing required field
+        """
+        missing_field = 'num_slices'
+        
+        for val in self.file_types:
+            with self.subTest(val=val):
+                # Load the sample data
+                self.data_type = val
+                self.load_data_w_filename()
+
+                # Remove a required field
+                dkeys = [dkey for dkey in self.data.keys()]
+                del self.data[dkeys[0]][missing_field]
+
+                # Test raises appropriate error
+                with self.assertRaises(
+                        bor_exc.BorealisFieldMissingError) as err:
+                    self.write_func(self.temp_file, self.data, val,
+                                    self.file_struct)
+
+                self.assertEqual(err.fields, {missing_field})
+
+    def test_extra_field(self):
+        """
+        Test raises BorealisFieldMissingError when unknown field supplied
+        """
+        extra_field = 'dummy'
+        
+        for val in self.file_types:
+            with self.subTest(val=val):
+                # Load the sample data
+                self.data_type = val
+                self.load_data_w_filename()
+
+                # Add a fake field
+                dkeys = [dkey for dkey in self.data.keys()]
+                self.data[dkeys[0]][extra_field] = extra_field
+
+                # Test raises appropriate error
+                with self.assertRaises(
+                        bor_exc.BorealisExtraFieldError) as err:
+                    self.write_func(self.temp_file, self.data, val,
+                                    self.file_struct)
+
+                self.assertEqual(err.fields, {extra_field})
+                self.assertEqual(err.record_name, dkeys[0])
+
+    def test_incorrect_data_format(self):
+        """
+        Test raises BorealisDataFormatTypeError with badly formatted data
+        """
+        bad_data_key = {'rawacf': 'scan_start_marker',
+                        'bfiq': 'first_range_rrt',
+                        'antenna_iq': 'num_slices'}
+        bad_data_val = {'rawacf': 1, 'bfiq': 5, 'antenna_iq': 'a'}
+        bad_data_msg = {'rawacf': "<class 'numpy.bool_'>",
+                        'bfiq': "<class 'numpy.float32'>",
+                        'antenna_iq': "<class 'numpy.int64'>"}
+        
+        for val in self.file_types:
+            with self.subTest(val=val):
+                # Load the sample data
+                self.data_type = val
+                self.load_data_w_filename()
+
+                # Add a fake field
+                dkeys = [dkey for dkey in self.data.keys()]
+                self.data[dkeys[0]][bad_data_key[val]] = bad_data_val[val]
+
+                # Test raises appropriate error
+                with self.assertRaises(
+                        bor_exc.BorealisDataFormatTypeError) as err:
+                    self.write_func(self.temp_file, self.data, val,
+                                    self.file_struct)
+
+                self.assertGreater(
+                    err.incorrect_types[bad_data_key[val]].find(
+                        bad_data_msg[val]), 0)
+                self.assertEqual(err.record_name, dkeys[0])
+
+    def test_wrong_borealis_filetype(self):
+        """
+        Test raises Borealis Error when specifying the wrong filetype.
+        """
+        wrong_filetype_exceptions = (bor_exc.BorealisExtraFieldError,
+                                     bor_exc.BorealisFieldMissingError,
+                                     bor_exc.BorealisDataFormatTypeError)
+
+        for i, val in enumerate(self.file_types):
+            with self.subTest(val=val):
+                # Load the sample data that is not of the current file type
+                self.data_type = self.file_types[i - 1]
+                self.load_data_w_filename()
+
+                # Try to write the data, specifying the current file type
+                with self.assertRaises(wrong_filetype_exceptions):
+                    self.write_func(self.temp_file, self.data, val,
+                                    self.file_struct)
+
+    def test_wrong_borealis_file_structure(self):
+        """
+        Test raises BorealisStructureError when specifying wrong file structure
+        """
+        # Get the opposite of the current structure
+        fstruct = "site" if self.file_struct == "array" else "array"
+
+        # Cycle through the different file types
+        for val in self.file_types:
+            with self.subTest(val=val):
+                # Load the sample data for the current structure
+                self.data_type = val
+                self.load_data_w_filename()
+
+                # Attempt to write the test data with the wrong structure
+                with self.assertRaises(bor_exc.BorealisStructureError):
+                    self.write_func(self.temp_file, self.data, val, fstruct)
