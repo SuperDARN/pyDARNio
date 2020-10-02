@@ -15,21 +15,17 @@ And supports conversion of the following Borealis -> SDARN DMap types:
     rawacf -> rawacf
 """
 
-from collections import OrderedDict
-import copy
 import logging
-import numpy as np
 import os
-import unittest
 
 import pyDARNio
 
-import file_utils
+import borealis_utils
 
 pyDARNio_logger = logging.getLogger('pyDARNio')
 
 
-class TestBorealisReadSitev04(file_utils.TestReadBorealis):
+class TestBorealisReadSitev04(borealis_utils.TestReadBorealis):
     """
     Testing class for reading Borealis v04 Site data
     """
@@ -50,7 +46,7 @@ class TestBorealisReadSitev04(file_utils.TestReadBorealis):
         del self.read_func, self.file_types, self.file_struct, self.version
 
 
-class TestBorealisReadSitev05(file_utils.TestReadBorealis):
+class TestBorealisReadSitev05(borealis_utils.TestReadBorealis):
     """
     Testing class for reading Borealis v05 Site data
     """
@@ -71,7 +67,7 @@ class TestBorealisReadSitev05(file_utils.TestReadBorealis):
         del self.read_func, self.file_types, self.file_struct, self.version
 
 
-class TestBorealisReadArrayv04(file_utils.TestReadBorealis):
+class TestBorealisReadArrayv04(borealis_utils.TestReadBorealis):
     """
     Testing class for reading Borealis v04 array data
     """
@@ -92,7 +88,7 @@ class TestBorealisReadArrayv04(file_utils.TestReadBorealis):
         del self.read_func, self.file_types, self.file_struct, self.version
 
 
-class TestBorealisReadArrayv05(file_utils.TestReadBorealis):
+class TestBorealisReadArrayv05(borealis_utils.TestReadBorealis):
     """
     Testing class for reading Borealis v05 Array data
     """
@@ -113,7 +109,7 @@ class TestBorealisReadArrayv05(file_utils.TestReadBorealis):
         del self.read_func, self.file_types, self.file_struct, self.version
 
 
-class TestBorealisWriteSite(file_utils.TestWriteBorealis):
+class TestBorealisWriteSite(borealis_utils.TestWriteBorealis):
     """
     Tests BorealisWrite class
     """
@@ -130,12 +126,11 @@ class TestBorealisWriteSite(file_utils.TestWriteBorealis):
         self.file_struct = "site"
 
     def tearDown(self):
-        self.remove_temp_file()
         del self.write_func, self.data_type, self.data
         del self.temp_file, self.file_types, self.file_struct, self.nrec
 
 
-class TestBorealisWriteArray(file_utils.TestWriteBorealis):
+class TestBorealisWriteArray(borealis_utils.TestWriteBorealis):
     """
     Tests BorealisWrite class
     """
@@ -152,82 +147,77 @@ class TestBorealisWriteArray(file_utils.TestWriteBorealis):
         self.file_struct = "array"
 
     def tearDown(self):
-        self.remove_temp_file()
         del self.write_func, self.data_type, self.data
         del self.temp_file, self.file_types, self.file_struct, self.nrec
 
 
-@unittest.skip("Not Re-written Yet")
-class TestBorealisConvert(unittest.TestCase):
+class TestBorealisConvertSitev04(borealis_utils.TestConvertBorealis):
     """
-    Tests BorealisConvert class
+    Tests BorealisConvert class for V04 Site data conversion
     """
 
     def setUp(self):
-        self.rawacf_array_data = copy.deepcopy(borealis_array_rawacf_data)
-        self.bfiq_array_data = copy.deepcopy(borealis_array_bfiq_data)
+        self.test_file = "fake.file"
+        self.temp_file = "fake.temp"
+        self.test_dir = os.path.join("..", "testdir")
+        self.file_types = ["rawacf", "bfiq"]
+        self.file_struct = "site"
+        self.version = 4
 
-        # write some v0.4 data
-        self.bfiq_test_file = "test_bfiq.bfiq.hdf5"
-        _ = pyDARNio.BorealisWrite(self.bfiq_test_file,
-                                 self.bfiq_array_data, 'bfiq', 'array')
-        self.rawacf_test_file = "test_rawacf.rawacf.hdf5"
-        _ = pyDARNio.BorealisWrite(self.rawacf_test_file,
-                                 self.rawacf_array_data,
-                                 'rawacf', 'array')
+    def tearDown(self):
+        del self.test_file, self.test_dir, self.file_types, self.file_struct
+        del self.version, self.temp_file
 
-        # get v0.5 data from file
-        self.bfiqv05_test_file = borealis_site_bfiq_file_v05
-        self.rawacfv05_test_file = borealis_site_rawacf_file_v05
 
-    def test_borealis_convert_to_rawacfv04(self):
-        """
-        Tests BorealisConvert to rawacf
+class TestBorealisConvertArrayv04(borealis_utils.TestConvertBorealis):
+    """
+    Tests BorealisConvert class for V04 Array data conversion
+    """
 
-        Expected behaviour
-        ------------------
-        write a SDARN DMap rawacf
-        """
-        _ = pyDARNio.BorealisConvert(self.rawacf_test_file, "rawacf",
-                                   "test_rawacf.rawacf.dmap",
-                                   borealis_slice_id=0,
-                                   borealis_file_structure='array')
-        self.assertTrue(os.path.isfile("test_rawacf.rawacf.dmap"))
-        os.remove("test_rawacf.rawacf.dmap")
+    def setUp(self):
+        self.test_file = "fake.file"
+        self.temp_file = "fake.temp"
+        self.test_dir = os.path.join("..", "testdir")
+        self.file_types = ["rawacf", "bfiq"]
+        self.file_struct = "array"
+        self.version = 4
 
-    def test_borealis_convert_to_iqdatv04(self):
-        """
-        Tests BorealisConvert to iqdat
+    def tearDown(self):
+        del self.test_file, self.test_dir, self.file_types, self.file_struct
+        del self.version, self.temp_file
 
-        Expected behaviour
-        ------------------
-        write a SDARN DMap iqdat
-        """
 
-        _ = pyDARNio.BorealisConvert(self.bfiq_test_file, "bfiq",
-                                   "test_bfiq.bfiq.dmap",
-                                   borealis_slice_id=0,
-                                   borealis_file_structure='array')
-        self.assertTrue(os.path.isfile("test_bfiq.bfiq.dmap"))
-        os.remove("test_bfiq.bfiq.dmap")
+class TestBorealisConvertSitev05(borealis_utils.TestConvertBorealis):
+    """
+    Tests BorealisConvert class for V05 Site data conversion
+    """
 
-    def test_borealis_convert_to_rawacfv05(self):
-        _ = pyDARNio.BorealisConvert(self.rawacfv05_test_file, "rawacf",
-                                   "test_rawacf.rawacf.dmap",
-                                   borealis_file_structure='site')
-        self.assertTrue(os.path.isfile("test_rawacf.rawacf.dmap"))
-        os.remove("test_rawacf.rawacf.dmap")
+    def setUp(self):
+        self.test_file = "fake.file"
+        self.temp_file = "fake.temp"
+        self.test_dir = os.path.join("..", "testdir")
+        self.file_types = ["rawacf", "bfiq"]
+        self.file_struct = "site"
+        self.version = 5
 
-    def test_borealis_convert_to_iqdatv05(self):
-        """
-        Tests BorealisConvert to iqdat
+    def tearDown(self):
+        del self.test_file, self.test_dir, self.file_types, self.file_struct
+        del self.version, self.temp_file
 
-        Expected behaviour
-        ------------------
-        write a SDARN DMap iqdat
-        """
-        _ = pyDARNio.BorealisConvert(self.bfiqv05_test_file, "bfiq",
-                                   "test_bfiq.bfiq.dmap",
-                                   borealis_file_structure='site')
-        self.assertTrue(os.path.isfile("test_bfiq.bfiq.dmap"))
-        os.remove("test_bfiq.bfiq.dmap")
+
+class TestBorealisConvertArrayv05(borealis_utils.TestConvertBorealis):
+    """
+    Tests BorealisConvert class for V05 Array data conversion
+    """
+
+    def setUp(self):
+        self.test_file = "fake.file"
+        self.temp_file = "fake.temp"
+        self.test_dir = os.path.join("..", "testdir")
+        self.file_types = ["rawacf", "bfiq"]
+        self.file_struct = "array"
+        self.version = 5
+
+    def tearDown(self):
+        del self.test_file, self.test_dir, self.file_types, self.file_struct
+        del self.version, self.temp_file
