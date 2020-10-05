@@ -7,8 +7,7 @@ import numpy as np
 import os
 
 import pyDARNio
-
-import file_utils
+from pyDARNio.tests.utils import file_utils
 
 pyDARNio_logger = logging.getLogger('pyDARNio')
 
@@ -67,7 +66,6 @@ class TestDmapWrite(file_utils.TestWrite):
         self.file_types = ["dmap"]
 
     def tearDown(self):
-        self.remove_temp_file()
         del self.write_class, self.write_func, self.data_type, self.data
         del self.temp_file, self.file_types
 

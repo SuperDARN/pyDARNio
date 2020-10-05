@@ -11,10 +11,11 @@ import unittest
 import pyDARNio
 import pyDARNio.exceptions.borealis_exceptions as bor_exc
 
-from file_utils import get_test_files, remove_temp_file
-import borealis_rawacf_data_sets as borealis_rawacf
-import borealis_bfiq_data_sets as borealis_bfiq
-import borealis_antennas_iq_data_sets as borealis_antennas_iq
+from pyDARNio.tests.utils.file_utils import get_test_files, remove_temp_file
+import pyDARNio.tests.utils.data_sets.borealis_rawacf_data_sets as bor_rawacf
+import pyDARNio.tests.utils.data_sets.borealis_bfiq_data_sets as bor_bfiq
+import pyDARNio.tests.utils.data_sets.borealis_antennas_iq_data_sets \
+    as bor_antennas_iq
 
 
 def get_borealis_type(file_type, file_struct, version):
@@ -220,29 +221,29 @@ class TestWriteBorealis(unittest.TestCase):
         """ Utility for loading data and constructing a temporary filename
         """
         if self.data_type == "bfiq":
-            self.nrec = borealis_bfiq.num_records
+            self.nrec = bor_bfiq.num_records
             if self.file_struct == "site":
                 self.data = copy.deepcopy(
-                    borealis_bfiq.borealis_site_bfiq_data)
+                    bor_bfiq.borealis_site_bfiq_data)
             else:
                 self.data = copy.deepcopy(
-                    borealis_bfiq.borealis_array_bfiq_data)
+                    bor_bfiq.borealis_array_bfiq_data)
         elif self.data_type == "antennas_iq":
-            self.nrec = borealis_antennas_iq.num_records
+            self.nrec = bor_antennas_iq.num_records
             if self.file_struct == "site":
                 self.data = copy.deepcopy(
-                    borealis_antennas_iq.borealis_site_antennas_iq_data)
+                    bor_antennas_iq.borealis_site_antennas_iq_data)
             else:
                 self.data = copy.deepcopy(
-                    borealis_antennas_iq.borealis_array_antennas_iq_data)
+                    bor_antennas_iq.borealis_array_antennas_iq_data)
         elif self.data_type == "rawacf":
-            self.nrec = borealis_rawacf.num_records
+            self.nrec = bor_rawacf.num_records
             if self.file_struct == "site":
                 self.data = copy.deepcopy(
-                    borealis_rawacf.borealis_site_rawacf_data)
+                    bor_rawacf.borealis_site_rawacf_data)
             else:
                 self.data = copy.deepcopy(
-                    borealis_rawacf.borealis_array_rawacf_data)
+                    bor_rawacf.borealis_array_rawacf_data)
 
         self.temp_file = "{:s}_{:s}_test.{:s}.hdf5".format(
             self.data_type, self.file_struct, self.data_type)

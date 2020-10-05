@@ -11,12 +11,12 @@ import unittest
 
 import pyDARNio
 
-import dmap_data_sets
-import fitacf_data_sets
-import grid_data_sets
-import iqdat_data_sets
-import map_data_sets
-import rawacf_data_sets
+from pyDARNio.tests.utils.data_sets import dmap_data_sets
+from pyDARNio.tests.utils.data_sets import fitacf_data_sets
+from pyDARNio.tests.utils.data_sets import grid_data_sets
+from pyDARNio.tests.utils.data_sets import iqdat_data_sets
+from pyDARNio.tests.utils.data_sets import map_data_sets
+from pyDARNio.tests.utils.data_sets import rawacf_data_sets
 
 
 def get_test_files(test_file_type, test_dir=os.path.join("..", "testfiles")):
@@ -294,7 +294,6 @@ class TestWrite(unittest.TestCase):
         self.file_types = ["rawacf", "fitacf", "dmap", "iqdat", "grid", "map"]
 
     def tearDown(self):
-        remove_temp_file(self.temp_file)
         del self.write_class, self.write_func, self.data_type, self.data
         del self.temp_file, self.file_types
 
@@ -354,6 +353,8 @@ class TestWrite(unittest.TestCase):
                         pyDARNio.dmap_exceptions.FilenameRequiredError):
                     self.write_func()
 
+                self.assertFalse(remove_temp_file(self.temp_file))
+
     def test_empty_record(self):
         """
         Test raises DmapDataError if an empty record is given
@@ -361,6 +362,8 @@ class TestWrite(unittest.TestCase):
         with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
             self.set_write_func()
             self.write_func(self.temp_file)
+
+        self.assertFalse(remove_temp_file(self.temp_file))
 
     def test_writing_success(self):
         """

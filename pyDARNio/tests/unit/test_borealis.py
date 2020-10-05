@@ -19,8 +19,7 @@ import logging
 import os
 
 import pyDARNio
-
-import borealis_utils
+from pyDARNio.tests.utils import borealis_utils
 
 pyDARNio_logger = logging.getLogger('pyDARNio')
 

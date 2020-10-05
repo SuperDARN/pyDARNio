@@ -21,8 +21,7 @@ import unittest
 
 import pyDARNio
 from pyDARNio import superdarn_exceptions as sdarn_exp
-
-import file_utils
+from pyDARNio.tests.utils import file_utils
 
 pydarnio_logger = logging.getLogger('pydarnio')
 
@@ -382,7 +381,6 @@ class TestSDarnWrite(file_utils.TestWrite):
     def tearDown(self):
         """ Runs after every test to clean up the test environment
         """
-        self.remove_temp_file()
         del self.write_class, self.write_func, self.data_type, self.data
         del self.temp_file, self.file_types
 
