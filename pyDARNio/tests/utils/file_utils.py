@@ -103,6 +103,61 @@ def remove_temp_file(temp_file):
         return False
 
 
+def load_data_w_filename(data_type):
+    """ Utility for loading data and constructing a temporary filename
+
+    Parameters
+    ----------
+    data_type : str
+        Accepts 'rawacf', 'fitacf', 'iqdat', 'grid', 'map', 'dmap'
+
+    Returns
+    -------
+    data : list, dict
+        Data from data_set files
+    temp_file : str
+        Temporary output filename built from data_type
+    """
+    # Copy the data from the data_set files
+    if data_type == "rawacf":
+        data = copy.deepcopy(rawacf_data_sets.rawacf_data)
+    elif data_type == "fitacf":
+        data = copy.deepcopy(fitacf_data_sets.fitacf_data)
+    elif data_type == "iqdat":
+        data = copy.deepcopy(iqdat_data_sets.iqdat_data)
+    elif data_type == "grid":
+        data = copy.deepcopy(grid_data_sets.grid_data)
+    elif data_type == "map":
+        data = copy.deepcopy(map_data_sets.map_data)
+    elif data_type == "dmap":
+        data = copy.deepcopy(dmap_data_sets.dmap_data)
+
+    # Build a temporary filename
+    temp_file = "{:s}_test.{:s}".format(data_type, data_type)
+
+    return data, temp_file
+
+
+def set_write_func(write_class, data):
+    """ Utility to retrieve the writing function from a writing class
+
+    Parameters
+    ----------
+    write_class : SDarnWrite or DMapWrite
+        pyDARNio writing class object
+    data : DMap data class
+        An appropriate data class for thee writing class
+
+    Returns
+    -------
+    write_func : function
+        Function for writing files
+    """
+    darn = write_class(data)
+    write_func = getattr(darn, "write_{:s}".format(data_type))
+    return write_func
+
+
 class TestRead(unittest.TestCase):
     """ Testing class for reading classes
     """
@@ -297,31 +352,6 @@ class TestWrite(unittest.TestCase):
         del self.write_class, self.write_func, self.data_type, self.data
         del self.temp_file, self.file_types
 
-    def load_data_w_filename(self):
-        """ Utility for loading data and constructing a temporary filename
-        """
-        if self.data_type == "rawacf":
-            self.data = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        elif self.data_type == "fitacf":
-            self.data = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        elif self.data_type == "iqdat":
-            self.data = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        elif self.data_type == "grid":
-            self.data = copy.deepcopy(grid_data_sets.grid_data)
-        elif self.data_type == "map":
-            self.data = copy.deepcopy(map_data_sets.map_data)
-        elif self.data_type == "dmap":
-            self.data = copy.deepcopy(dmap_data_sets.dmap_data)
-
-        self.temp_file = "{:s}_test.{:s}".format(self.data_type,
-                                                 self.data_type)
-
-    def set_write_func(self):
-        """ Utility to retrieve the writing function
-        """
-        darn = self.write_class(self.data)
-        self.write_func = getattr(darn, "write_{:s}".format(self.data_type))
-
     def test_darn_write_constructor(self):
         """
         Tests SDarnWrite constructor for different file types
@@ -332,8 +362,7 @@ class TestWrite(unittest.TestCase):
         """
         for val in self.file_types:
             with self.subTest(val=val):
-                self.data_type = val
-                self.load_data_w_filename()
+                self.data, self.temp_file = load_data_w_filename(val)
                 darn = self.write_class(self.data, self.temp_file)
                 self.assertEqual(darn.filename, self.temp_file)
                 self.assertFalse(remove_temp_file(self.temp_file))
@@ -344,11 +373,10 @@ class TestWrite(unittest.TestCase):
         """
         for val in self.file_types:
             with self.subTest(val=val):
-                self.data_type = val
-                self.load_data_w_filename()
+                self.data, self.temp_file = load_data_w_filename(val)
 
                 # Attempt to write data without a filename
-                self.set_write_func()
+                self.write_func = set_write_func(self.write_class, self.data)
                 with self.assertRaises(
                         pyDARNio.dmap_exceptions.FilenameRequiredError):
                     self.write_func()
@@ -360,7 +388,7 @@ class TestWrite(unittest.TestCase):
         Test raises DmapDataError if an empty record is given
         """
         with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
-            self.set_write_func()
+            self.write_func = set_write_func(self.write_class, self.data)
             self.write_func(self.temp_file)
 
         self.assertFalse(remove_temp_file(self.temp_file))
@@ -372,12 +400,139 @@ class TestWrite(unittest.TestCase):
         for val in self.file_types:
             with self.subTest(val=val):
                 self.data_type = val
-                self.load_data_w_filename()
-                self.set_write_func()
+                self.data, self.temp_file = load_data_w_filename(val)
+                self.write_func = set_write_func(self.write_class, self.data)
 
                 # Only testing the file is created since it should only be
                 # created at the last step after all checks have passed.
                 # Testing the integrity of the insides of the file will be part
                 # of integration testing since we need SDarnRead for that.
                 self.write_func(self.temp_file)
+                self.assertTrue(remove_temp_file(self.temp_file))
+
+class TestReadWrite(unittest.TestCase):
+    def setUp(self):
+        self.test_dir = os.path.join("..", "testdir")
+        self.read_class = None
+        self.write_class = None
+        self.read_func = None
+        self.write_func = None
+        self.read_dmap = None
+        self.written_dmap = None
+        self.temp_file = "temp.file"
+        self.file_types = ['rawacf', 'fitacf', 'iqdat', 'fit', 'grid', 'map']
+
+    def tearDown(self):
+        del self.read_func, self.write_func, self.read_dmap, self.written_dmap
+        del self.temp_file, self.file_types, self.test_dir, self.read_func
+        del self.write_func
+
+    def set_read_func(self, file_type='', stream=False):
+        """ Get the reading function from the temporary file
+
+        Parameters
+        ----------
+        file_type : str
+            File type from self.file_types
+        stream : bool
+            True if stream from compressed file, False if a file (default=False)
+
+        """
+        # Load the data with the current test file
+        data = self.read_class(self.temp_file, stream=stream)
+
+        # Read the data
+        self.read_func = getattr(data, "read_{:s}".format(file_type))
+
+    def dmap_list_compare(self):
+        """ Compare two lists of DMap objects
+        """
+        # Test that the lists are equal, will use assertListEqual
+        # If this works, can get rid of test method
+        self.assertEqual(self.read_dmap, self.written_dmap)
+
+        # Check each list item
+        for record1, record2 in zip(self.read_dmap, self.written_dmap):
+            self.assertEqual(record1, record2)
+
+            for field, val_obj in record1.items():
+                if isinstance(val_obj, pydarnio.DmapScalar):
+                    self.assertEqual(record2[field], val_obj)
+                elif isinstance(val_obj, pydarnio.DmapArray):
+                    self.compare_dmaparray(record2[field], val_obj)
+                elif isinstance(val_obj, np.ndarray):
+                    if np.array_equal(record2[field], val_obj):
+                        self.assertTrue(np.array_equal(record2[field],
+                                                       val_obj))
+                    else:
+                        self.assertTrue(np.allclose(record2[field], val_obj,
+                                                    equal_nan=True))
+                else:
+                    self.assertEqual(val_obj, record2[field])
+
+    def compare_DmapArray(self, dmaparr1, dmaparr2):
+        """ Compare two DmapArray objects
+
+        Parameters
+        ----------
+        dmaparr1 : pyDARNio.DmapArray
+            First DmapArray object to compare
+        dmaparr2 : pyDARNio.DmapArray
+            Second DmapArray object to compare
+        """
+        # Test the descriptive attributees
+        for val in ['name', 'data_type', 'data_type_fmt', 'dimension']:
+            with self.subTest(val=val):
+                self.assertTrue(hasattr(dmaparr1, val))
+                self.assertTrue(hasattr(dmaparr2, val))
+                self.assertEqual(getattr(dmaparr1, val), getattr(dmaparr2, val))
+
+        # Test the value, ensuring the values are shaped correctly
+        value1 = np.reshape(dmaparr1.value, dmaparr1.shape)
+        value2 = np.reshape(dmaparr2.value, dmaparr2.shape)
+    
+        # Allow all values to be equal or NaN
+        self.assertTrue(np.array_equal(value1, value2)
+                        | np.allclose(value1, value2, equal_nan=True))
+
+    def test_read_write(self):
+        """ Test the ability to write data read in from a file
+        """
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        test_file_dict = get_test_files("good", test_dir=self.test_dir) 
+
+        for val in self.file_types:
+            with self.subTest(val=val):
+                self.temp_file = "{:s}_temp.{:s}".format(val, val)
+                dmap = self.read_class(test_file_dict[val])
+                self.read_dmap = dmap.read_records()
+                self.write_func = set_write_func(self.write_class,
+                                                 self.read_dmap)
+                self.write_func(self.temp_file)
+                self.assertTrue(remove_temp_file(self.temp_file))
+
+    def test_write_read(self):
+        """ Test the consistency of data written to a file
+        """
+
+        for val in self.file_types:
+            with self.subTest(val=val):
+                # Get the locally stored data
+                self.written_dmap, self.temp_file = load_data_w_filename(val)
+
+                # Get the writting functiton and create the temp file
+                self.write_func = set_write_func(self.write_class,
+                                                 self.written_dmap)
+                self.write_func(self.temp_file)
+
+                # Read the temp file
+                self.set_read_func(val)
+                self.read_dmap = self.read_func()
+
+                # Assert the read and written data are the same
+                self.dmap_list_compare()
+
+                # Remove the temp file
                 self.assertTrue(remove_temp_file(self.temp_file))
