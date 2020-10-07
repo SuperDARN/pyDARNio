@@ -138,7 +138,7 @@ def load_data_w_filename(data_type):
     return data, temp_file
 
 
-def set_write_func(write_class, data):
+def set_write_func(write_class, data, data_type):
     """ Utility to retrieve the writing function from a writing class
 
     Parameters
@@ -146,7 +146,10 @@ def set_write_func(write_class, data):
     write_class : SDarnWrite or DMapWrite
         pyDARNio writing class object
     data : DMap data class
-        An appropriate data class for thee writing class
+        An appropriate data class for the writing class
+    data_type : str
+        Accepts 'rawacf', 'fitacf', 'iqdat', 'grid', 'map', 'dmap', and
+        'dmap_stream'
 
     Returns
     -------
@@ -376,7 +379,8 @@ class TestWrite(unittest.TestCase):
                 self.data, self.temp_file = load_data_w_filename(val)
 
                 # Attempt to write data without a filename
-                self.write_func = set_write_func(self.write_class, self.data)
+                self.write_func = set_write_func(self.write_class, self.data,
+                                                 val)
                 with self.assertRaises(
                         pyDARNio.dmap_exceptions.FilenameRequiredError):
                     self.write_func()
@@ -388,7 +392,8 @@ class TestWrite(unittest.TestCase):
         Test raises DmapDataError if an empty record is given
         """
         with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
-            self.write_func = set_write_func(self.write_class, self.data)
+            self.write_func = set_write_func(self.write_class, self.data,
+                                             "rawacf")
             self.write_func(self.temp_file)
 
         self.assertFalse(remove_temp_file(self.temp_file))
@@ -401,7 +406,8 @@ class TestWrite(unittest.TestCase):
             with self.subTest(val=val):
                 self.data_type = val
                 self.data, self.temp_file = load_data_w_filename(val)
-                self.write_func = set_write_func(self.write_class, self.data)
+                self.write_func = set_write_func(self.write_class, self.data,
+                                                 val)
 
                 # Only testing the file is created since it should only be
                 # created at the last step after all checks have passed.
@@ -509,7 +515,7 @@ class TestReadWrite(unittest.TestCase):
                 dmap = self.read_class(test_file_dict[val])
                 self.read_dmap = dmap.read_records()
                 self.write_func = set_write_func(self.write_class,
-                                                 self.read_dmap)
+                                                 self.read_dmap, val)
                 self.write_func(self.temp_file)
                 self.assertTrue(remove_temp_file(self.temp_file))
 
@@ -524,15 +530,86 @@ class TestReadWrite(unittest.TestCase):
 
                 # Get the writting functiton and create the temp file
                 self.write_func = set_write_func(self.write_class,
-                                                 self.written_dmap)
+                                                 self.written_dmap, val)
                 self.write_func(self.temp_file)
 
                 # Read the temp file
                 self.set_read_func(val)
-                self.read_dmap = self.read_func()
+                self.read_dmap = self.read_func(self.temp_file)
 
                 # Assert the read and written data are the same
                 self.dmap_list_compare()
 
                 # Remove the temp file
                 self.assertTrue(remove_temp_file(self.temp_file))
+
+    def test_read_stream_write_file(self):
+        """
+        Test successful read of a bz2 file stream and writing to a file
+        """
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        # bz2 opens the compressed file into a data
+        # stream of bytes without actually uncompressing the file
+        stream_files = get_test_files("stream", test_dir=self.test_dir)
+        for val in stream_files:
+            with self.subTest(val=val):
+                # Open the streaming file
+                file_parts = stream_files.split(".")
+                with bz2.open(val) as fp:
+                    self.temp_file = fp.read()
+
+                # Read from the streaming file
+                self.set_read_func(file_parts[-2], stream=True)
+                self.read_dmap = self.read_func(self.temp_file)
+
+                # Write from the streaming file
+                self.temp_file = "{:s}_test.{:s}".format(file_parts[-2],
+                                                         file_parts[-2])
+                self.write_func = set_write_func(self.write_class,
+                                                 self.read_dmap,
+                                                 file_parts[-2])
+                self.write_func(self.temp_file)
+
+                # Read from the written file
+                self.set_read_func(file_parts[-2], stream=False)
+                self.written_dmap = self.read_func(self.temp_file)
+
+                # Compare the read and written data
+                self.dmap_list_compare()
+
+                # Remove the the temporary file
+                self.assertTrue(remove_temp_file(self.temp_file))
+
+    def test_read_stream_write_stream(self):
+        """
+        Test successful read of a bz2 file stream and writing as a stream
+        """
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        # bz2 opens the compressed file into a data
+        # stream of bytes without actually uncompressing the file
+        stream_files = get_test_files("stream", test_dir=self.test_dir)
+        for val in stream_files:
+            with self.subTest(val=val):
+                # Open the streaming file
+                file_parts = stream_files.split(".")
+                with bz2.open(val) as fp:
+                    self.temp_file = fp.read()
+
+                # Read from the streaming file
+                self.set_read_func(file_parts[-2], stream=True)
+                self.read_dmap = self.read_func(self.temp_file)
+
+                # Write from the streaming file
+                self.write_func = set_write_func(self.write_class,
+                                                 self.read_dmap, "dmap_stream")
+                dmap_write_stream = self.write_func(self.read_dmap)
+
+                # Read from the written file
+                self.written_dmap = self.read_func(dmap_write_stream)
+
+                # Compare the read and written data
+                self.dmap_list_compare()
