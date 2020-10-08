@@ -134,6 +134,8 @@ def load_data_w_filename(data_type):
         data = copy.deepcopy(map_data_sets.map_data)
     elif data_type == "dmap":
         data = copy.deepcopy(dmap_data_sets.dmap_data)
+    else:
+        raise ValueError('unknown data type {:}'.format(data_type))
 
     # Build a temporary filename
     temp_file = "{:s}_test.{:s}".format(data_type, data_type)
@@ -430,12 +432,30 @@ class TestReadWrite(unittest.TestCase):
         self.read_dmap = None
         self.written_dmap = None
         self.temp_file = "temp.file"
-        self.file_types = ['rawacf', 'fitacf', 'iqdat', 'fit', 'grid', 'map']
+        self.read_types = ['rawacf', 'fitacf', 'iqdat', 'fit', 'grid', 'map']
+        self.write_types = ['dmap']
+        self.file_types = []
 
     def tearDown(self):
         del self.read_func, self.write_func, self.read_dmap, self.written_dmap
-        del self.temp_file, self.file_types, self.test_dir, self.read_func
-        del self.write_func
+        del self.temp_file, self.read_types, self.test_dir, self.read_class
+        del self.write_class, self.write_types, self.file_types
+
+    def set_file_types(self):
+        """ Function to set read/write type pairs
+        """
+        self.file_types = []
+        for rtype in self.read_types:
+            for wtype in self.write_types:
+                if wtype in self.read_types:
+                    # If this write type is also a read type, they should match
+                    new_set = (rtype, rtype)
+                else:
+                    # If the write type is not a read type, assign as is
+                    new_set = (rtype, wtype)
+
+                if new_set not in self.file_types:
+                    self.file_types.append(new_set)
 
     def set_read_func(self, file_type='', stream=False):
         """ Get the reading function from the temporary file
@@ -460,60 +480,54 @@ class TestReadWrite(unittest.TestCase):
             # Standard Dmap/SDarn reading function
             self.read_func = getattr(data, "read_records")
 
-        # Set the temp filename
-        self.temp_file = "{:s}_test.{:s}".format(file_type, file_type)
-
     def dmap_list_compare(self):
         """ Compare two lists of DMap objects
         """
-        # Test that the lists are equal, will use assertListEqual
-        # If this works, can get rid of test method
-        self.assertEqual(self.read_dmap, self.written_dmap)
+        # Test that the list lenghts are equal
+        self.assertEqual(len(self.read_dmap), len(self.written_dmap))
 
         # Check each list item
         for record1, record2 in zip(self.read_dmap, self.written_dmap):
-            self.assertEqual(record1, record2)
+            self.assertEqual(set(record1), set(record2))
 
             for field, val_obj in record1.items():
-                if isinstance(val_obj, pyDARNio.DmapScalar):
-                    self.assertEqual(record2[field], val_obj)
-                elif isinstance(val_obj, pyDARNio.DmapArray):
-                    self.compare_dmaparray(record2[field], val_obj)
-                elif isinstance(val_obj, np.ndarray):
-                    if np.array_equal(record2[field], val_obj):
-                        self.assertTrue(np.array_equal(record2[field],
-                                                       val_obj))
-                    else:
-                        self.assertTrue(np.allclose(record2[field], val_obj,
-                                                    equal_nan=True))
-                else:
-                    self.assertEqual(val_obj, record2[field])
+                comp_vals = [val_obj, record2[field]]
 
-    def compare_DmapArray(self, dmaparr1, dmaparr2):
-        """ Compare two DmapArray objects
+                # If this is a DMap type, get the value
+                for i, val in enumerate(comp_vals):
+                    if isinstance(val, pyDARNio.DmapScalar):
+                        self.assess_DmapType(val, 'scalar')
+                        comp_vals[i] = val.value
+                    elif isinstance(val, pyDARNio.DmapArray):
+                        self.assess_DmapType(val, 'array')
+                        comp_vals[i] = val.value.reshape(val.shape)
+
+                # Compare the two values as dictated by their types
+                if isinstance(comp_vals[0], np.ndarray):
+                    pass
+                    #self.assertTrue(np.array_equal(*comp_vals)
+                    #                | np.allclose(*comp_vals, equal_nan=True))
+                else:
+                    self.assertEqual(*comp_vals)
+
+    def assess_DmapType(self, dmap_record, dmap_type="array"):
+        """ Test to see that all Dmap descriptive attributes are present
 
         Parameters
         ----------
-        dmaparr1 : pyDARNio.DmapArray
-            First DmapArray object to compare
-        dmaparr2 : pyDARNio.DmapArray
-            Second DmapArray object to compare
+        dmap_record : pyDARNio.DmapArray or pyDARNio.DmapScalar
+            Dmap object to assess
+        dmap_type : str
+            Accepts 'scalar' or 'array' (default='array')
         """
-        # Test the descriptive attributees
-        for val in ['name', 'data_type', 'data_type_fmt', 'dimension']:
+        dmap_attrs = ['name', 'data_type', 'data_type_fmt', 'value']
+        if dmap_type.lower() == 'array':
+            dmap_attrs.append('dimension')
+        
+        # Test the descriptive attributes
+        for val in dmap_attrs:
             with self.subTest(val=val):
-                self.assertTrue(hasattr(dmaparr1, val))
-                self.assertTrue(hasattr(dmaparr2, val))
-                self.assertEqual(getattr(dmaparr1, val),
-                                 getattr(dmaparr2, val))
-
-        # Test the value, ensuring the values are shaped correctly
-        value1 = np.reshape(dmaparr1.value, dmaparr1.shape)
-        value2 = np.reshape(dmaparr2.value, dmaparr2.shape)
-
-        # Allow all values to be equal or NaN
-        self.assertTrue(np.array_equal(value1, value2)
-                        | np.allclose(value1, value2, equal_nan=True))
+                self.assertTrue(hasattr(dmap_record, val))
 
     def test_read_write(self):
         """ Test the ability to write data read in from a file
@@ -522,16 +536,19 @@ class TestReadWrite(unittest.TestCase):
             self.skipTest('test directory is not included with pyDARNio')
 
         test_file_dict = get_test_files("good", test_dir=self.test_dir)
+        self.set_file_types()
 
         for val in self.file_types:
             with self.subTest(val=val):
                 # Read in the test file
-                self.set_read_func(val)
-                self.read_dmap = self.read_func(test_file_dict[val])
+                self.temp_file = test_file_dict[val[0]]
+                self.set_read_func(val[0])
+                self.read_dmap = self.read_func()
 
                 # Write the data
+                self.temp_file = "{:s}_test.{:s}".format(val[0], val[0])
                 self.write_func = set_write_func(self.write_class,
-                                                 self.read_dmap, val)
+                                                 self.read_dmap, val[1])
                 self.write_func(self.temp_file)
 
                 # Test the file creation and remove the temp file
@@ -540,20 +557,22 @@ class TestReadWrite(unittest.TestCase):
     def test_write_read(self):
         """ Test the consistency of data written to a file
         """
+        self.set_file_types()
 
         for val in self.file_types:
             with self.subTest(val=val):
                 # Get the locally stored data
-                self.written_dmap, self.temp_file = load_data_w_filename(val)
+                self.written_dmap, self.temp_file = load_data_w_filename(
+                    val[0])
 
                 # Get the writting functiton and create the temp file
                 self.write_func = set_write_func(self.write_class,
-                                                 self.written_dmap, val)
+                                                 self.written_dmap, val[1])
                 self.write_func(self.temp_file)
 
                 # Read the temp file
-                self.set_read_func(val)
-                self.read_dmap = self.read_func(self.temp_file)
+                self.set_read_func(val[0])
+                self.read_dmap = self.read_func()
 
                 # Assert the read and written data are the same
                 self.dmap_list_compare()
@@ -580,17 +599,22 @@ class TestReadWrite(unittest.TestCase):
 
                 # Read from the streaming file
                 self.set_read_func(file_parts[-2], stream=True)
-                self.read_dmap = self.read_func(self.temp_file)
+                self.read_dmap = self.read_func()
 
                 # Write from the streaming file
+                self.temp_file = "{:s}_test.{:s}".format(file_parts[-2],
+                                                         file_parts[-2])
+                if file_parts[-2] in self.write_types:
+                    wtype = file_parts[-2]
+                else:
+                    wtype = self.write_types[0]
                 self.write_func = set_write_func(self.write_class,
-                                                 self.read_dmap,
-                                                 file_parts[-2])
+                                                 self.read_dmap, wtype)
                 self.write_func(self.temp_file)
 
                 # Read from the written file
                 self.set_read_func(file_parts[-2], stream=False)
-                self.written_dmap = self.read_func(self.temp_file)
+                self.written_dmap = self.read_func()
 
                 # Compare the read and written data
                 self.dmap_list_compare()
@@ -617,15 +641,16 @@ class TestReadWrite(unittest.TestCase):
 
                 # Read from the streaming file
                 self.set_read_func(file_parts[-2], stream=True)
-                self.read_dmap = self.read_func(self.temp_file)
+                self.read_dmap = self.read_func()
 
                 # Write from the streaming file
                 self.write_func = set_write_func(self.write_class,
                                                  self.read_dmap, "dmap_stream")
-                dmap_write_stream = self.write_func(self.read_dmap)
+                self.temp_file = self.write_func(self.read_dmap)
 
                 # Read from the written file
-                self.written_dmap = self.read_func(dmap_write_stream)
+                self.set_read_func(file_parts[-2], stream=True)
+                self.written_dmap = self.read_func()
 
                 # Compare the read and written data
                 self.dmap_list_compare()
@@ -634,10 +659,12 @@ class TestReadWrite(unittest.TestCase):
         """
         Test successful writing as a stream and then reading from the stream
         """
+        self.set_file_types()
+
         for val in self.file_types:
             with self.subTest(val=val):
                 # Get the locally stored data
-                (self.read_dmap, self.temp_file) = load_data_w_filename(val)
+                (self.read_dmap, self.temp_file) = load_data_w_filename(val[0])
 
                 # Write the streaming file
                 self.write_func = set_write_func(self.write_class,
@@ -645,8 +672,8 @@ class TestReadWrite(unittest.TestCase):
                 self.temp_file = self.write_func(self.read_dmap)
 
                 # Read from the streaming file
-                self.set_read_func(val, stream=True)
-                self.written_dmap = self.read_func(self.temp_file)
+                self.set_read_func(val[0], stream=True)
+                self.written_dmap = self.read_func()
 
                 # Compare the read and written data
                 self.dmap_list_compare()

@@ -8,7 +8,7 @@ import numpy as np
 
 from pyDARNio import DmapScalar, DmapArray
 
-=
+
 rawacf_data = [OrderedDict([('radar.revision.major',
                              DmapScalar(name='radar.revision.major', value=1,
                                         data_type=1, data_type_fmt='c')),
