@@ -1,11 +1,10 @@
 # Copyright (C) 2019 SuperDARN
 # Author: Marina Schmidt, Angeline G. Burrell
-import bz2
-import copy
+# --------------------------------------------
+
 import logging
 import numpy as np
 import os
-import unittest
 
 import pyDARNio
 from pyDARNio import superdarn_exceptions as sdarn_exc
@@ -220,7 +219,8 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
         if not os.path.isdir(self.test_dir):
             self.skipTest('test directory is not included with pyDARNio')
 
-        test_file_dict = get_test_files("good", test_dir=self.test_dir) 
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
 
         for val in self.file_types:
             with self.subTest(val=val):
@@ -229,8 +229,9 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
                 self.read_dmap = self.read_func(test_file_dict[val])
 
                 # Write the data
-                self.write_func = set_write_func(self.write_class,
-                                                 self.read_dmap, val)
+                self.write_func = file_utils.set_write_func(self.write_class,
+                                                            self.read_dmap,
+                                                            val)
                 self.write_func(self.temp_file)
 
                 # Read in again using SDarnRead
@@ -243,4 +244,4 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
                 self.dmap_list_compare()
 
                 # Test the file creation and remove the temp file
-                self.assertTrue(remove_temp_file(self.temp_file))
+                self.assertTrue(file_utils.remove_temp_file(self.temp_file))

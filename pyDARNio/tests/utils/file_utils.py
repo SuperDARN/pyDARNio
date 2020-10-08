@@ -419,6 +419,7 @@ class TestWrite(unittest.TestCase):
                 self.write_func(self.temp_file)
                 self.assertTrue(remove_temp_file(self.temp_file))
 
+
 class TestReadWrite(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.join("..", "testdir")
@@ -444,7 +445,8 @@ class TestReadWrite(unittest.TestCase):
         file_type : str
             File type from self.file_types
         stream : bool
-            True if stream from compressed file, False if a file (default=False)
+            True if stream from compressed file, False if a file
+            (default=False)
 
         """
         # Load the data with the current test file
@@ -473,9 +475,9 @@ class TestReadWrite(unittest.TestCase):
             self.assertEqual(record1, record2)
 
             for field, val_obj in record1.items():
-                if isinstance(val_obj, pydarnio.DmapScalar):
+                if isinstance(val_obj, pyDARNio.DmapScalar):
                     self.assertEqual(record2[field], val_obj)
-                elif isinstance(val_obj, pydarnio.DmapArray):
+                elif isinstance(val_obj, pyDARNio.DmapArray):
                     self.compare_dmaparray(record2[field], val_obj)
                 elif isinstance(val_obj, np.ndarray):
                     if np.array_equal(record2[field], val_obj):
@@ -502,12 +504,13 @@ class TestReadWrite(unittest.TestCase):
             with self.subTest(val=val):
                 self.assertTrue(hasattr(dmaparr1, val))
                 self.assertTrue(hasattr(dmaparr2, val))
-                self.assertEqual(getattr(dmaparr1, val), getattr(dmaparr2, val))
+                self.assertEqual(getattr(dmaparr1, val),
+                                 getattr(dmaparr2, val))
 
         # Test the value, ensuring the values are shaped correctly
         value1 = np.reshape(dmaparr1.value, dmaparr1.shape)
         value2 = np.reshape(dmaparr2.value, dmaparr2.shape)
-    
+
         # Allow all values to be equal or NaN
         self.assertTrue(np.array_equal(value1, value2)
                         | np.allclose(value1, value2, equal_nan=True))
@@ -518,7 +521,7 @@ class TestReadWrite(unittest.TestCase):
         if not os.path.isdir(self.test_dir):
             self.skipTest('test directory is not included with pyDARNio')
 
-        test_file_dict = get_test_files("good", test_dir=self.test_dir) 
+        test_file_dict = get_test_files("good", test_dir=self.test_dir)
 
         for val in self.file_types:
             with self.subTest(val=val):
@@ -640,7 +643,7 @@ class TestReadWrite(unittest.TestCase):
                 self.write_func = set_write_func(self.write_class,
                                                  self.read_dmap, "dmap_stream")
                 self.temp_file = self.write_func(self.read_dmap)
-                
+
                 # Read from the streaming file
                 self.set_read_func(val, stream=True)
                 self.written_dmap = self.read_func(self.temp_file)
