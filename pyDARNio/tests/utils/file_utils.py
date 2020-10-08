@@ -109,7 +109,8 @@ def load_data_w_filename(data_type):
     Parameters
     ----------
     data_type : str
-        Accepts 'rawacf', 'fitacf', 'iqdat', 'grid', 'map', 'dmap'
+        Accepts 'rawacf', 'fitacf', 'iqdat', 'grid', 'map', 'dmap', and
+        'rawacf_dict'
 
     Returns
     -------
@@ -121,6 +122,8 @@ def load_data_w_filename(data_type):
     # Copy the data from the data_set files
     if data_type == "rawacf":
         data = copy.deepcopy(rawacf_data_sets.rawacf_data)
+    elif data_type == "rawacf_dict":
+        data = copy.deepcopy(rawacf_data_sets.rawacf_dict_data)
     elif data_type == "fitacf":
         data = copy.deepcopy(fitacf_data_sets.fitacf_data)
     elif data_type == "iqdat":
@@ -448,7 +451,15 @@ class TestReadWrite(unittest.TestCase):
         data = self.read_class(self.temp_file, stream=stream)
 
         # Read the data
-        self.read_func = getattr(data, "read_{:s}".format(file_type))
+        if hasattr(data, "read_{:s}".format(file_type)):
+            # SDarn reading functions or specific Dmap reading function
+            self.read_func = getattr(data, "read_{:s}".format(file_type))
+        else:
+            # Standard Dmap/SDarn reading function
+            self.read_func = getattr(data, "read_records")
+
+        # Set the temp filename
+        self.temp_file = "{:s}_test.{:s}".format(file_type, file_type)
 
     def dmap_list_compare(self):
         """ Compare two lists of DMap objects
@@ -511,12 +522,16 @@ class TestReadWrite(unittest.TestCase):
 
         for val in self.file_types:
             with self.subTest(val=val):
-                self.temp_file = "{:s}_temp.{:s}".format(val, val)
-                dmap = self.read_class(test_file_dict[val])
-                self.read_dmap = dmap.read_records()
+                # Read in the test file
+                self.set_read_func(val)
+                self.read_dmap = self.read_func(test_file_dict[val])
+
+                # Write the data
                 self.write_func = set_write_func(self.write_class,
                                                  self.read_dmap, val)
                 self.write_func(self.temp_file)
+
+                # Test the file creation and remove the temp file
                 self.assertTrue(remove_temp_file(self.temp_file))
 
     def test_write_read(self):
@@ -565,8 +580,6 @@ class TestReadWrite(unittest.TestCase):
                 self.read_dmap = self.read_func(self.temp_file)
 
                 # Write from the streaming file
-                self.temp_file = "{:s}_test.{:s}".format(file_parts[-2],
-                                                         file_parts[-2])
                 self.write_func = set_write_func(self.write_class,
                                                  self.read_dmap,
                                                  file_parts[-2])
@@ -610,6 +623,27 @@ class TestReadWrite(unittest.TestCase):
 
                 # Read from the written file
                 self.written_dmap = self.read_func(dmap_write_stream)
+
+                # Compare the read and written data
+                self.dmap_list_compare()
+
+    def test_write_stream_read_stream(self):
+        """
+        Test successful writing as a stream and then reading from the stream
+        """
+        for val in self.file_types:
+            with self.subTest(val=val):
+                # Get the locally stored data
+                (self.read_dmap, self.temp_file) = load_data_w_filename(val)
+
+                # Write the streaming file
+                self.write_func = set_write_func(self.write_class,
+                                                 self.read_dmap, "dmap_stream")
+                self.temp_file = self.write_func(self.read_dmap)
+                
+                # Read from the streaming file
+                self.set_read_func(val, stream=True)
+                self.written_dmap = self.read_func(self.temp_file)
 
                 # Compare the read and written data
                 self.dmap_list_compare()
