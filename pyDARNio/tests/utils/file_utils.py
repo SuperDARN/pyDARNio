@@ -504,9 +504,8 @@ class TestReadWrite(unittest.TestCase):
 
                 # Compare the two values as dictated by their types
                 if isinstance(comp_vals[0], np.ndarray):
-                    pass
-                    #self.assertTrue(np.array_equal(*comp_vals)
-                    #                | np.allclose(*comp_vals, equal_nan=True))
+                    self.assertTrue(np.array_equal(*comp_vals)
+                                    | np.allclose(*comp_vals, equal_nan=True))
                 else:
                     self.assertEqual(*comp_vals)
 
@@ -523,7 +522,7 @@ class TestReadWrite(unittest.TestCase):
         dmap_attrs = ['name', 'data_type', 'data_type_fmt', 'value']
         if dmap_type.lower() == 'array':
             dmap_attrs.append('dimension')
-        
+
         # Test the descriptive attributes
         for val in dmap_attrs:
             with self.subTest(val=val):
