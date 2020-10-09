@@ -96,7 +96,9 @@ class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
         """
         # Set the missing field name and record number
         rnum = 0
-        extra_field = 'dummy'
+        extra_key = 'dummy'
+        extra_field = {extra_key: pyDARNio.DmapScalar(
+            name=extra_key, value=extra_key, data_type=9, data_type_fmt='s')}
         self.set_file_types()
 
         # Test each of the file types
@@ -105,8 +107,8 @@ class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
                 # Get the locally stored data and add an extra value
                 (self.read_dmap,
                  self.temp_file) = file_utils.load_data_w_filename(val[0])
-                self.read_dmap[rnum].update({extra_field: extra_field})
-                self.read_dmap[rnum].move_to_end(extra_field, last=False)
+                self.read_dmap[rnum].update(extra_field)
+                self.read_dmap[rnum].move_to_end(extra_key, last=False)
 
                 # Write the extra data
                 self.write_func = file_utils.set_write_func(self.write_class,
@@ -122,7 +124,7 @@ class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
                     self.written_dmap = self.read_func()
 
                 # Test the error message raised
-                self.assertEqual(err.exception.fields, {extra_field})
+                self.assertEqual(err.exception.fields, {extra_key})
                 self.assertEqual(err.exception.record_number, rnum)
 
                 # Remove the the temporary file
@@ -132,7 +134,7 @@ class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
         """Raise SuperDARNDataFormatTypeError when reading badly written dict
         """
         # Test the only file type that currently has a data dict
-        self.read_type = ['rawacf_dict']
+        self.read_types = ['rawacf_dict']
         self.set_file_types()
 
         for val in self.file_types:
@@ -156,6 +158,9 @@ class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
                 with self.assertRaises(sdarn_exc.SuperDARNDataFormatTypeError):
                     self.written_dmap = self.read_func()
 
+                # Remove the temporary file
+                self.assertTrue(file_utils.remove_temp_file(self.temp_file))
+
 
 class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
     def setUp(self):
@@ -167,7 +172,7 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
         self.read_dmap = None
         self.written_dmap = None
         self.temp_file = "temp.file"
-        self.read_types = ['dmap']
+        self.read_types = ['rawacf', 'fitacf', 'iqdat', 'grid', 'map']
         self.write_types = ['rawacf', 'fitacf', 'iqdat', 'grid', 'map']
         self.file_types = []
 
@@ -180,10 +185,11 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
         """Use dict2dmap to convert a dictionary to DMap then SDarnWrite file
         """
         # Test the only file type that currently has a data dict
-        self.read_type = ['rawacf_dict']
+        self.read_types = ['rawacf_dict']
+        self.write_types = ['rawacf']
         self.set_file_types()
 
-        for val in self.file_types():
+        for val in self.file_types:
             with self.subTest(val=val):
                 # Get the locally stored data
                 read_dict, self.temp_file = file_utils.load_data_w_filename(
@@ -205,14 +211,15 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
                 # Compare the read and written data
                 self.dmap_list_compare()
 
-                # Remove the the temporary file
+                # Remove the temporary file
                 self.assertTrue(file_utils.remove_temp_file(self.temp_file))
 
     def test_write_incorrect_rawacf_from_dict(self):
         """Raise SuperDARNDataFormatTypeError when writing badly formatted dict
         """
         # Test the only file type that currently has a data dict
-        self.read_type = ['rawacf_dict']
+        self.read_types = ['rawacf_dict']
+        self.write_types = ['rawacf']
         self.set_file_types()
 
         for val in self.file_types:
@@ -232,6 +239,9 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
 
                 with self.assertRaises(sdarn_exc.SuperDARNDataFormatTypeError):
                     self.write_func(self.temp_file)
+
+                # There won't be a temporary file
+                self.assertFalse(file_utils.remove_temp_file(self.temp_file))
 
     def test_DmapRead_SDarnWrite_SDarnRead(self):
         """Test read/write/read with DmapRead, SDarnWrite, and SDarnRead
