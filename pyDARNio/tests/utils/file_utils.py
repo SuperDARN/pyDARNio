@@ -470,7 +470,7 @@ class TestReadWrite(unittest.TestCase):
 
         """
         # Load the data with the current test file
-        data = self.read_class(self.temp_file, stream=stream)
+        data = self.read_class(self.temp_file, stream)
 
         # Read the data
         if hasattr(data, "read_{:s}".format(file_type)):
