@@ -6,11 +6,9 @@ import logging
 import numpy as np
 import os
 
-import pyDARNio
+import pydarnio
 
 import file_utils
-
-pyDARNio_logger = logging.getLogger('pyDARNio')
 
 
 class TestDmapRead(file_utils.TestRead):
@@ -22,7 +20,7 @@ class TestDmapRead(file_utils.TestRead):
         self.test_dir = os.path.join("..", "testfiles")
         self.data = None
         self.rec = None
-        self.read_func = pyDARNio.DmapRead
+        self.read_func = pydarnio.DmapRead
         self.file_types = ["rawacf", "fitacf"]
         self.corrupt_read_type = "records"
 
@@ -48,8 +46,8 @@ class TestDmapRead(file_utils.TestRead):
         # Test the first record
         self.assertIsInstance(self.rec, collections.deque)
         self.assertIsInstance(self.rec[0], collections.OrderedDict)
-        self.assertIsInstance(self.rec[4]['bmnum'], pyDARNio.DmapScalar)
-        self.assertIsInstance(self.rec[1]['ptab'], pyDARNio.DmapArray)
+        self.assertIsInstance(self.rec[4]['bmnum'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
         self.assertIsInstance(self.rec[7]['channel'].value, int)
         self.assertIsInstance(self.rec[2]['ltab'].value, np.ndarray)
         self.assertEqual(self.rec[0]['ptab'].dimension, 1)
@@ -59,7 +57,7 @@ class TestDmapRead(file_utils.TestRead):
 class TestDmapWrite(file_utils.TestWrite):
     """ Testing DmapWrite class"""
     def setUp(self):
-        self.write_class = pyDARNio.DmapWrite
+        self.write_class = pydarnio.DmapWrite
         self.write_func = None
         self.data_type = "dmap"
         self.data = []
@@ -75,9 +73,9 @@ class TestDmapWrite(file_utils.TestWrite):
         """
         Test raises DmapCharError when attempting to write char instead of int8
         """
-        self.data = [{'channel': pyDARNio.DmapScalar('channel', 'c', 1, 'c')}]
+        self.data = [{'channel': pydarnio.DmapScalar('channel', 'c', 1, 'c')}]
         darn = self.write_class(self.data)
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapCharError):
+        with self.assertRaises(pydarnio.dmap_exceptions.DmapCharError):
             darn.dmap_scalar_to_bytes(self.data[0]['channel'])
 
     def test_bad_array_to_byes(self):
@@ -85,14 +83,14 @@ class TestDmapWrite(file_utils.TestWrite):
         Test raises appropriate Dmap Error when writing unsupported array types
         """
 
-        self.data = [{'xcf': pyDARNio.DmapArray('xcf', np.array(['dog', 'cat',
+        self.data = [{'xcf': pydarnio.DmapArray('xcf', np.array(['dog', 'cat',
                                                                  'rat']),
                                                 9, 's', 1, [3])},
-                     {'channel': pyDARNio.DmapArray('channel',
+                     {'channel': pydarnio.DmapArray('channel',
                                                     np.array(['d', 'c', 'r']),
                                                     1, 'c', 1, [3])}]
-        errors = [pyDARNio.dmap_exceptions.DmapDataError,
-                  pyDARNio.dmap_exceptions.DmapCharError]
+        errors = [pydarnio.dmap_exceptions.DmapDataError,
+                  pydarnio.dmap_exceptions.DmapCharError]
         for i, val in enumerate(errors):
             with self.subTest(val=val):
                 array = [dat_val for dat_val in self.data[i].values()][0]

@@ -9,7 +9,7 @@ import numpy as np
 import os
 import unittest
 
-import pyDARNio
+import pydarnio
 
 import dmap_data_sets
 import fitacf_data_sets
@@ -152,7 +152,7 @@ class TestRead(unittest.TestCase):
             self.skipTest('test directory is not included with pyDARNio')
 
         self.test_file = get_test_files("empty", test_dir=self.test_dir)[0]
-        self.assertRaises(pyDARNio.dmap_exceptions.EmptyFileError,
+        self.assertRaises(pydarnio.dmap_exceptions.EmptyFileError,
                           self.read_func, self.test_file)
 
     def test_good_open_file(self):
@@ -201,9 +201,9 @@ class TestRead(unittest.TestCase):
         corrupt_files = get_test_files("corrupt", test_dir=self.test_dir)
 
         for val in [(corrupt_files[0],
-                     pyDARNio.dmap_exceptions.DmapDataTypeError),
+                     pydarnio.dmap_exceptions.DmapDataTypeError),
                     (corrupt_files[1],
-                     pyDARNio.dmap_exceptions.NegativeByteError)]:
+                     pydarnio.dmap_exceptions.NegativeByteError)]:
             with self.subTest(val=val):
                 self.test_file = val[0]
                 with self.assertRaises(val[1]):
@@ -219,9 +219,9 @@ class TestRead(unittest.TestCase):
         corrupt_files = get_test_files("corrupt", test_dir=self.test_dir)
 
         for val in [(corrupt_files[0],
-                     pyDARNio.dmap_exceptions.MismatchByteError),
+                     pydarnio.dmap_exceptions.MismatchByteError),
                     (corrupt_files[1],
-                     pyDARNio.dmap_exceptions.NegativeByteError)]:
+                     pydarnio.dmap_exceptions.NegativeByteError)]:
             with self.subTest(val=val):
                 self.data = self.read_func(val[0])
                 with self.assertRaises(val[1]):
@@ -249,8 +249,8 @@ class TestRead(unittest.TestCase):
         # Test the output of the first record
         self.assertIsInstance(self.rec, collections.deque)
         self.assertIsInstance(self.rec[0], collections.OrderedDict)
-        self.assertIsInstance(self.rec[4]['channel'], pyDARNio.DmapScalar)
-        self.assertIsInstance(self.rec[1]['ptab'], pyDARNio.DmapArray)
+        self.assertIsInstance(self.rec[4]['channel'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
         self.assertIsInstance(self.rec[7]['channel'].value, int)
         self.assertIsInstance(self.rec[2]['xcfd'].value, np.ndarray)
         self.assertEqual(self.rec[0]['xcfd'].dimension, 3)
@@ -278,7 +278,7 @@ class TestRead(unittest.TestCase):
         self.data[40:] = self.test_file[37:]
 
         # Assert data from corrupted stream is corrupted
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
+        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
             self.local_file_record(self.corrupt_read_type, stream=True)
 
 
@@ -351,14 +351,14 @@ class TestWrite(unittest.TestCase):
                 # Attempt to write data without a filename
                 self.set_write_func()
                 with self.assertRaises(
-                        pyDARNio.dmap_exceptions.FilenameRequiredError):
+                        pydarnio.dmap_exceptions.FilenameRequiredError):
                     self.write_func()
 
     def test_empty_record(self):
         """
         Test raises DmapDataError if an empty record is given
         """
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
+        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
             self.set_write_func()
             self.write_func(self.temp_file)
 

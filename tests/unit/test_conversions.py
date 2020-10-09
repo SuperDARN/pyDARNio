@@ -6,8 +6,8 @@ import unittest
 import numpy as np
 from collections import OrderedDict
 
-import pyDARNio
-from pyDARNio import DmapScalar, DmapArray
+import pydarnio
+from pydarnio import DmapScalar, DmapArray
 
 
 class Test_Conversions(unittest.TestCase):
@@ -156,7 +156,7 @@ class Test_Conversions(unittest.TestCase):
         """
         From utils package, testing dict2dmap function
         """
-        dmap_records_test = pyDARNio.dict2dmap(self.dmap_list)
+        dmap_records_test = pydarnio.dict2dmap(self.dmap_list)
         self.dmap_compare(dmap_records_test)
 
     def test_dmap2dict(self):
@@ -165,7 +165,7 @@ class Test_Conversions(unittest.TestCase):
         """
         # need to break up the list of dictionaries to properly
         # compare each field value
-        dmap_list_test = pyDARNio.dmap2dict(self.dmap_records)
+        dmap_list_test = pydarnio.dmap2dict(self.dmap_records)
         for j in range(len(dmap_list_test)):
             for key, value in dmap_list_test[j].items():
                 if isinstance(value, np.ndarray):

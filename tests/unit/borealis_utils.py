@@ -8,8 +8,8 @@ import os
 import tables
 import unittest
 
-import pyDARNio
-import pyDARNio.exceptions.borealis_exceptions as bor_exc
+import pydarnio
+import pydarnio.exceptions.borealis_exceptions as bor_exc
 
 from file_utils import get_test_files, remove_temp_file
 import borealis_rawacf_data_sets as borealis_rawacf
@@ -50,7 +50,7 @@ class TestReadBorealis(unittest.TestCase):
         self.data = None
         self.rec = None
         self.arr = None
-        self.read_func = pyDARNio.BorealisRead
+        self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq", "rawrf"]
         self.file_struct = "site"
         self.version = 4
@@ -79,7 +79,7 @@ class TestReadBorealis(unittest.TestCase):
         Test ability of return_reader function to determin the file structure
         """
         if not os.path.isdir(self.test_dir):
-            self.skipTest('test directory is not included with pyDARNio')
+            self.skipTest('test directory is not included with pydarnio')
 
         test_file_dict = get_test_files(get_borealis_type(
             "good", self.file_struct, self.version), test_dir=self.test_dir)
@@ -116,7 +116,7 @@ class TestReadBorealis(unittest.TestCase):
         Tests raise OSError or HDF5ExtError with an empty file
         """
         if not os.path.isdir(self.test_dir):
-            self.skipTest('test directory is not included with pyDARNio')
+            self.skipTest('test directory is not included with pydarnio')
 
         self.test_file = get_test_files("empty", test_dir=self.test_dir)[0]
         self.assertRaises((OSError, tables.exceptions.HDF5ExtError),
@@ -128,7 +128,7 @@ class TestReadBorealis(unittest.TestCase):
         Test raises Borealis Error when specifying the wrong filetype.
         """
         if not os.path.isdir(self.test_dir):
-            self.skipTest('test directory is not included with pyDARNio')
+            self.skipTest('test directory is not included with pydarnio')
 
         wrong_filetype_exceptions = (bor_exc.BorealisExtraFieldError,
                                      bor_exc.BorealisFieldMissingError,
@@ -150,7 +150,7 @@ class TestReadBorealis(unittest.TestCase):
         Test raises BorealisStructureError when specifying wrong file structure
         """
         if not os.path.isdir(self.test_dir):
-            self.skipTest('test directory is not included with pyDARNio')
+            self.skipTest('test directory is not included with pydarnio')
 
         # Load the good files with the current file structure
         test_file_dict = get_test_files(get_borealis_type(
@@ -175,7 +175,7 @@ class TestReadBorealis(unittest.TestCase):
         """ Test successful reading of Borealis data
         """
         if not os.path.isdir(self.test_dir):
-            self.skipTest('test directory is not included with pyDARNio')
+            self.skipTest('test directory is not included with pydarnio')
 
         test_file_dict = get_test_files(get_borealis_type(
             "good", self.file_struct, self.version), test_dir=self.test_dir)
@@ -451,7 +451,7 @@ class TestConvertBorealis(unittest.TestCase):
         """ Test successful conversion of Borealis data to DMap types
         """
         if not os.path.isdir(self.test_dir):
-            self.skipTest('test directory is not included with pyDARNio')
+            self.skipTest('test directory is not included with pydarnio')
 
         test_file_dict = get_test_files(get_borealis_type(
             "good", self.file_struct, self.version), test_dir=self.test_dir)
@@ -463,7 +463,7 @@ class TestConvertBorealis(unittest.TestCase):
                 self.temp_file = "{:s}.temp.dmap".format(self.test_file)
 
                 # Run the data convertion
-                pyDARNio.BorealisConvert(
+                pydarnio.BorealisConvert(
                     self.test_file, val, self.temp_file,
                     borealis_file_structure=self.file_struct)
 
