@@ -39,7 +39,7 @@ import logging
 
 from typing import Union, List
 
-from pyDARNio import (DmapRead, DmapWrite, superdarn_exceptions,
+from pydarnio import (DmapRead, DmapWrite, superdarn_exceptions,
                       superdarn_formats, dmap2dict)
 
 pyDARNio_log = logging.getLogger('pyDARNio')
