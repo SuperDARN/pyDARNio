@@ -78,7 +78,7 @@ class TestDmapWrite(file_utils.TestWrite):
         with self.assertRaises(pydarnio.dmap_exceptions.DmapCharError):
             darn.dmap_scalar_to_bytes(self.data[0]['channel'])
 
-    def test_bad_array_to_byes(self):
+    def test_bad_array_to_bytes(self):
         """
         Test raises appropriate Dmap Error when writing unsupported array types
         """
