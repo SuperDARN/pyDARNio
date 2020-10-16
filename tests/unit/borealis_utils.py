@@ -39,7 +39,24 @@ def get_borealis_type(file_type, file_struct, version):
     return borealis_type
 
 
-class TestReadBorealis(unittest.TestCase):
+class TestBorealis(unittest.TestCase):
+
+    def check_dictionaries_are_same(self, dict1, dict2):    
+
+        self.assertEqual(sorted(list(dict1.keys())),    
+                         sorted(list(dict2.keys())))    
+        for key1, value1 in dict1.items():  
+            if isinstance(value1, dict) or isinstance(value1, OrderedDict): 
+                self.check_dictionaries_are_same(value1, dict2[key1])   
+            elif isinstance(value1, np.ndarray):    
+                self.assertTrue((value1 == dict2[key1]).all())  
+            else:   
+                self.assertEqual(value1, dict2[key1])   
+
+        return True
+
+
+class TestReadBorealis(TestBorealis):
     """
     Testing class for reading Borealis data
     """
@@ -198,7 +215,7 @@ class TestReadBorealis(unittest.TestCase):
                 self.assertIsInstance(self.arr['num_slices'][0], np.int64)
 
 
-class TestWriteBorealis(unittest.TestCase):
+class TestWriteBorealis(TestBorealis):
     """ Testing class for writing classes
     """
     def setUp(self):
@@ -256,8 +273,12 @@ class TestWriteBorealis(unittest.TestCase):
             One of self.file_types
         """
         # Load the data with the current test file
-        self.temp_data = self.read_func(self.temp_file, self.data_type,
+        reader = self.read_func(self.temp_file, self.data_type,
                                         self.file_struct)
+        if self.file_struct == 'site':
+            self.temp_data = reader.records
+        else:  # file_struct = array
+            self.temp_data = reader.arrays
 
     def test_writing_success(self):
         """
@@ -283,10 +304,10 @@ class TestWriteBorealis(unittest.TestCase):
 
                 for dkey, temp_val in self.temp_data.items():
                     if isinstance(temp_val, dict):
-                        self.assertDictEqual(temp_val, self.data[dkey])
+                        self.check_dictionaries_are_same(temp_val, self.data[dkey])
                     elif isinstance(temp_val, OrderedDict):
-                        self.assertDictEqual(dict(temp_val),
-                                             dict(self.data[dkey]))
+                        self.check_dictionaries_are_same(dict(temp_val),
+                                                         dict(self.data[dkey]))
                     elif isinstance(temp_val, np.ndarray):
                         self.assertTrue((temp_val == self.data[dkey]).all())
                     else:
@@ -308,16 +329,19 @@ class TestWriteBorealis(unittest.TestCase):
                 self.load_data_w_filename()
 
                 # Remove a required field
-                dkeys = [dkey for dkey in self.data.keys()]
-                del self.data[dkeys[0]][missing_field]
+                if self.file_struct == 'site':
+                    dkeys = [dkey for dkey in self.data.keys()]
+                    del self.data[dkeys[0]][missing_field]
+                else:  # file_struct = array
+                    del self.data[missing_field]
 
                 # Test raises appropriate error
                 with self.assertRaises(
-                        bor_exc.BorealisFieldMissingError) as err:
+                        bor_exc.BorealisFieldMissingError) as context:
                     self.write_func(self.temp_file, self.data, val,
                                     self.file_struct)
 
-                self.assertEqual(err.fields, {missing_field})
+                self.assertEqual(context.exception.fields, {missing_field})
 
                 # Remove the temporary file, if it was created
                 remove_temp_file(self.temp_file)
@@ -335,17 +359,21 @@ class TestWriteBorealis(unittest.TestCase):
                 self.load_data_w_filename()
 
                 # Add a fake field
-                dkeys = [dkey for dkey in self.data.keys()]
-                self.data[dkeys[0]][extra_field] = extra_field
+                if self.file_struct == 'site':
+                    dkeys = [dkey for dkey in self.data.keys()]
+                    self.data[dkeys[0]][extra_field] = extra_field
+                else:  # file struct = array
+                    self.data[extra_field] = extra_field
 
                 # Test raises appropriate error
                 with self.assertRaises(
-                        bor_exc.BorealisExtraFieldError) as err:
+                        bor_exc.BorealisExtraFieldError) as context:
                     self.write_func(self.temp_file, self.data, val,
                                     self.file_struct)
 
-                self.assertEqual(err.fields, {extra_field})
-                self.assertEqual(err.record_name, dkeys[0])
+                self.assertEqual(context.exception.fields, {extra_field})
+                if self.file_struct == 'site':
+                    self.assertEqual(context.exception.record_name, dkeys[0])
 
                 # Remove the temporary file, if it was created
                 remove_temp_file(self.temp_file)
@@ -355,12 +383,15 @@ class TestWriteBorealis(unittest.TestCase):
         Test raises BorealisDataFormatTypeError with badly formatted data
         """
         bad_data_key = {'rawacf': 'scan_start_marker',
-                        'bfiq': 'first_range_rrt',
-                        'antenna_iq': 'num_slices'}
-        bad_data_val = {'rawacf': 1, 'bfiq': 5, 'antenna_iq': 'a'}
+                        'bfiq': 'first_range_rtt',
+                        'antennas_iq': 'num_slices'}
+        bad_data_val = {'rawacf': 1, 'bfiq': 5, 'antennas_iq': 'a'}
+        bad_data_type = {'rawacf': np.uint32,
+                         'bfiq': np.int64,
+                         'antennas_iq': np.unicode_}
         bad_data_msg = {'rawacf': "<class 'numpy.bool_'>",
                         'bfiq': "<class 'numpy.float32'>",
-                        'antenna_iq': "<class 'numpy.int64'>"}
+                        'antennas_iq': "<class 'numpy.int64'>"}
 
         for val in self.file_types:
             with self.subTest(val=val):
@@ -369,19 +400,38 @@ class TestWriteBorealis(unittest.TestCase):
                 self.load_data_w_filename()
 
                 # Add a fake field
-                dkeys = [dkey for dkey in self.data.keys()]
-                self.data[dkeys[0]][bad_data_key[val]] = bad_data_val[val]
-
+                if self.file_struct == 'site':
+                    dkeys = [dkey for dkey in self.data.keys()]
+                    self.data[dkeys[0]][bad_data_key[val]] = bad_data_val[val]
+                else:  # file_struct = array
+                    if isinstance(self.data[bad_data_key[val]], np.ndarray):
+                        new_array = \
+                            np.full_like(self.data[bad_data_key[val]], 
+                                         bad_data_val[val], 
+                                         dtype=bad_data_type[val])
+                        self.data[bad_data_key[val]] = new_array
+                    else:
+                        self.data[bad_data_key[val]] = bad_data_val[val]
                 # Test raises appropriate error
                 with self.assertRaises(
-                        bor_exc.BorealisDataFormatTypeError) as err:
+                        bor_exc.BorealisDataFormatTypeError) as context:
                     self.write_func(self.temp_file, self.data, val,
                                     self.file_struct)
 
-                self.assertGreater(
-                    err.incorrect_types[bad_data_key[val]].find(
-                        bad_data_msg[val]), 0)
-                self.assertEqual(err.record_name, dkeys[0])
+                if self.file_struct == 'site':
+                    self.assertEqual(
+                        context.exception.incorrect_types[bad_data_key[val]],
+                            bad_data_msg[val])
+                    self.assertEqual(context.exception.record_name, dkeys[0])
+                else:  # file_struct = array
+                    if isinstance(self.data[bad_data_key[val]], np.ndarray):
+                        self.assertEqual(
+                            context.exception.incorrect_types[bad_data_key[val]],
+                                "np.ndarray of {}".format(bad_data_msg[val]))
+                    else:
+                        self.assertEqual(
+                        context.exception.incorrect_types[bad_data_key[val]],
+                            bad_data_msg[val])
 
                 # Remove the temporary file, if it was created
                 remove_temp_file(self.temp_file)
@@ -430,7 +480,7 @@ class TestWriteBorealis(unittest.TestCase):
                 remove_temp_file(self.temp_file)
 
 
-class TestConvertBorealis(unittest.TestCase):
+class TestConvertBorealis(TestBorealis):
     """
     Testing class for converting Borealis data to standard SuperDARN data
     """
