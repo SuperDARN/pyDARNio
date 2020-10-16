@@ -7,7 +7,7 @@ import numpy as np
 
 from collections import OrderedDict
 
-from pyDARNio import DmapScalar, DmapArray
+from pydarnio import DmapScalar, DmapArray
 
 rawacf_data = [OrderedDict([('radar.revision.major',
                              DmapScalar(name='radar.revision.major', value=1,
