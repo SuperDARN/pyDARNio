@@ -13,7 +13,9 @@ BorealisDataFormatTypeError
 BorealisConversionTypesError
 BorealisConvert2IqdatError
 BorealisConvert2RawacfError
+BorealisStructureError
 ConvertFileOverWriteError
+BorealisVersionError
 
 See Also
 --------
@@ -335,12 +337,7 @@ class BorealisStructureError(Exception):
     """
 
     def __init__(self, error_str: str):
-        self.message = "Structural errors found. You may be"\
-                " attempting to use the file as the wrong"\
-                " structure ('site' or 'array'"\
-                " supported). Please check if you are interested"\
-                " in records or arrays."\
-                "{error_str}".format(error_str=error_str)
+        self.message = error_str
         pyDARNio_logger.error(self.message)
         Exception.__init__(self, self.message)
 

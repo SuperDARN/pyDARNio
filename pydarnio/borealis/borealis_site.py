@@ -132,9 +132,10 @@ class BorealisSiteRead():
             # if this is an array style file, it will raise
             # IndexError on the array.
             raise borealis_exceptions.BorealisStructureError(
-                ' {} Could not find the borealis_git_hash required to '
-                'determine read version (file may be array style): {}'
-                ''.format(self.filename, err)) from err
+                'Site-structured read of {}: Could not find the '
+                'borealis_git_hash required to '
+                'determine read version (file may be array structured)'
+                ''.format(self.filename)) from err
 
         if version not in borealis_formats.borealis_version_dict:
             raise borealis_exceptions.BorealisVersionError(self.filename,
@@ -380,9 +381,10 @@ class BorealisSiteWrite():
             # if this is an array style file, it will raise
             # IndexError on the array.
             raise borealis_exceptions.BorealisStructureError(
-                ' {} Could not find the borealis_git_hash required to '
-                'determine read version (data may be array style) {}'
-                ''.format(self.filename, err)) from err
+                'Site-structured write of {}: Could not find the '
+                'borealis_git_hash required to '
+                'determine write version (data may be given as arrays)'
+                ''.format(self.filename)) from err
 
         if version not in borealis_formats.borealis_version_dict:
             raise borealis_exceptions.BorealisVersionError(self.filename,

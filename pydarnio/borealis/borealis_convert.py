@@ -223,7 +223,8 @@ class BorealisConvert(BorealisRead):
                 raise borealis_exceptions.BorealisStructureError(
                     'The slice_id could not be found in the file: Borealis '
                     'files produced before Borealis v0.5 must provide the '
-                    'slice_id value to the BorealisConvert class.') from e
+                    'borealis_slice_id optional argument to the '
+                    'BorealisConvert class.') from e
 
         self._sdarn_dmap_records = {}
         self._sdarn_dict = {}
