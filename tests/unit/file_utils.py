@@ -52,7 +52,7 @@ def get_test_files(test_file_type, test_dir=os.path.join("..", "testfiles")):
         test_dir = os.path.join(test_dir, '_'.join(test_subdir[:-1]))
 
     # Get a list of the available test files
-    files = glob("ls {:s}".format(os.path.join(test_dir, test_file_type, "*")))
+    files = glob("{:s}".format(os.path.join(test_dir, test_file_type, "*")))
 
     # Prepare the test files in the necessary output format
     if test_file_type == "good":
