@@ -37,7 +37,7 @@ class TestBorealisReadSitev04(borealis_utils.TestReadBorealis):
         self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq"]
         self.file_struct = "site"
-        self.version = 4
+        self.version = 0.4
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.data, self.rec, self.arr
@@ -58,7 +58,7 @@ class TestBorealisReadSitev05(borealis_utils.TestReadBorealis):
         self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq"]
         self.file_struct = "site"
-        self.version = 5
+        self.version = 0.5
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.data, self.rec, self.arr
@@ -79,7 +79,7 @@ class TestBorealisReadArrayv04(borealis_utils.TestReadBorealis):
         self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq"]
         self.file_struct = "array"
-        self.version = 4
+        self.version = 0.4
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.data, self.rec, self.arr
@@ -100,7 +100,7 @@ class TestBorealisReadArrayv05(borealis_utils.TestReadBorealis):
         self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq"]
         self.file_struct = "array"
-        self.version = 5
+        self.version = 0.5
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.data, self.rec, self.arr
@@ -160,7 +160,7 @@ class TestBorealisConvertSitev04(borealis_utils.TestConvertBorealis):
         self.test_dir = os.path.join("..", "testdir")
         self.file_types = ["rawacf", "bfiq"]
         self.file_struct = "site"
-        self.version = 4
+        self.version = 0.4
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.file_types, self.file_struct
@@ -178,7 +178,7 @@ class TestBorealisConvertArrayv04(borealis_utils.TestConvertBorealis):
         self.test_dir = os.path.join("..", "testdir")
         self.file_types = ["rawacf", "bfiq"]
         self.file_struct = "array"
-        self.version = 4
+        self.version = 0.4
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.file_types, self.file_struct
@@ -196,7 +196,7 @@ class TestBorealisConvertSitev05(borealis_utils.TestConvertBorealis):
         self.test_dir = os.path.join("..", "testdir")
         self.file_types = ["rawacf", "bfiq"]
         self.file_struct = "site"
-        self.version = 5
+        self.version = 0.5
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.file_types, self.file_struct
@@ -214,7 +214,7 @@ class TestBorealisConvertArrayv05(borealis_utils.TestConvertBorealis):
         self.test_dir = os.path.join("..", "testdir")
         self.file_types = ["rawacf", "bfiq"]
         self.file_struct = "array"
-        self.version = 5
+        self.version = 0.5
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.file_types, self.file_struct

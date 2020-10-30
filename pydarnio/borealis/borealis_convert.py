@@ -214,7 +214,7 @@ class BorealisConvert(BorealisRead):
         self.borealis_filename = self.filename
 
         try:
-            first_key = list(self.records.keys())[0]
+            first_key = self.record_names[0]
             self._borealis_slice_id = self.records[first_key]['slice_id']
         except KeyError as e:
             if borealis_slice_id is not None:

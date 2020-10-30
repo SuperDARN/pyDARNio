@@ -65,10 +65,10 @@ def get_test_files(test_file_type, test_dir=os.path.join("..", "testfiles")):
             # file type as the second to the last element in the split list
             # and Borealis site files have the SuperDARN file type as the
             # third element
-            if split_fname[-1] in ['hd5f', 'h5', 'nc']:
+            if split_fname[-1] in ['hdf5', 'hd5f', 'h5', 'nc']:
                 ext = split_fname[-2]
             elif(split_fname[-1] == 'site'
-                 and split_fname[-2] in ['hd5f', 'h5', 'nc']):
+                 and split_fname[-2] in ['hdf5', 'hd5f', 'h5', 'nc']):
                 ext = "_".join(["site", split_fname[-3]])
             else:
                 ext = split_fname[-1]

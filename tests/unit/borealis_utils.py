@@ -26,16 +26,17 @@ def get_borealis_type(file_type, file_struct, version):
         Standard file_type input for get_test_files
     file_struct : str
         Borealis file structure (accepts 'array' or 'site')
-    version : int
-        Borealis version number
+    version : float
+        Borealis version number ex. 0.5
 
     Returns
     -------
     borealis_type : str
         Borealis-style input for get_test_files
     """
-    borealis_type = "borealis-v{:02d}{:s}_{:s}".format(
-        version, "" if file_struct == "array" else file_struct, file_type)
+    borealis_type = "borealis-v{:s}{:s}{:s}_{:s}".format(
+        str(version).split('.')[0], str(version).split('.')[1], 
+        "" if file_struct == "array" else file_struct, file_type)
     return borealis_type
 
 
@@ -50,7 +51,7 @@ class TestBorealis(unittest.TestCase):
                 self.check_dictionaries_are_same(value1, dict2[key1])   
             elif isinstance(value1, np.ndarray):    
                 self.assertTrue((value1 == dict2[key1]).all())  
-            else:   
+            else:
                 self.assertEqual(value1, dict2[key1])   
 
         return True
@@ -70,7 +71,7 @@ class TestReadBorealis(TestBorealis):
         self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq", "rawrf"]
         self.file_struct = "site"
-        self.version = 4
+        self.version = 0.4
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.data, self.rec, self.arr
@@ -491,7 +492,7 @@ class TestConvertBorealis(TestBorealis):
         self.test_dir = os.path.join("..", "testdir")
         self.file_types = ["rawacf", "bfiq"]
         self.file_struct = "site"
-        self.version = 4
+        self.version = 0.4
 
     def tearDown(self):
         del self.test_file, self.test_dir, self.file_types, self.file_struct
@@ -512,10 +513,17 @@ class TestConvertBorealis(TestBorealis):
                 self.test_file = test_file_dict[val]
                 self.temp_file = "{:s}.temp.dmap".format(self.test_file)
 
-                # Run the data convertion
-                pydarnio.BorealisConvert(
-                    self.test_file, val, self.temp_file,
-                    borealis_file_structure=self.file_struct)
+                # Run the data conversion
+                if self.version <= 0.4:
+                    pydarnio.BorealisConvert(
+                        self.test_file, val, self.temp_file,
+                        borealis_file_structure=self.file_struct,
+                        borealis_slice_id=0)
+                elif self.version >= 0.5:
+                    # no borealis_slice_id is needed
+                    pydarnio.BorealisConvert(
+                        self.test_file, val, self.temp_file,
+                        borealis_file_structure=self.file_struct)  
 
                 # Test that the file was created
                 self.assertTrue(remove_temp_file(self.temp_file))
