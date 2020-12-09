@@ -142,8 +142,8 @@ class BorealisRead():
             self._borealis_file_structure = 'array'
         else:  # unknown structure
             raise borealis_exceptions.\
-                BorealisStructureError("Unknown structure type: {}"
-                                       "".format(borealis_file_structure))
+                BorealisStructureError("Unknown borealis_file_structure type:"
+                                       " {}".format(borealis_file_structure))
 
     def __repr__(self):
         """ for representation of the class object"""
@@ -361,8 +361,8 @@ class BorealisWrite():
             self._borealis_file_structure = 'array'
         else:  # unknown structure
             raise borealis_exceptions.\
-                BorealisStructureError('Unknown structure type: {}'
-                                       ''.format(borealis_file_structure))
+                BorealisStructureError("Unknown borealis_file_structure type:"
+                                       " {}".format(borealis_file_structure))
 
     def __repr__(self):
         """For representation of the class object"""

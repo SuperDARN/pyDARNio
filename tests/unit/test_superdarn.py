@@ -1,5 +1,5 @@
 # Copyright (C) 2019 SuperDARN Canada, University of Saskatchewan
-# Author: Marina Schmidt
+# Author: Marina Schmidt, Angeline Burrell
 """
 This test suite is to test the implementation for the following classes:
     SDarnRead
@@ -13,146 +13,37 @@ Support for the following SuperDARN file types:
     map
 """
 
-import bz2
-import copy
 import collections
 import logging
 import numpy as np
 import os
-import pytest
 import unittest
 
 import pydarnio
+from pydarnio import superdarn_exceptions as sdarn_exp
 
-import map_data_sets
-import grid_data_sets
-import fitacf_data_sets
-import iqdat_data_sets
-import rawacf_data_sets
+import file_utils
 
 pydarnio_logger = logging.getLogger('pydarnio')
 
-# Test files
-rawacf_stream = "../testfiles/20170410.1801.00.sas.stream.rawacf.bz2"
-rawacf_file = "../testfiles/20170410.1801.00.sas.rawacf"
-fitacf_file = "../testfiles/20160331.2201.00.mcm.a.fitacf"
-map_file = "../testfiles/20170114.map"
-iqdat_file = "../testfiles/20160316.1945.01.rkn.iqdat"
-grid_file = "../testfiles/20180220.C0.rkn.grid"
-# Black listed files
-corrupt_file1 = "../testfiles/20070117.1001.00.han.rawacf"
-corrupt_file2 = "../testfiles/20090320.1601.00.pgr.rawacf"
 
-
-@pytest.mark.skip
-class TestSDarnRead(unittest.TestCase):
+class TestSDarnRead(file_utils.TestRead):
     """
     Testing class for SDarnRead class
     """
     def setUp(self):
-        pass
+        self.test_file = "somefile.rawacf"
+        self.test_dir = os.path.join("..", "testfiles")
+        self.data = None
+        self.rec = None
+        self.read_func = pydarnio.SDarnRead
+        self.file_types = ["rawacf", "fitacf", "iqdat", "grid", "map"]
+        self.corrupt_read_type = "rawacf"
 
-    """
-    Testing SDarnRead constructor
-    """
-    def test_incorrect_path(self):
-        """
-        Testing SDarnRead constructor with an nonexistent folder.
+    def tearDown(self):
+        del self.test_file, self.test_dir, self.data, self.rec
+        del self.read_func, self.file_types, self.corrupt_read_type
 
-        Expected behaviour: raise FileNotFoundError
-        """
-        self.assertRaises(FileNotFoundError, pydarnio.SDarnRead,
-                          './dog/somefile.rawacf')
-
-    def test_incorrect_file(self):
-        """
-        Tests if SDarnRead constructor with an non-existent file
-
-        Expected behaviour: raises FileNotFoundError
-        """
-        self.assertRaises(FileNotFoundError, pydarnio.SDarnRead,
-                          '../testfiles/somefile.rawacf')
-
-    def test_empty_file(self):
-        """
-        Tests if SDarnRead constructor with an empty file
-
-        Expected behaviour: raise EmptyFileError
-        """
-        self.assertRaises(pydarnio.dmap_exceptions.EmptyFileError,
-                          pydarnio.SDarnRead, '../testfiles/empty.rawacf')
-
-    def test_open_rawacf(self):
-        """
-        Tests SDarnRead constructor on opening a rawacf.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = rawacf_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    def test_open_fitacf(self):
-        """
-        Tests SDarnRead constructor on opening a fitacf.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = fitacf_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    def test_open_map(self):
-        """
-        Tests SDarnRead constructor on opening a map.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = map_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    def test_open_grid(self):
-        """
-        Tests SDarnRead constructor on opening a grid.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = grid_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    def test_open_iqdat(self):
-        """
-        Tests SDarnRead constructor on opening a iqdat.
-        It should be able to open the file, read it and convert to bytearray.
-
-        Checks:
-            - bytearray instance is created from reading in the file
-            - bytearray is not empty
-        """
-        file_path = iqdat_file
-        dm = pydarnio.SDarnRead(file_path)
-        self.assertIsInstance(dm.dmap_bytearr, bytearray)
-        self.assertGreater(dm.dmap_end_bytes, 0)
-
-    # TODO: potential issue if files change and the values are not the same :/
     def test_read_iqdat(self):
         """
         Test reading records from iqdat.
@@ -161,18 +52,24 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = iqdat_file
-        dm = pydarnio.SDarnRead(file_path)
-        _ = dm.read_iqdat()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[0]['rxrise'], pydarnio.DmapScalar)
-        self.assertIsInstance(dm_records[3]['tsc'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[5]['mppul'].value, int)
-        self.assertIsInstance(dm_records[6]['tnoise'].value, np.ndarray)
-        self.assertEqual(dm_records[7]['channel'].value, 0)
-        self.assertEqual(dm_records[10]['data'].dimension, 1)
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        # Load the data and read in the first record
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
+        self.test_file = test_file_dict['iqdat']
+        self.load_file_record(file_type='iqdat')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[0]['rxrise'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[3]['tsc'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[5]['mppul'].value, int)
+        self.assertIsInstance(self.rec[6]['tnoise'].value, np.ndarray)
+        self.assertEqual(self.rec[7]['channel'].value, 0)
+        self.assertEqual(self.rec[10]['data'].dimension, 1)
 
     def test_read_rawacf(self):
         """
@@ -182,17 +79,23 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = rawacf_file
-        dm = pydarnio.SDarnRead(file_path)
-        dm_records = dm.read_rawacf()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['channel'], pydarnio.DmapScalar)
-        self.assertIsInstance(dm_records[1]['ptab'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[7]['channel'].value, int)
-        self.assertIsInstance(dm_records[2]['xcfd'].value, np.ndarray)
-        self.assertEqual(dm_records[0]['xcfd'].dimension, 3)
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        # Load the data and read in the first record
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
+        self.test_file = test_file_dict['rawacf']
+        self.load_file_record(file_type='rawacf')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[4]['channel'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[7]['channel'].value, int)
+        self.assertIsInstance(self.rec[2]['xcfd'].value, np.ndarray)
+        self.assertEqual(self.rec[0]['xcfd'].dimension, 3)
 
     def test_read_fitacf(self):
         """
@@ -202,17 +105,23 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = fitacf_file
-        dm = pydarnio.SDarnRead(file_path)
-        dm_records = dm.read_fitacf()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['bmnum'], pydarnio.DmapScalar)
-        self.assertIsInstance(dm_records[1]['ptab'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[7]['channel'].value, int)
-        self.assertIsInstance(dm_records[2]['ltab'].value, np.ndarray)
-        self.assertEqual(dm_records[0]['ptab'].dimension, 1)
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        # Load the data and read in the first record
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
+        self.test_file = test_file_dict['fitacf']
+        self.load_file_record(file_type='fitacf')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[4]['bmnum'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[7]['channel'].value, int)
+        self.assertIsInstance(self.rec[2]['ltab'].value, np.ndarray)
+        self.assertEqual(self.rec[0]['ptab'].dimension, 1)
 
     def test_read_grid(self):
         """
@@ -222,17 +131,23 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = grid_file
-        dm = pydarnio.SDarnRead(file_path)
-        _ = dm.read_grid()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['start.year'], pydarnio.DmapScalar)
-        self.assertIsInstance(dm_records[1]['v.max'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[7]['end.day'].value, int)
-        self.assertIsInstance(dm_records[2]['stid'].value, np.ndarray)
-        self.assertEqual(dm_records[0]['nvec'].dimension, 1)
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        # Load the data and read in the first record
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
+        self.test_file = test_file_dict['grid']
+        self.load_file_record(file_type='grid')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[4]['start.year'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['v.max'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[7]['end.day'].value, int)
+        self.assertIsInstance(self.rec[2]['stid'].value, np.ndarray)
+        self.assertEqual(self.rec[0]['nvec'].dimension, 1)
 
     def test_read_map(self):
         """
@@ -242,180 +157,106 @@ class TestSDarnRead(unittest.TestCase):
             - returns correct data structures
             - returns expected values
         """
-        file_path = map_file
-        dm = pydarnio.SDarnRead(file_path)
-        _ = dm.read_map()
-        dm_records = dm.get_dmap_records
-        self.assertIsInstance(dm_records, collections.deque)
-        self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[2]['IMF.flag'],
+        if not os.path.isdir(self.test_dir):
+            self.skipTest('test directory is not included with pyDARNio')
+
+        # Load the data and read in the first record
+        test_file_dict = file_utils.get_test_files("good",
+                                                   test_dir=self.test_dir)
+        self.test_file = test_file_dict['map']
+        self.load_file_record(file_type='map')
+
+        # Test the first record
+        self.assertIsInstance(self.rec, collections.deque)
+        self.assertIsInstance(self.rec[0], collections.OrderedDict)
+        self.assertIsInstance(self.rec[2]['IMF.flag'],
                               pydarnio.io.datastructures.DmapScalar)
-        self.assertIsInstance(dm_records[3]['stid'], pydarnio.DmapArray)
-        self.assertIsInstance(dm_records[8]['IMF.flag'].value, int)
-        self.assertIsInstance(dm_records[10]['stid'].value, np.ndarray)
-        self.assertEqual(dm_records[3]['stid'].dimension, 1)
+        self.assertIsInstance(self.rec[3]['stid'], pydarnio.DmapArray)
+        self.assertIsInstance(self.rec[8]['IMF.flag'].value, int)
+        self.assertIsInstance(self.rec[10]['stid'].value, np.ndarray)
+        self.assertEqual(self.rec[3]['stid'].dimension, 1)
         # this will be file dependent... future working test project.
-        self.assertEqual(dm_records[0]['stid'].shape[0], 14)
-
-    def test_read_corrupt_file1(self):
-        """
-        Test read_records on a corrupt file
-
-        Expected behaviour: raises pydmap exception
-        """
-        dmap = pydarnio.SDarnRead(corrupt_file1)
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataTypeError):
-            dmap.read_rawacf()
-
-    def test_read_currupt_file2(self):
-        """
-        Test read_records on a corrupt file
-
-        Expected behaviour: raises pydmap exception
-        """
-        dmap = pydarnio.SDarnRead(corrupt_file2)
-        with self.assertRaises(pydarnio.dmap_exceptions.NegativeByteError):
-            dmap.read_rawacf()
-
-    def test_dmap_read_stream(self):
-        """
-        Test read_records on dmap data stream.
-        The dmap data stream is formed from compressed
-        bzip2 file that returns a bytes object.
-
-         Checks:
-            - returns correct data structures
-            - returns expected values
-        """
-        # bz2 opens the compressed file into a data
-        # stream of bytes without actually uncompressing the file
-        with bz2.open(rawacf_stream) as fp:
-            dmap_stream = fp.read()
-        dmap = pydarnio.SDarnRead(dmap_stream, True)
-        dmap_data = dmap.read_rawacf()
-        dmap_data = dmap.get_dmap_records
-        self.assertIsInstance(dmap_data, collections.deque)
-        self.assertIsInstance(dmap_data[0], collections.OrderedDict)
-        self.assertIsInstance(dmap_data[4]['channel'], pydarnio.DmapScalar)
-        self.assertIsInstance(dmap_data[1]['ptab'], pydarnio.DmapArray)
-        self.assertIsInstance(dmap_data[7]['channel'].value, int)
-        self.assertIsInstance(dmap_data[2]['xcfd'].value, np.ndarray)
-        self.assertEqual(dmap_data[0]['xcfd'].dimension, 3)
-
-    def test_dmap_read_corrupt_stream(self):
-        """
-        Test read_records on a corrupt stream. Read in compressed
-        file which returns a byte object, then insert some random
-        bytes to produce a corrupt stream.
-
-        Expected behaviour: raises pydmap exception
-        """
-        with bz2.open(rawacf_stream) as fp:
-            dmap_stream = fp.read()
-
-        # need to convert to byte array for mutability
-        # since bytes are immutable.
-        corrupt_stream = bytearray(dmap_stream[0:36])
-        corrupt_stream[36:40] = bytearray(str(os.urandom(4)).encode('utf-8'))
-        corrupt_stream[40:] = dmap_stream[37:]
-        dmap = pydarnio.SDarnRead(corrupt_stream, True)
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
-            dmap.read_rawacf()
+        self.assertEqual(self.rec[0]['stid'].shape[0], 14)
 
 
-@pytest.mark.skip
-class TestDarnUtilities(unittest.TestCase):
+class TestSDarnUtilities(unittest.TestCase):
     """
     Testing DarnUtilities class.
-    
-    Note
-    ----
+
+    Notes
+    -----
     All methods in this class are static so there is no constructor testing
     """
-    def SetUp(self):
-        pass
+    def setUp(self):
+        self.tdicts = [{'a': 's', 'c': 'i', 'd': 'f'},
+                       {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]},
+                       {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}]
+
+    def tearDown(self):
+        del self.tdicts
 
     def test_dict_key_diff(self):
         """
-        Testing dict_key_diff - returns the difference in keys between two sets
-        dictionaries
-
-        Expected behaviour
-        ------------------
-        Returns the set difference between two dictionaries
+        Test the difference in keys between two dictionaries, order dependent
         """
-        a = {'a': 4, 'c': 5, 'd': 4}
-        b = {'1': 'a', 'c': 'd', 'd': 4, 'z': 'dog'}
-        solution_a_b = {'a'}
-        solution_b_a = {'1', 'z'}
-        diff_set = pydarnio.SDarnUtilities.dict_key_diff(a, b)
-        self.assertEqual(diff_set, solution_a_b)
-        diff_set = pydarnio.SDarnUtilities.dict_key_diff(b, a)
-        self.assertEqual(diff_set, solution_b_a)
+        self.tdicts[1] = {'1': 'a', 'c': 2, 'z': 'fun', 'd': 'dog'}
+
+        for val in [(self.tdicts[0], self.tdicts[1], {'a'}),
+                    (self.tdicts[1], self.tdicts[0], {'1', 'z'})]:
+            with self.subTest(val=val):
+                out = pydarnio.SDarnUtilities.dict_key_diff(val[0], val[1])
+                self.assertEqual(val[2], out)
 
     def test_dict_list2set(self):
         """
-        Tests the dict_list2set method - this method converts lists of
-        dictionaries to concatenated full sets
+        Test conversion of lists of dictionaries into concatenated full sets
 
         Expected behaviour
         ------------------
         Returns only a single set the comprises of the dictionary keys
         given in the list
         """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-
-        complete_set = {'a', 'b', 'c',
-                        'rst', 'stid', 'vel',
-                        'fitacf', 'rawacf', 'map'}
-        dict_set = pydarnio.SDarnUtilities.dict_list2set([dict1, dict2, dict3])
-        self.assertEqual(dict_set, complete_set)
+        dict_keys = {'a', 'c', 'd', 'rst', 'stid', 'vel', 'fitacf', 'rawacf',
+                     'map'}
+        out = pydarnio.SDarnUtilities.dict_list2set(self.tdicts)
+        self.assertEqual(dict_keys, out)
 
     def test_extra_field_check_pass(self):
         """
-        Test the extra_field_check method - this method checks if there are
-        differences in the key sets of dictionaries that when passed a record
-        and field names it will indicate if there is an extra field in the
-        record key set
+        Test extra_field_check success
+
+        Method - this method checks if there are differences in the key sets of
+        dictionaries that when passed a record and field names it will indicate
+        if there is an extra field in the record key set
 
         Expected behaviour
         ------------------
-        Nothing - if there are no differences in the key set then
-        nothing returns
+        Silent success - if there are no differences in the key set then
+        nothing is returned or raised
         """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-        test_dict = {'a': 3, 'b': 3, 'c': 3, 'rst': 1, 'vel': 'd'}
-        pydarnio.SDarnUtilities.extra_field_check([dict1, dict2, dict3],
-                                                test_dict, 1)
+        out = {'a': 3, 'c': 3, 'd': 3, 'rst': 1, 'vel': 'd'}
+        pydarnio.SDarnUtilities.extra_field_check(self.tdicts, out, 1)
 
     def test_extra_field_check_fail(self):
         """
-        Test the extra_field_check method - this method checks if there are
-        differences in the key sets of dictionaries that when passed a record
-        and field names it will indicate if there is an extra field in the
-        record key set
+        Test extra_field_check failur raises SuperDARNExtraFieldError
+
+        Method - this method checks if there are  differences in the key sets
+        of dictionaries that when passed a record and field names it will
+        indicate if there is an extra field in the record key set
 
         Expected behaviour
         -----------------
         Raises SuperDARNExtraFieldError because there are differences between
         the two dictionary sets
         """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        out = {'a': 3, 'b': 3, 'c': 2, 'd': 3, 'rst': 1, 'vel': 'd'}
+        with self.assertRaises(sdarn_exp.SuperDARNExtraFieldError) as err:
+            pydarnio.SDarnUtilities.extra_field_check(self.tdicts, out, 1)
 
-        test_dict = {'a': 3, 'b': 3, 'c': 2, 'd': 3, 'rst': 1, 'vel': 'd'}
-        try:
-            pydarnio.SDarnUtilities.extra_field_check([dict1, dict2, dict3],
-                                                    test_dict, 1)
-        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
-            self.assertEqual(err.fields, {'d'})
+        self.assertEqual(err.exception.fields, {'b'})
 
-    def test_missing_field_check_pass_mixed_dict(self):
+    def test_missing_field_check_pass(self):
         """
         Testing missing_field_check - Reverse idea of the extra_field_check,
         should find missing fields in a record when compared to a key set of
@@ -425,97 +266,42 @@ class TestDarnUtilities(unittest.TestCase):
         ------------------
         Nothing - if there is not differences then nothing happens
         """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-        test_dict = {}
-        test_dict.update(dict1)
-        test_dict.update(dict3)
-        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2,
-                                                  dict3],
-                                                  test_dict, 1)
-
-    def test_missing_field_check_pass_mixed_subset(self):
-        """
-        Testing missing_field_check - Reverse idea of the extra_field_check,
-        should find missing fields in a record when compared to a key set of
-        SuperDARN field names
-
-        Expected behaviour
-        ------------------
-        Nothing - the missing_field_check should be able to handle subsets of
-        of complete sets. Meaning it will not raise an error if it contains
-        the full subsets of the dictionary keys but the full overall set.
-        This is needed for Fitacf, Gird and Map files as they do not write
-        all the fields in if data is bad or users do not use certain
-        commands/options when processing the data.
-        """
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-
-        test_dict = {'a': 3, 'b': 3, 'c': 2, 'd': 2,
-                     'stid': 's', 'rst': 1, 'vel': 'd'}
-
-        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
-                                                  test_dict, 1)
-        test_dict = {}
-        test_dict.update(dict1)
-        test_dict.update(dict3)
-        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
-                                                  test_dict, 1)
-
-    def test_missing_field_check_fail2(self):
-        """
-        Testing missing_field_check - Reverse idea of the extra_field_check,
-        should find missing fields in a record when compared to a key set of
-        SuperDARN field names
-
-        Expected behaviour
-        ------------------
-        Raise SuperDARNFieldMissingError - raised when there is a difference
-        between dictionary key sets
-        """
-
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
-
-        test_dict = {'a': 3, 'b': 3, 'd': 2,
-                     'stid': 's', 'vel': 'd',
-                     'fitacf': 3, 'map': 4}
-
-        try:
-            pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
-                                                      test_dict, 1)
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'c', 'rst', 'rawacf'})
+        in_list = [dict(self.tdicts[0]),
+                   {'a': 3, 'c': 2, 'd': 2, 'stid': 's', 'rst': 1, 'vel': 'd'},
+                   dict(self.tdicts[1])]
+        in_list[0].update(self.tdicts[-1])
+        in_list[2].update(self.tdicts[2])
+        for val in in_list:
+            with self.subTest(val=val):
+                pydarnio.SDarnUtilities.missing_field_check(self.tdicts,
+                                                            val, 1)
 
     def test_missing_field_check_fail(self):
         """
-        Testing missing_field_check - Reverse idea of the extra_field_check,
-        should find missing fields in a record when compared to a key set of
-        SuperDARN field names
+        Test raises SuperDARNFieldMissingError with appropriate fields missing
+
+        Method - Reverse idea of the extra_field_check, should find missing
+        fields in a record when compared to a key set of SuperDARN field names
 
         Expected behaviour
         ------------------
         Raise SuperDARNFieldMissingError - raised when there is a difference
         between dictionary key sets
         """
+        in_list = [({'a': 3, 'b': 3, 'd': 2, 'stid': 's', 'vel': 'd'},
+                    {'c', 'rst'}),
+                   ({'a': 3, 'b': 3, 'd': 2, 'stid': 's', 'rst': 1,
+                     'vel': 'd', 'fitacf': 3, 'map': 4}, {'c', 'rawacf'})]
 
-        dict1 = {'a': 1, 'b': 2, 'c': 3}
-        dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        for val in in_list:
+            with self.subTest(val=val):
+                with self.assertRaises(
+                        sdarn_exp.SuperDARNFieldMissingError) as err:
+                    pydarnio.SDarnUtilities.missing_field_check(self.tdicts,
+                                                                val[0], 1)
 
-        test_dict = {'a': 3, 'b': 3, 'd': 2,
-                     'stid': 's', 'rst': 1, 'vel': 'd',
-                     'fitacf': 3, 'map': 4}
-
-        try:
-            pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
-                                                      test_dict, 1)
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'c', 'rawacf'})
+                # Items in tdicts, but not in rdict
+                self.assertEqual(err.exception.fields, val[1])
 
     def test_incorrect_types_check_pass(self):
         """
@@ -524,26 +310,27 @@ class TestDarnUtilities(unittest.TestCase):
 
         Note
         ----
-        This method only works on pydarnio DMAP record data structure
+        This method only works on pyDARNio DMAP record data structure
 
         Expected Behaviour
         ------------------
         Nothing - should not return or raise anything if the fields
         are the correct data format type
         """
-        dict1 = {'a': 's', 'b': 'i', 'c': 'f'}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        rdict = {'a': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['a']),
+                 'c': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['c']),
+                 'd': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
+                                         self.tdicts[0]['d'], 1, [3]),
+                 'fitacf': pydarnio.DmapScalar('a', 1, 1,
+                                               self.tdicts[-1]['fitacf']),
+                 'rawacf': pydarnio.DmapScalar('a', 1, 1,
+                                               self.tdicts[-1]['rawacf']),
+                 'map': pydarnio.DmapScalar('a', 1, 1,
+                                            self.tdicts[-1]['map'])}
 
-        test_dict = {'a': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'b': pydarnio.DmapScalar('a', 1, 1, 'i'),
-                     'c': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
-                                           'f', 1, [3]),
-                     'fitacf': pydarnio.DmapScalar('a', 1, 1, 'f'),
-                     'rawacf': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'map': pydarnio.DmapScalar('a', 1, 1, 'm')}
-
-        pydarnio.SDarnUtilities.incorrect_types_check([dict1, dict3],
-                                                    test_dict, 1)
+        pydarnio.SDarnUtilities.incorrect_types_check([self.tdicts[0],
+                                                       self.tdicts[-1]],
+                                                      rdict, 1)
 
     def test_incorrect_types_check_fail(self):
         """
@@ -552,472 +339,132 @@ class TestDarnUtilities(unittest.TestCase):
 
         Note
         ----
-        This method only works on pydarnio DMAP record data structure
+        This method only works on pyDARNio DMAP record data structure
 
         Expected Behaviour
         ------------------
         Raises SuperDARNDataFormatTypeError - because the field format types
         should not be the same.
         """
+        rdict = {'a': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['a']),
+                 'c': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['c']),
+                 'd': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
+                                         self.tdicts[0]['d'], 1, [3]),
+                 'fitacf': pydarnio.DmapScalar('a', 1, 1,
+                                               self.tdicts[-1]['rawacf']),
+                 'rawacf': pydarnio.DmapScalar('a', 1, 1,
+                                               self.tdicts[-1]['rawacf']),
+                 'map': pydarnio.DmapScalar('a', 1, 1,
+                                            self.tdicts[-1]['map'])}
 
-        dict1 = {'a': 's', 'b': 'i', 'c': 'f'}
-        dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
+        with self.assertRaises(sdarn_exp.SuperDARNDataFormatTypeError) as err:
+            pydarnio.SDarnUtilities.incorrect_types_check([self.tdicts[0],
+                                                           self.tdicts[-1]],
+                                                          rdict, 1)
 
-        test_dict = {'a': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'b': pydarnio.DmapScalar('a', 1, 1, 'i'),
-                     'c': pydarnio.DmapArray('a', np.array([2.4, 2.4]),
-                                           1, 'f', 1, [3]),
-                     'fitacf': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'rawacf': pydarnio.DmapScalar('a', 1, 1, 's'),
-                     'map': pydarnio.DmapScalar('a', 1, 1, 'm')}
-        try:
-            pydarnio.SDarnUtilities.incorrect_types_check([dict1, dict3],
-                                                        test_dict, 1)
-        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
-            self.assertEqual(err.incorrect_params, {'fitacf': 'f'})
+        self.assertEqual(err.exception.incorrect_params, {'fitacf': 'f'})
 
 
-@pytest.mark.skip
-class TestSDarnWrite(unittest.TestCase):
+class TestSDarnWrite(file_utils.TestWrite):
     """
     Tests SDarnWrite class
     """
     def setUp(self):
-        pass
-
-    def test_darn_write_constructor(self):
+        """ Runs before every test to create the test environment
         """
-        Tests SDarnWrite constructor
+        self.write_class = pydarnio.SDarnWrite
+        self.write_func = None
+        self.data_type = "rawacf"
+        self.data = []
+        self.temp_file = "not_a_file.acf"
+        self.file_types = ["rawacf", "fitacf", "iqdat", "grid", "map"]
 
-        Expected behaviour
-        ------------------
-        Contains file name of the data if given to it.
+    def tearDown(self):
+        """ Runs after every test to clean up the test environment
         """
-        rawacf_data = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        darn = pydarnio.SDarnWrite(rawacf_data, "rawacf_test.rawacf")
-        self.assertEqual(darn.filename, "rawacf_test.rawacf")
+        self.remove_temp_file()
+        del self.write_class, self.write_func, self.data_type, self.data
+        del self.temp_file, self.file_types
 
-    def test_empty_record(self):
+    def test_SDarnWrite_missing_field(self):
         """
-        Tests if an empty record is given. This will later be changed for
-        real-time implementation.
-
-        Expected behaviour
-        ------------------
-        Raise DmapDataError if no data is provided to the constructor
+        Test raises SuperDARNFieldMissingError when required data is missing
         """
-        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
-            pydarnio.SDarnWrite([], 'dummy_file.acf')
+        missing_fields = {"rawacf": "nave", "fitacf": "stid",
+                          "iqdat": "chnnum", "map": "IMF.Kp",
+                          "grid": "start.year"}
+        rnum = 0
 
-    def test_incorrect_filename_input_using_write_methods(self):
+        for val in missing_fields.keys():
+            with self.subTest(val=val):
+                # Set up the data, removing a required value
+                self.data_type = val
+                self.load_data_w_filename()
+                del self.data[rnum][missing_fields[val]]
+
+                # Attempt to write the data
+                self.set_write_func()
+                with self.assertRaises(
+                        sdarn_exp.SuperDARNFieldMissingError) as err:
+                    self.write_func(self.temp_file)
+
+                # Evaluate the error message
+                self.assertEqual(err.exception.fields, {missing_fields[val]})
+                self.assertEqual(err.exception.record_number, rnum)
+
+    def test_extra_field(self):
         """
-        Tests if a file name is not provided to any of the write methods
-
-        Expected behaviour
-        ------------------
-        All should raise a FilenameRequiredError - if no file name is given
-        what do we write to.
+        Raises SuperDARNExtraFieldErrorSuperDARNExtraFieldError with extra data
         """
-        rawacf_data = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        dmap_data = pydarnio.SDarnWrite(rawacf_data)
-        with self.assertRaises(pydarnio.dmap_exceptions.FilenameRequiredError):
-            dmap_data.write_rawacf()
-            dmap_data.write_fitacf()
-            dmap_data.write_iqdat()
-            dmap_data.write_grid()
-            dmap_data.write_map()
-            dmap_data.write_dmap()
+        rnum = 0
+        extra_name = "dummy"
+        extra_field = pydarnio.DmapArray(extra_name, np.array([1, 2]), chr(1),
+                                         'c', 1, [2])
+        test_file_dict = file_utils.get_test_files("good")
 
-    def test_SDarnWrite_missing_field_rawacf(self):
+        for val in test_file_dict.keys():
+            with self.subTest(val=val):
+                # Set up the data, adding and extra data field
+                self.data_type = val
+                self.load_data_w_filename()
+                self.data[rnum][extra_name] = extra_field
+
+                # Attempt to write the data
+                self.set_write_func()
+                with self.assertRaises(
+                        sdarn_exp.SuperDARNExtraFieldError) as err:
+                    self.write_func(self.temp_file)
+
+                # Evaluate the error message
+                self.assertEqual(err.exception.fields, {extra_name})
+                self.assertEqual(err.exception.record_number, rnum)
+
+    def test_incorrect_data_format(self):
         """
-        Tests write_rawacf method - writes a rawacf structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNFieldMissingError - because the rawacf data is
-        missing field nave
+        Test raises SuperDARNDataFormatTypeError for writing with bad format
         """
-        rawacf_missing_field = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        del rawacf_missing_field[2]['nave']
+        rnum = 0
+        incorrect_param = {"rawacf": "scan", "fitacf": "ltab",
+                           "iqdat": "lagfr", "map": "IMF.Bx", "grid": "v.min"}
+        incorrect_type = {"rawacf": "c", "fitacf": "s", "iqdat": "d",
+                          "map": "i", "grid": "d"}
 
-        dmap = pydarnio.SDarnWrite(rawacf_missing_field)
+        for val in incorrect_type.keys():
+            with self.subTest(val=val):
+                # Set up the data, adding and extra data field
+                self.data_type = val
+                self.load_data_w_filename()
+                self.data[rnum][incorrect_param[val]] = \
+                    self.data[rnum][incorrect_param[val]]._replace(
+                        data_type_fmt=incorrect_type[val])
 
-        try:
-            dmap.write_rawacf("test_rawacf.rawacf")
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'nave'})
-            self.assertEqual(err.record_number, 2)
+                # Attempt to write the data
+                self.set_write_func()
+                with self.assertRaises(
+                        sdarn_exp.SuperDARNDataFormatTypeError) as err:
+                    self.write_func(self.temp_file)
 
-    def test_extra_field_rawacf(self):
-        """
-        Tests write_rawacf method - writes a rawacf structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNExtraFieldError because the rawacf data
-        has an extra field dummy
-        """
-        rawacf_extra_field = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        rawacf_extra_field[1]['dummy'] = pydarnio.DmapScalar('dummy', 'nothing',
-                                                           chr(1), 's')
-        dmap = pydarnio.SDarnWrite(rawacf_extra_field)
-
-        try:
-            dmap.write_rawacf("test_rawacf.rawacf")
-        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
-            self.assertEqual(err.fields, {'dummy'})
-            self.assertEqual(err.record_number, 1)
-
-    def test_incorrect_data_format_rawacf(self):
-        """
-        Tests write_rawacf method - writes a rawacf structure file for the
-        given data
-
-        Expected Behaviour
-        -------------------
-        Raises SuperDARNDataFormatTypeError because the rawacf data has the
-        wrong type for the scan field
-        """
-        rawacf_incorrect_fmt = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        rawacf_incorrect_fmt[2]['scan'] = \
-            rawacf_incorrect_fmt[2]['scan']._replace(data_type_fmt='c')
-        dmap = pydarnio.SDarnWrite(rawacf_incorrect_fmt)
-
-        try:
-            dmap.write_rawacf("test_rawacf.rawacf")
-        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
-            self.assertEqual(err.incorrect_params['scan'], 'h')
-            self.assertEqual(err.record_number, 2)
-
-    def test_writing_rawacf(self):
-        """
-        Tests write_rawacf method - writes a rawacf file
-
-        Expected behaviour
-        ------------------
-        Rawacf file is produced
-        """
-        rawacf_data = copy.deepcopy(rawacf_data_sets.rawacf_data)
-
-        dmap = pydarnio.SDarnWrite(rawacf_data)
-
-        dmap.write_rawacf("test_rawacf.rawacf")
-        # only testing the file is created since it should only be created
-        # at the last step after all checks have passed
-        # Testing the integrity of the insides of the file will be part of
-        # integration testing since we need SDarnRead for that.
-        self.assertTrue(os.path.isfile("test_rawacf.rawacf"))
-        os.remove("test_rawacf.rawacf")
-
-    def test_writing_fitacf(self):
-        """
-        Tests write_fitacf method - writes a fitacf file
-
-        Expected behaviour
-        ------------------
-        fitacf file is produced
-        """
-        fitacf_data = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        dmap = pydarnio.SDarnWrite(fitacf_data)
-
-        dmap.write_fitacf("test_fitacf.fitacf")
-        self.assertTrue(os.path.isfile("test_fitacf.fitacf"))
-        os.remove("test_fitacf.fitacf")
-
-    def test_missing_fitacf_field(self):
-        """
-        Tests write_fitacf method - writes a fitacf structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNFieldMissingError - because the fitacf data is
-        missing field stid
-        """
-        fitacf_missing_field = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        del fitacf_missing_field[0]['stid']
-        dmap = pydarnio.SDarnWrite(fitacf_missing_field)
-
-        try:
-            dmap.write_fitacf("test_fitacf.fitacf")
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'stid'})
-            self.assertEqual(err.record_number, 0)
-
-    def test_extra_fitacf_field(self):
-        """
-        Tests write_fitacf method - writes a fitacf structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNExtraFieldError because the fitacf data
-        has an extra field dummy
-        """
-        fitacf_extra_field = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        fitacf_extra_field[1]['dummy'] = pydarnio.DmapArray('dummy',
-                                                          np.array([1, 2]),
-                                                          chr(1), 'c', 1, [2])
-        dmap = pydarnio.SDarnWrite(fitacf_extra_field)
-
-        try:
-            dmap.write_fitacf("test_fitacf.fitacf")
-        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
-            self.assertEqual(err.fields, {'dummy'})
-            self.assertEqual(err.record_number, 1)
-
-    def test_incorrect_fitacf_data_type(self):
-        """
-        Tests write_fitacf method - writes a fitacf structure file for the
-        given data
-
-        Expected Behaviour
-        -------------------
-        Raises SuperDARNDataFormatTypeError because the fitacf data has the
-        wrong type for the ltab field
-        """
-
-        fitacf_incorrect_fmt = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        fitacf_incorrect_fmt[1]['ltab'] = \
-            fitacf_incorrect_fmt[1]['ltab']._replace(data_type_fmt='s')
-        dmap = pydarnio.SDarnWrite(fitacf_incorrect_fmt)
-
-        try:
-            dmap.write_fitacf("test_fitacf.fitacf")
-        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
-            self.assertEqual(err.incorrect_params['ltab'], 'h')
-            self.assertEqual(err.record_number, 1)
-
-    def test_writing_iqdat(self):
-        """
-        Tests write_iqdat method - writes a iqdat file
-
-        Expected behaviour
-        ------------------
-        iqdat file is produced
-        """
-        iqdat_data = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        dmap = pydarnio.SDarnWrite(iqdat_data)
-
-        dmap.write_iqdat("test_iqdat.iqdat")
-        self.assertTrue(os.path.isfile("test_iqdat.iqdat"))
-        os.remove("test_iqdat.iqdat")
-
-    def test_missing_iqdat_field(self):
-        """
-        Tests write_iqdat method - writes a iqdat structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNFieldMissingError - because the iqdat data is
-        missing field chnnum
-        """
-
-        iqdat_missing_field = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        del iqdat_missing_field[1]['chnnum']
-        dmap = pydarnio.SDarnWrite(iqdat_missing_field)
-
-        try:
-            dmap.write_iqdat("test_iqdat.iqdat")
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'chnnum'})
-            self.assertEqual(err.record_number, 1)
-
-    def test_extra_iqdat_field(self):
-        """
-        Tests write_iqdat method - writes a iqdat structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNExtraFieldError because the iqdat data
-        has an extra field dummy
-        """
-        iqdat_extra_field = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        iqdat_extra_field[2]['dummy'] = \
-            pydarnio.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
-        dmap = pydarnio.SDarnWrite(iqdat_extra_field)
-
-        try:
-            dmap.write_iqdat("test_iqdat.iqdat")
-        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
-            self.assertEqual(err.fields, {'dummy'})
-            self.assertEqual(err.record_number, 2)
-
-    def test_incorrect_iqdat_data_type(self):
-        """
-        Tests write_iqdat method - writes a iqdat structure file for the
-        given data
-
-        Expected Behaviour
-        -------------------
-        Raises SuperDARNDataFormatTypeError because the iqdat data has the
-        wrong type for the lagfr field
-        """
-        iqdat_incorrect_fmt = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        iqdat_incorrect_fmt[2]['lagfr'] = \
-            iqdat_incorrect_fmt[2]['lagfr']._replace(data_type_fmt='d')
-        dmap = pydarnio.SDarnWrite(iqdat_incorrect_fmt)
-
-        try:
-            dmap.write_iqdat("test_iqdat.iqdat")
-        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
-            self.assertEqual(err.incorrect_params['lagfr'], 'h')
-            self.assertEqual(err.record_number, 2)
-
-    def test_writing_map(self):
-        """
-        Tests write_map method - writes a map file
-
-        Expected behaviour
-        ------------------
-        map file is produced
-        """
-        map_data = copy.deepcopy(map_data_sets.map_data)
-        dmap = pydarnio.SDarnWrite(map_data)
-
-        dmap.write_map("test_map.map")
-        self.assertTrue(os.path.isfile("test_map.map"))
-        os.remove("test_map.map")
-
-    def test_missing_map_field(self):
-        """
-        Tests write_map method - writes a map structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNFieldMissingError - because the map data is
-        missing field stid
-        """
-        map_missing_field = copy.deepcopy(map_data_sets.map_data)
-        del map_missing_field[0]['IMF.Kp']
-        dmap = pydarnio.SDarnWrite(map_missing_field)
-
-        try:
-            dmap.write_map("test_map.map")
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'IMF.Kp'})
-            self.assertEqual(err.record_number, 0)
-
-    def test_extra_map_field(self):
-        """
-        Tests write_map method - writes a map structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNExtraFieldError because the map data
-        has an extra field dummy
-        """
-        map_extra_field = copy.deepcopy(map_data_sets.map_data)
-        map_extra_field[1]['dummy'] = \
-            pydarnio.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
-        dmap = pydarnio.SDarnWrite(map_extra_field)
-
-        try:
-            dmap.write_map("test_map.map")
-        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
-            self.assertEqual(err.fields, {'dummy'})
-            self.assertEqual(err.record_number, 1)
-
-    def test_incorrect_map_data_type(self):
-        """
-        Tests write_map method - writes a map structure file for the
-        given data
-
-        Expected Behaviour
-        -------------------
-        Raises SuperDARNDataFormatTypeError because the map data has the
-        wrong type for the IMF.Bx field
-        """
-        map_incorrect_fmt = copy.deepcopy(map_data_sets.map_data)
-        map_incorrect_fmt[2]['IMF.Bx'] = \
-            map_incorrect_fmt[2]['IMF.Bx']._replace(data_type_fmt='i')
-        dmap = pydarnio.SDarnWrite(map_incorrect_fmt)
-
-        try:
-            dmap.write_map("test_map.map")
-        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
-            self.assertEqual(err.incorrect_params.keys(), {'IMF.Bx'})
-            self.assertEqual(err.record_number, 2)
-
-    def test_writing_grid(self):
-        """
-        Tests write_grid method - writes a grid file
-
-        Expected behaviour
-        ------------------
-        grid file is produced
-        """
-        grid_data = copy.deepcopy(grid_data_sets.grid_data)
-        dmap = pydarnio.SDarnWrite(grid_data)
-
-        dmap.write_grid("test_grid.grid")
-        self.assertTrue(os.path.isfile("test_grid.grid"))
-        os.remove("test_grid.grid")
-
-    def test_missing_grid_field(self):
-        """
-        Tests write_grid method - writes a grid structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNFieldMissingError - because the grid data is
-        missing field stid
-        """
-        grid_missing_field = copy.deepcopy(grid_data_sets.grid_data)
-        del grid_missing_field[1]['start.year']
-        dmap = pydarnio.SDarnWrite(grid_missing_field)
-
-        try:
-            dmap.write_grid("test_grid.grid")
-        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
-            self.assertEqual(err.fields, {'start.year'})
-            self.assertEqual(err.record_number, 1)
-
-    def test_extra_grid_field(self):
-        """
-        Tests write_grid method - writes a grid structure file for the
-        given data
-
-        Expected behaviour
-        ------------------
-        Raises SuperDARNExtraFieldError because the grid data
-        has an extra field dummy
-        """
-        grid_extra_field = copy.deepcopy(grid_data_sets.grid_data)
-        grid_extra_field[0]['dummy'] = \
-            pydarnio.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
-        dmap = pydarnio.SDarnWrite(grid_extra_field)
-
-        try:
-            dmap.write_grid("test_grid.grid")
-        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
-            self.assertEqual(err.fields, {'dummy'})
-            self.assertEqual(err.record_number, 0)
-
-    def test_incorrect_grid_data_type(self):
-        """
-        Tests write_grid method - writes a grid structure file for the
-        given data
-
-        Expected Behaviour
-        -------------------
-        Raises SuperDARNDataFormatTypeError because the grid data has the
-        wrong type for the v.min field
-        """
-        grid_incorrect_fmt = copy.deepcopy(grid_data_sets.grid_data)
-        grid_incorrect_fmt[2]['v.min'] = \
-            grid_incorrect_fmt[2]['v.min']._replace(data_type_fmt='d')
-        dmap = pydarnio.SDarnWrite(grid_incorrect_fmt)
-
-        try:
-            dmap.write_grid("test_grid.grid")
-        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
-            self.assertEqual(err.incorrect_params.keys(), {'v.min'})
-            self.assertEqual(err.record_number, 2)
+                # Evaluate the error message
+                self.assertEqual(err.exception.incorrect_params.keys(),
+                                 {incorrect_param[val]})
+                self.assertEqual(err.exception.record_number, rnum)

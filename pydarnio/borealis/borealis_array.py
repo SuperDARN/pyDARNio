@@ -119,9 +119,10 @@ class BorealisArrayRead():
                                  group='/borealis_git_hash').split('-')[0]
         except ValueError as err:
             raise borealis_exceptions.BorealisStructureError(
-                ' {} Could not find the borealis_git_hash required to '
-                'determine read version (file may be site style) {}'
-                ''.format(self.filename, err)) from err
+                'Array-structured read of {}: Could not find the '
+                'borealis_git_hash required to '
+                'determine read version (file may be site structured)'
+                ''.format(self.filename)) from err
 
         if version not in borealis_formats.borealis_version_dict:
             raise borealis_exceptions.BorealisVersionError(self.filename,
@@ -363,9 +364,10 @@ class BorealisArrayWrite():
             version = self._arrays['borealis_git_hash'].split('-')[0]
         except KeyError as err:
             raise borealis_exceptions.BorealisStructureError(
-                ' {} Could not find the borealis_git_hash required to '
-                'determine write version (data may be site style): {}'
-                ''.format(self.filename, err)) from err
+                'Array-structured write of {}: Could not find the '
+                'borealis_git_hash required to '
+                'determine write version (data may be given as records)'
+                ''.format(self.filename)) from err
 
         if version not in borealis_formats.borealis_version_dict:
             raise borealis_exceptions.BorealisVersionError(self.filename,
