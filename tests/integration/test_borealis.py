@@ -30,19 +30,33 @@ import pydarnio
 
 pydarnio_logger = logging.getLogger('pydarnio')
 
+# # Site Test files
+# borealis_site_bfiq_file = "../test_files/20200819.2200.00.sas.0.bfiq.hdf5.site"
+# borealis_site_rawacf_file =\
+#         "../test_files/20200819.2200.00.sas.0.rawacf.hdf5.site"
+# borealis_site_antennas_iq_file =\
+#         "../test_files/20200819.2200.00.sas.0.antennas_iq.hdf5.site"
+# borealis_site_rawrf_file = ""
+
+# # Array Test files
+# borealis_array_bfiq_file = "../test_files/20200819.2200.00.sas.0.bfiq.hdf5"
+# borealis_array_rawacf_file = "../test_files/20200819.2200.00.sas.0.rawacf.hdf5"
+# borealis_array_antennas_iq_file =\
+#         "../test_files/20200819.2200.00.sas.0.antennas_iq.hdf5"
+
 # Site Test files
-borealis_site_bfiq_file = "../test_files/20200819.2200.00.sas.0.bfiq.hdf5.site"
+borealis_site_bfiq_file = "../testdir/borealis-v04site/good/borealis-v04site_good.bfiq.hdf5"
 borealis_site_rawacf_file =\
-        "../test_files/20200819.2200.00.sas.0.rawacf.hdf5.site"
+        "../testdir/borealis-v04site/good/borealis-v04site_good.rawacf.hdf5"
 borealis_site_antennas_iq_file =\
-        "../test_files/20200819.2200.00.sas.0.antennas_iq.hdf5.site"
+        "../testdir/borealis-v04site/good/borealis-v04site_good.antennas_iq.hdf5"
 borealis_site_rawrf_file = ""
 
 # Array Test files
-borealis_array_bfiq_file = "../test_files/20200819.2200.00.sas.0.bfiq.hdf5"
-borealis_array_rawacf_file = "../test_files/20200819.2200.00.sas.0.rawacf.hdf5"
+borealis_array_bfiq_file = "../testdir/borealis-v04/good/borealis-v04_good.bfiq.hdf5"
+borealis_array_rawacf_file = "../testdir/borealis-v04/good/borealis-v04_good.rawacf.hdf5"
 borealis_array_antennas_iq_file =\
-        "../test_files/20200819.2200.00.sas.0.antennas_iq.hdf5"
+        "../testdir/borealis-v04/good/borealis-v04_good.antennas_iq.hdf5"
 
 # Problem files TODO
 borealis_site_extra_field_file = ""
