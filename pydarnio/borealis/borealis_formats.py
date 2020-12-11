@@ -11,6 +11,10 @@ BorealisBfiq
 BorealisAntennasIq
 BorealisRawrf
 as well as previous versions of these classes, currently including
+BorealisRawacfv0_5
+BorealisBfiqv0_5
+BorealisAntennasIqv0_5
+BorealisRawrfv0_5
 BorealisRawacfv0_4
 BorealisBfiqv0_4
 BorealisAntennasIqv0_4
@@ -1270,13 +1274,9 @@ class BorealisRawrfv0_4(BaseFormat):
             }
 
 
-# The following are the currently used classes, with additions according
-# to Borealis updates.
-
-class BorealisRawacf(BorealisRawacfv0_4):
+class BorealisRawacfv0_5(BorealisRawacfv0_4):
     """
-    Class containing Borealis Rawacf data fields and their types for the
-    current version of Borealis (v0.5).
+    Class containing Borealis Rawacf data fields and their types
 
     See Also
     --------
@@ -1407,10 +1407,9 @@ class BorealisRawacf(BorealisRawacfv0_4):
         return array_specific
 
 
-class BorealisBfiq(BorealisBfiqv0_4):
+class BorealisBfiqv0_5(BorealisBfiqv0_4):
     """
-    Class containing Borealis Bfiq data fields and their types for the
-    current version of Borealis (v0.5).
+    Class containing Borealis Bfiq data fields and their types
 
     See Also
     --------
@@ -1542,10 +1541,9 @@ class BorealisBfiq(BorealisBfiqv0_4):
         return array_specific
 
 
-class BorealisAntennasIq(BorealisAntennasIqv0_4):
+class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
     """
-    Class containing Borealis Antennas iq data fields and their types for
-    Borealis current version (v0.5).
+    Class containing Borealis Antennas iq data fields and their types
 
     See Also
     --------
@@ -1690,10 +1688,9 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         return array_specific
 
 
-class BorealisRawrf(BorealisRawrfv0_4):
+class BorealisRawrfv0_5(BorealisRawrfv0_4):
     """
-    Class containing Borealis Rawrf data fields and their types for current
-    Borealis version (v0.5).
+    Class containing Borealis Rawrf data fields and their types
 
     See Also
     --------
@@ -1759,6 +1756,351 @@ class BorealisRawrf(BorealisRawrfv0_4):
         return array_dtypes
 
 
+# The following are the currently used classes, with additions according
+# to Borealis updates.
+
+class BorealisRawacf(BorealisRawacfv0_5):
+    """
+    Class containing Borealis Rawacf data fields and their types for the
+    current version of Borealis (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisRawacfv0_5
+    https://borealis.readthedocs.io/en/latest/borealis_data.html
+
+    Notes
+    -----
+    Rawacf data has been mixed, filtered, and decimated; beamformed and
+    combined into antenna arrays; then autocorrelated and correlated between
+    antenna arrays to produce matrices of num_ranges x num_lags.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, the following fields were added:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and low_power_status_word.
+    array structured files contain the same fields, but with dims of [num_records].
+    """
+
+    @classmethod
+    def single_element_types(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Returns
+        -------
+        single_element_types
+            All the single-element fields in records of the
+            format, as a dictionary fieldname : type.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and low_power_status_word were added as single element fields
+        """
+        single_element_types = super(BorealisRawacf,
+                                     cls).single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP mapped to bit position
+            # A '1' indicates an agc fault at least once during the integration period.
+            "ags_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP mapped to bit position
+            # A '1' indicates a low power condition at least once during the integration period.
+            "low_power_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire integration period
+            "gps_locked": np.boolean,
+            # The max time diffe between GPS and system time during the integration period.
+            # In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float32
+        })
+        return single_element_types
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and low_power_status_word were added to rawacf.
+        All are unshared fields because their values may not be the same from record to record.
+        """
+        unshared_fields_dims = super(BorealisRawacf,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'low_power_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisRawacf,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'low_power_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+
+class BorealisBfiq(BorealisBfiqv0_5):
+    """
+    Class containing Borealis Bfiq data fields and their types for the
+    current version of Borealis (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisBfiqv0_5
+
+    Notes
+    -----
+    Bfiq data is beamformed i and q data. It has been mixed, filtered,
+    decimated to the final output receive rate, and it has been beamformed
+    and all channels have been combined into their arrays. No correlation
+    or averaging has occurred.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, the following fields were added:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and low_power_status_word.
+    array structured files contain the same fields, but with dims of [num_records].
+    """
+
+    @classmethod
+    def single_element_types(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Returns
+        -------
+        single_element_types
+            All the single-element fields in records of the
+            format, as a dictionary fieldname : type.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and low_power_status_word were added as single element fields
+        """
+        single_element_types = super(BorealisBfiq,
+                                     cls).single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP mapped to bit position
+            # A '1' indicates an agc fault at least once during the integration period.
+            "ags_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP mapped to bit position
+            # A '1' indicates a low power condition at least once during the integration period.
+            "low_power_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire integration period
+            "gps_locked": np.boolean,
+            # The max time diffe between GPS and system time during the integration period.
+            # In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float32
+        })
+        return single_element_types
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and low_power_status_word were added to bfiq.
+        All are unshared fields because their values may not be the same from record to record.
+        """
+        unshared_fields_dims = super(BorealisBfiq,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'low_power_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisBfiq,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'low_power_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+
+class BorealisAntennasIq(BorealisAntennasIqv0_5):
+    """
+    Class containing Borealis Antennas iq data fields and their types for
+    Borealis current version (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisAntennasIqv0_5
+
+    Notes
+    -----
+    Antennas iq data is data with all channels separated. It has been mixed
+    and filtered, but it has not been beamformed or combined into the
+    entire antenna array data product.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, the following fields were added to the Borealis-produced
+    site structured files:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and low_power_status_word.
+    array structured files contain the same fields, but with dims of [num_records].
+    """
+
+    @classmethod
+    def single_element_types(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Returns
+        -------
+        single_element_types
+            All the single-element fields in records of the
+            format, as a dictionary fieldname : type.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and low_power_status_word were added as single element fields
+        """
+        single_element_types = super(BorealisAntennasIq
+                                     cls).single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP mapped to bit position
+            # A '1' indicates an agc fault at least once during the integration period.
+            "ags_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP mapped to bit position
+            # A '1' indicates a low power condition at least once during the integration period.
+            "low_power_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire integration period
+            "gps_locked": np.boolean,
+            # The max time diffe between GPS and system time during the integration period.
+            # In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float32
+        })
+        return single_element_types
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and low_power_status_word were added to the antennas_iq.
+        All are unshared fields because their values may not be the same from record to record.
+        """
+        unshared_fields_dims = super(BorealisAntennasIq,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'low_power_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisAntennasIq,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'low_power_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+
+class BorealisRawrf(BorealisRawrfv0_5):
+    """
+    Class containing Borealis Rawrf data fields and their types for current
+    Borealis version (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisRawrfv0_5
+
+    Notes
+    -----
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, the following fields were added to BorealisRawrf:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and low_power_status_word.
+    """
+
+    @classmethod
+    def single_element_types(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Returns
+        -------
+        single_element_types
+            All the single-element fields in records of the
+            format, as a dictionary fieldname : type.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and low_power_status_word were added as single element fields
+        """
+        single_element_types = super(BorealisRawrf,
+                                     cls).single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP mapped to bit position
+            # A '1' indicates an agc fault at least once during the integration period.
+            "ags_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP mapped to bit position
+            # A '1' indicates a low power condition at least once during the integration period.
+            "low_power_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire integration period
+            "scheduling_mode": np.boolean,
+            # The max time diffe between GPS and system time during the integration period.
+            # In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float32
+        })
+        return single_element_types
+
+
 # borealis versions
 borealis_version_dict = {
     'v0.2': {
@@ -1780,6 +2122,12 @@ borealis_version_dict = {
         'rawrf': BorealisRawrfv0_4
         },
     'v0.5': {
+        'bfiq': BorealisBfiqv0_5,
+        'rawacf': BorealisRawacfv0_5,
+        'antennas_iq': BorealisAntennasIqv0_5,
+        'rawrf': BorealisRawrfv0_5
+        },
+    'v0.6': {
         'bfiq': BorealisBfiq,
         'rawacf': BorealisRawacf,
         'antennas_iq': BorealisAntennasIq,
