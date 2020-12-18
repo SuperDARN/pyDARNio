@@ -1321,7 +1321,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         from record to record, but it is also a single-element-per-record
         field.
         """
-        single_element_types = super(BorealisRawacfv0_4,
+        single_element_types = super(BorealisRawacfv0_5,
                                      cls).single_element_types()
         single_element_types.update({
             # the slice id of the file and dataset.
@@ -1352,7 +1352,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         within the sequence. Therefore, this bug was fixed by changing
         blanked_samples to an unshared field in Borealis v0.5.
         """
-        shared = super(BorealisRawacfv0_4, cls).shared_fields() + \
+        shared = super(BorealisRawacfv0_5, cls).shared_fields() + \
             ['slice_id', 'scheduling_mode', 'averaging_method']
         shared.remove('blanked_samples')
         return shared
@@ -1370,7 +1370,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         new slices may be added and interfaced to this slice and therefore
         slice_interfacing may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisRawacfv0_4,
+        unshared_fields_dims = super(BorealisRawacfv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.find_max_blanked_samples],
@@ -1383,7 +1383,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisRawacfv0_4,
+        unshared_fields_dims = super(BorealisRawacfv0_5,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
@@ -1397,7 +1397,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisRawacfv0_4,
+        array_specific = super(BorealisRawacfv0_5,
                                cls).array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
@@ -1457,7 +1457,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         array-specific field as the number may vary from record to record,
         but it is also a single-element-per-record field.
         """
-        single_element_types = super(BorealisBfiqv0_4,
+        single_element_types = super(BorealisBfiqv0_5,
                                      cls).single_element_types()
         single_element_types.update({
             # the slice id of the file and dataset.
@@ -1486,7 +1486,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         was fixed by changing blanked_samples to an unshared field in Borealis
         v0.5.
         """
-        shared = super(BorealisBfiqv0_4, cls).shared_fields() + \
+        shared = super(BorealisBfiqv0_5, cls).shared_fields() + \
             ['slice_id', 'scheduling_mode']
         shared.remove('blanked_samples')
         return shared
@@ -1504,7 +1504,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         new slices may be added and interfaced to this slice and therefore
         slice_interfacing may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisBfiqv0_4,
+        unshared_fields_dims = super(BorealisBfiqv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.find_max_blanked_samples],
@@ -1517,7 +1517,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisBfiqv0_4,
+        unshared_fields_dims = super(BorealisBfiqv0_5,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
@@ -1531,7 +1531,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisBfiqv0_4,
+        array_specific = super(BorealisBfiqv0_5,
                                cls).array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
@@ -1586,7 +1586,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         array-specific field as the number may vary from record to record,
         but it is also a single-element-per-record field.
         """
-        single_element_types = super(BorealisAntennasIqv0_4,
+        single_element_types = super(BorealisAntennasIqv0_5,
                                      cls).single_element_types()
         single_element_types.update({
             # the slice id of the file and dataset.
@@ -1617,7 +1617,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         In Borealis v0.5, blanked_samples was added as an array
         field.
         """
-        array_dtypes = super(BorealisAntennasIqv0_4, cls).array_dtypes()
+        array_dtypes = super(BorealisAntennasIqv0_5, cls).array_dtypes()
         array_dtypes.update({
             # Samples that occur during TR switching (transmission times)
             "blanked_samples": np.uint32
@@ -1634,7 +1634,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         In Borealis v0.5, slice_id and scheduling_mode were added and these
         will be shared fields.
         """
-        shared = super(BorealisAntennasIqv0_4, cls).shared_fields() + \
+        shared = super(BorealisAntennasIqv0_5, cls).shared_fields() + \
             ['slice_id', 'scheduling_mode']
         return shared
 
@@ -1651,7 +1651,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         new slices may be added and interfaced to this slice and therefore
         the field may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisAntennasIqv0_4,
+        unshared_fields_dims = super(BorealisAntennasIqv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.find_max_blanked_samples],
@@ -1664,7 +1664,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisAntennasIqv0_4,
+        unshared_fields_dims = super(BorealisAntennasIqv0_5,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
@@ -1678,7 +1678,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisAntennasIqv0_4,
+        array_specific = super(BorealisAntennasIqv0_5,
                                cls).array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
@@ -1723,7 +1723,7 @@ class BorealisRawrfv0_5(BorealisRawrfv0_4):
         In Borealis v0.5, scheduling_mode was added as a single
         element field.
         """
-        single_element_types = super(BorealisRawrfv0_4,
+        single_element_types = super(BorealisRawrfv0_5,
                                      cls).single_element_types()
         single_element_types.update({
             # A string describing the type of scheduling time at the time of
@@ -1748,7 +1748,7 @@ class BorealisRawrfv0_5(BorealisRawrfv0_4):
         In Borealis v0.5, blanked_samples was added as an array
         field.
         """
-        array_dtypes = super(BorealisRawrfv0_4, cls).array_dtypes()
+        array_dtypes = super(BorealisRawrfv0_5, cls).array_dtypes()
         array_dtypes.update({
             # Samples that occur during TR switching (transmission times)
             "blanked_samples": np.uint32
@@ -1802,7 +1802,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
         and low_power_status_word were added as single element fields
         """
-        single_element_types = super(BorealisRawacfv0_5,
+        single_element_types = super(BorealisRawacf,
                                      cls).single_element_types()
         single_element_types.update({
             # the agc fault status of each transmitter, transmitter/USRP
