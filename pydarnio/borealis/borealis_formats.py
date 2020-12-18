@@ -1836,7 +1836,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
         All are unshared fields because their values may not be the same from
         record to record.
         """
-        unshared_fields_dims = super(BorealisRawacfv0_5,
+        unshared_fields_dims = super(BorealisRawacf,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
@@ -1851,7 +1851,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisRawacfv0_5,
+        unshared_fields_dims = super(BorealisRawacf,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
@@ -1905,7 +1905,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
         and low_power_status_word were added as single element fields
         """
-        single_element_types = super(BorealisBfiqv0_5,
+        single_element_types = super(BorealisBfiq,
                                      cls).single_element_types()
         single_element_types.update({
             # the agc fault status of each transmitter, transmitter/USRP
@@ -1939,7 +1939,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
         All are unshared fields because their values may not be the same from
         record to record.
         """
-        unshared_fields_dims = super(BorealisBfiqv0_5,
+        unshared_fields_dims = super(BorealisBfiq,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
@@ -1954,7 +1954,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisBfiqv0_5,
+        unshared_fields_dims = super(BorealisBfiq,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
@@ -2008,7 +2008,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
         and low_power_status_word were added as single element fields
         """
-        single_element_types = super(BorealisAntennasIqv0_5,
+        single_element_types = super(BorealisAntennasIq,
                                      cls).single_element_types()
         single_element_types.update({
             # the agc fault status of each transmitter, transmitter/USRP
@@ -2042,7 +2042,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
         All are unshared fields because their values may not be the same from
         record to record.
         """
-        unshared_fields_dims = super(BorealisAntennasIqv0_5,
+        unshared_fields_dims = super(BorealisAntennasIq,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
@@ -2057,7 +2057,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisAntennasIqv0_5,
+        unshared_fields_dims = super(BorealisAntennasIq,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
@@ -2105,7 +2105,7 @@ class BorealisRawrf(BorealisRawrfv0_5):
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
         and low_power_status_word were added as single element fields
         """
-        single_element_types = super(BorealisRawrfv0_5,
+        single_element_types = super(BorealisRawrf,
                                      cls).single_element_types()
         single_element_types.update({
             # the agc fault status of each transmitter, transmitter/USRP
