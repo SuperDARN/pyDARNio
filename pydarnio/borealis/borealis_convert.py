@@ -612,10 +612,8 @@ class BorealisConvert(BorealisRead):
                 # smsep is in us; conversion from seconds
                 'smsep': np.int16(1e6 / record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                # TODO: currently not implemented
-                'stat.agc': np.int16(0),
-                # TODO: currently not implemented
-                'stat.lopwr': np.int16(0),
+                'stat.agc': np.int16(record_dict['agc_status_word']),
+                'stat.lopwr': np.int16(record_dict['lp_status_word']),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented
@@ -872,10 +870,8 @@ class BorealisConvert(BorealisRead):
                 'lagfr': np.int16(record_dict['first_range_rtt']),
                 'smsep': np.int16(1e6/record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                # TODO: currently not implemented
-                'stat.agc': np.int16(0),
-                # TODO: currently not implemented
-                'stat.lopwr': np.int16(0),
+                'stat.agc': np.int16(record_dict['agc_status_word']),
+                'stat.lopwr': np.int16(record_dict['lp_status_word']),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented

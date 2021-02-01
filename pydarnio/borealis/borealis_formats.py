@@ -1782,7 +1782,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
 
     In v0.6, four fields were added to site files:
     gps_locked, gps_to_system_time_diff, agc_status_word, and
-    low_power_status_word. Array structured files contain the same fields,
+    lp_status_word. Array structured files contain the same fields,
     but with dims of [num_records].
     """
 
@@ -1800,7 +1800,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and low_power_status_word were added as single element fields
+        and lp_status_word were added as single element fields
         """
         single_element_types = super(BorealisRawacf,
                                      cls).single_element_types()
@@ -1809,12 +1809,12 @@ class BorealisRawacf(BorealisRawacfv0_5):
             # mapped to bit position
             # A '1' indicates an agc fault at least once during the integration
             # period.
-            "ags_status_word": np.uint32,
+            "agc_status_word": np.uint32,
             # the low power status of each transmitter, transmitter/USRP
             # mapped to bit position
             # A '1' indicates a low power condition at least once during the
             # integration period.
-            "low_power_status_word": np.uint32,
+            "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
             "gps_locked": np.bool,
@@ -1832,7 +1832,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and low_power_status_word were added to rawacf.
+        and lp_status_word were added to rawacf.
         All are unshared fields because their values may not be the same from
         record to record.
         """
@@ -1840,7 +1840,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
-            'low_power_status_word': [],
+            'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             })
@@ -1855,7 +1855,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
-            'low_power_status_word': [],
+            'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             })
@@ -1885,7 +1885,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
 
     In v0.6, four fields were added to site files:
     gps_locked, gps_to_system_time_diff, agc_status_word, and
-    low_power_status_word. Array structured files contain the same fields,
+    lp_status_word. Array structured files contain the same fields,
     but with dims of [num_records].
     """
 
@@ -1903,7 +1903,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and low_power_status_word were added as single element fields
+        and lp_status_word were added as single element fields
         """
         single_element_types = super(BorealisBfiq,
                                      cls).single_element_types()
@@ -1912,12 +1912,12 @@ class BorealisBfiq(BorealisBfiqv0_5):
             # mapped to bit position
             # A '1' indicates an agc fault at least once during the
             # integration period.
-            "ags_status_word": np.uint32,
+            "agc_status_word": np.uint32,
             # the low power status of each transmitter, transmitter/USRP
             # mapped to bit position
             # A '1' indicates a low power condition at least once during
             # the integration period.
-            "low_power_status_word": np.uint32,
+            "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
             "gps_locked": np.bool,
@@ -1935,7 +1935,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and low_power_status_word were added to bfiq.
+        and lp_status_word were added to bfiq.
         All are unshared fields because their values may not be the same from
         record to record.
         """
@@ -1943,7 +1943,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
-            'low_power_status_word': [],
+            'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             })
@@ -1958,7 +1958,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
-            'low_power_status_word': [],
+            'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             })
@@ -1988,7 +1988,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
     In v0.6, the following fields were added to the Borealis-produced
     site structured files:
     gps_locked, gps_to_system_time_diff, agc_status_word, and
-    low_power_status_word. Array structured files contain the same fields,
+    lp_status_word. Array structured files contain the same fields,
     but with dims of [num_records].
     """
 
@@ -2006,7 +2006,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and low_power_status_word were added as single element fields
+        and lp_status_word were added as single element fields
         """
         single_element_types = super(BorealisAntennasIq,
                                      cls).single_element_types()
@@ -2015,12 +2015,12 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             # mapped to bit position
             # A '1' indicates an agc fault at least once during the
             # integration period.
-            "ags_status_word": np.uint32,
+            "agc_status_word": np.uint32,
             # the low power status of each transmitter, transmitter/USRP
             # mapped to bit position
             # A '1' indicates a low power condition at least once during
             # the integration period.
-            "low_power_status_word": np.uint32,
+            "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
             "gps_locked": np.bool,
@@ -2038,7 +2038,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and low_power_status_word were added to the antennas_iq.
+        and lp_status_word were added to the antennas_iq.
         All are unshared fields because their values may not be the same from
         record to record.
         """
@@ -2046,7 +2046,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
-            'low_power_status_word': [],
+            'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             })
@@ -2061,7 +2061,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
-            'low_power_status_word': [],
+            'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             })
@@ -2086,7 +2086,7 @@ class BorealisRawrf(BorealisRawrfv0_5):
 
     In v0.6, the following fields were added to BorealisRawrf:
     gps_locked, gps_to_system_time_diff, agc_status_word, and
-    low_power_status_word.
+    lp_status_word.
     """
 
     @classmethod
@@ -2103,7 +2103,7 @@ class BorealisRawrf(BorealisRawrfv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and low_power_status_word were added as single element fields
+        and lp_status_word were added as single element fields
         """
         single_element_types = super(BorealisRawrf,
                                      cls).single_element_types()
@@ -2112,12 +2112,12 @@ class BorealisRawrf(BorealisRawrfv0_5):
             # mapped to bit position
             # A '1' indicates an agc fault at least once during the
             # integration period.
-            "ags_status_word": np.uint32,
+            "agc_status_word": np.uint32,
             # the low power status of each transmitter, transmitter/USRP
             # mapped to bit position
             # A '1' indicates a low power condition at least once during
             # the integration period.
-            "low_power_status_word": np.uint32,
+            "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
             "scheduling_mode": np.bool,
