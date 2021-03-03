@@ -361,9 +361,11 @@ class BorealisConvert(BorealisRead):
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                if not np.array_equal(record['blanked_samples'],
-                                      record['pulses'] *
-                                      sample_spacing):
+                normal_blanked_1 = record['pulses'] * sample_spacing
+                normal_blanked_2 = normal_blanked_1 + 1
+                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                blanked = np.sort(blanked)
+                if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2IqdatError(
                                 'Increased complexity: Borealis bfiq file'
@@ -415,9 +417,11 @@ class BorealisConvert(BorealisRead):
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                if not np.array_equal(record['blanked_samples'],
-                                      record['pulses'] *
-                                      sample_spacing):
+                normal_blanked_1 = record['pulses'] * sample_spacing
+                normal_blanked_2 = normal_blanked_1 + 1
+                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                blanked = np.sort(blanked)
+                if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2RawacfError(
                                 'Increased complexity: Borealis rawacf file'

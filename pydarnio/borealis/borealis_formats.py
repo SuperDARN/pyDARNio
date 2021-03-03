@@ -1667,7 +1667,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         unshared_fields_dims = super(BorealisAntennasIqv0_5,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
-            'blanked_samples': [lambda arrays, record_num:
+            'blanked_samples': [lambda arrays, record_numyy:
                                 arrays['num_blanked_samples'][record_num]],
             'slice_interfacing': []
             })
@@ -1817,10 +1817,10 @@ class BorealisRawacf(BorealisRawacfv0_5):
             "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
-            "gps_locked": np.bool,
+            "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float32
+            "gps_to_system_time_diff": np.float64
         })
         return single_element_types
 
@@ -1920,10 +1920,10 @@ class BorealisBfiq(BorealisBfiqv0_5):
             "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
-            "gps_locked": np.bool,
+            "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float32
+            "gps_to_system_time_diff": np.float64
         })
         return single_element_types
 
@@ -1946,6 +1946,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
             'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
+            'pulse_phase_offset' : [cls.find_max_pulse_phase_offset]
             })
         return unshared_fields_dims
 
@@ -1961,6 +1962,11 @@ class BorealisBfiq(BorealisBfiqv0_5):
             'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [lambda arrays, record_num: 
+                            0 if (arrays['pulse_phase_offset'].shape[1] == 0)
+                            else 
+                            list((arrays['num_sequences'][record_num],) +
+                            arrays['pulse_phase_offset'][record_num].shape[1:])],
             })
         return unshared_fields_dims
 
@@ -2023,10 +2029,10 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
-            "gps_locked": np.bool,
+            "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float32
+            "gps_to_system_time_diff": np.float64
         })
         return single_element_types
 
@@ -2049,6 +2055,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
+            'pulse_phase_offset' : [cls.find_max_pulse_phase_offset]
             })
         return unshared_fields_dims
 
@@ -2064,6 +2071,8 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [lambda arrays, record_num:
+                                arrays['pulse_phase_offset'][record_num]],
             })
         return unshared_fields_dims
 
@@ -2120,10 +2129,10 @@ class BorealisRawrf(BorealisRawrfv0_5):
             "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
-            "scheduling_mode": np.bool,
+            "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float32
+            "gps_to_system_time_diff": np.float64
         })
         return single_element_types
 
