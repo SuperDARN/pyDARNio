@@ -190,6 +190,9 @@ class BaseFormat():
     find_max_blanked_samples(records): int
         Find the max number of blanked samples between records in a site file,
         for restructuring to arrays.
+    find_max_pulse_phase_offset(records): list
+        Find the maximum shape of the phase encoding values between records in
+        a site style records file, for restructuring to arrays.
 
     Notes
     -----

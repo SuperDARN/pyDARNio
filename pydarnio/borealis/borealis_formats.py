@@ -1667,7 +1667,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         unshared_fields_dims = super(BorealisAntennasIqv0_5,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
-            'blanked_samples': [lambda arrays, record_numyy:
+            'blanked_samples': [lambda arrays, record_num:
                                 arrays['num_blanked_samples'][record_num]],
             'slice_interfacing': []
             })
@@ -1887,6 +1887,8 @@ class BorealisBfiq(BorealisBfiqv0_5):
     gps_locked, gps_to_system_time_diff, agc_status_word, and
     lp_status_word. Array structured files contain the same fields,
     but with dims of [num_records].
+
+    pulse_phase_offset was also added
     """
 
     @classmethod
@@ -1935,7 +1937,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and lp_status_word were added to bfiq.
+        lp_status_word and pulse_phase_offset were added to bfiq.
         All are unshared fields because their values may not be the same from
         record to record.
         """
@@ -1946,7 +1948,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
             'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
-            'pulse_phase_offset' : [cls.find_max_pulse_phase_offset]
+            'pulse_phase_offset': [cls.find_max_pulse_phase_offset]
             })
         return unshared_fields_dims
 
@@ -1962,7 +1964,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
             'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
-            'pulse_phase_offset': [lambda arrays, record_num: 
+            'pulse_phase_offset': [lambda arrays, record_num:
                             0 if (arrays['pulse_phase_offset'].shape[1] == 0)
                             else 
                             list((arrays['num_sequences'][record_num],) +
@@ -1993,9 +1995,11 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
 
     In v0.6, the following fields were added to the Borealis-produced
     site structured files:
-    gps_locked, gps_to_system_time_diff, agc_status_word, and
-    lp_status_word. Array structured files contain the same fields,
+    gps_locked, gps_to_system_time_diff, agc_status_word, and lp_status_word.
+    Array structured files contain the same fields,
     but with dims of [num_records].
+
+    pulse_phase_offset was also added to the site-structured files.
     """
 
     @classmethod
@@ -2044,7 +2048,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and lp_status_word were added to the antennas_iq.
+        lp_status_word and pulse_phase_offset were added to the antennas_iq.
         All are unshared fields because their values may not be the same from
         record to record.
         """
@@ -2055,7 +2059,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             'lp_status_word': [],
             'gps_locked': [],
             'gps_to_system_time_diff': [],
-            'pulse_phase_offset' : [cls.find_max_pulse_phase_offset]
+            'pulse_phase_offset': [cls.find_max_pulse_phase_offset]
             })
         return unshared_fields_dims
 
@@ -2072,7 +2076,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             'pulse_phase_offset': [lambda arrays, record_num:
-                                arrays['pulse_phase_offset'][record_num]],
+                                   arrays['pulse_phase_offset'][record_num]],
             })
         return unshared_fields_dims
 
