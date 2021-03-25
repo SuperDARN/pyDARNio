@@ -40,7 +40,8 @@ import struct
 
 from typing import List, Union
 
-from pydarnio import dmap_exceptions, DmapArray, DmapScalar, dmap2dict, dict2dmap
+from pydarnio import dmap_exceptions
+from pydarnio import DmapArray, DmapScalar, dmap2dict, dict2dmap
 
 # Keeping these global definitions for readability purposes
 # Data types use in s
@@ -1149,7 +1150,7 @@ class DmapWrite(object):
         for size in array.shape:
             array_shape_bytes += struct.pack('i', size)
 
-        array_data_bytes = array_value.tostring()
+        array_data_bytes = array_value.tobytes()
 
         array_total_bytes = array_name_bytes + array_type_bytes + \
             array_dim_bytes + array_shape_bytes + array_data_bytes

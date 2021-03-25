@@ -132,9 +132,10 @@ class BorealisSiteRead():
             # if this is an array style file, it will raise
             # IndexError on the array.
             raise borealis_exceptions.BorealisStructureError(
-                ' {} Could not find the borealis_git_hash required to '
-                'determine read version (file may be array style): {}'
-                ''.format(self.filename, err)) from err
+                'Site-structured read of {}: Could not find the '
+                'borealis_git_hash required to '
+                'determine read version (file may be array structured)'
+                ''.format(self.filename)) from err
 
         if version not in borealis_formats.borealis_version_dict:
             raise borealis_exceptions.BorealisVersionError(self.filename,
@@ -369,7 +370,7 @@ class BorealisSiteWrite():
         self.borealis_filetype = borealis_filetype
         self.filename = filename
         self.compression = hdf5_compression
-        self._record_names = sorted(list(borealis_records.keys()))
+        self._record_names = sorted([bkey for bkey in borealis_records.keys()])
 
         # get the version of the file - split by the dash, first part should be
         # 'vX.X'
@@ -380,9 +381,10 @@ class BorealisSiteWrite():
             # if this is an array style file, it will raise
             # IndexError on the array.
             raise borealis_exceptions.BorealisStructureError(
-                ' {} Could not find the borealis_git_hash required to '
-                'determine read version (data may be array style) {}'
-                ''.format(self.filename, err)) from err
+                'Site-structured write of {}: Could not find the '
+                'borealis_git_hash required to '
+                'determine write version (data may be given as arrays)'
+                ''.format(self.filename)) from err
 
         if version not in borealis_formats.borealis_version_dict:
             raise borealis_exceptions.BorealisVersionError(self.filename,

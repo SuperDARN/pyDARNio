@@ -40,7 +40,7 @@ import logging
 from typing import Union, List
 
 from pydarnio import (DmapRead, DmapWrite, superdarn_exceptions,
-                    superdarn_formats, dmap2dict)
+                      superdarn_formats, dmap2dict)
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 
@@ -618,7 +618,9 @@ class SDarnWrite(DmapWrite):
         self._filename_check(filename)
         self._empty_record_check()
         file_struct_list = [superdarn_formats.Rawacf.types,
-                            superdarn_formats.Rawacf.extra_fields,
+                            superdarn_formats.Rawacf.correlation_field,
+                            superdarn_formats.Rawacf.digitizing_field,
+                            superdarn_formats.Rawacf.fittex_field,
                             superdarn_formats.Rawacf.cross_correlation_field]
         self.superDARN_file_structure_to_bytes(file_struct_list)
         with open(self.filename, 'wb') as f:
