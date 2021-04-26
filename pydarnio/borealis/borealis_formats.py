@@ -41,6 +41,7 @@ See Also
   https://borealis.readthedocs.io/en/latest/borealis_data.html
 """
 
+import copy
 import numpy as np
 
 from collections import OrderedDict
@@ -151,13 +152,14 @@ class BorealisRawacfv0_4(BaseFormat):
 
         # dimensions provided in correlation_dimensions field as num_beams,
         # num_ranges, num_lags for the rawacf format.
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
-            record_dimensions = records[key]['correlation_dimensions']
+            record_dimensions = new_records[key]['correlation_dimensions']
             for field in ['main_acfs', 'intf_acfs', 'xcfs']:
-                records[key][field] = records[key][field].\
+                new_records[key][field] = new_records[key][field].\
                                         reshape(record_dimensions)
 
-        return records
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -184,11 +186,12 @@ class BorealisRawacfv0_4(BaseFormat):
         BorealisRawacf has the main_acfs, intf_acfs, and xcfs fields flattened
         in the site structured files.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['main_acfs', 'intf_acfs', 'xcfs']:
-                records[key][field] = records[key][field].flatten()
+                new_records[key][field] = new_records[key][field].flatten()
 
-        return records
+        return new_records
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -512,13 +515,14 @@ class BorealisBfiqv0_4(BaseFormat):
         site structured files, so this field is reshaped here to the
         correct dimensions given in data_dimensions.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             record_dimensions = records[key]['data_dimensions']
             for field in ['data']:
-                records[key][field] = records[key][field].\
+                new_records[key][field] = new_records[key][field].\
                         reshape(record_dimensions)
 
-        return records
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -545,11 +549,12 @@ class BorealisBfiqv0_4(BaseFormat):
         BorealisBfiq has the data field flattened in the
         site structured files.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['data']:
-                records[key][field] = records[key][field].flatten()
+                new_records[key][field] = new_records[key][field].flatten()
 
-        return records
+        return new_records
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -863,13 +868,14 @@ class BorealisAntennasIqv0_4(BaseFormat):
         site structured files, so this field is reshaped here to the correct
         data_dimensions given in the file.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             record_dimensions = records[key]['data_dimensions']
             for field in ['data']:
-                records[key][field] = records[key][field].\
+                new_records[key][field] = new_records[key][field].\
                         reshape(record_dimensions)
 
-        return records
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -896,11 +902,12 @@ class BorealisAntennasIqv0_4(BaseFormat):
         BorealisAntennasIq has the data field flattened in the
         site structured files.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['data']:
-                records[key][field] = records[key][field].flatten()
+                new_records[key][field] = new_records[key][field].flatten()
 
-        return records
+        return new_records
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -1137,13 +1144,14 @@ class BorealisRawrfv0_4(BaseFormat):
         BorealisRawrf has the data field flattened in the
         site structured files, so this field is reshaped in here.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             record_dimensions = records[key]['data_dimensions']
             for field in ['data']:
-                records[key][field] = records[key][field].\
+                new_records[key][field] = new_records[key][field].\
                                         reshape(record_dimensions)
 
-        return records
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -1170,11 +1178,12 @@ class BorealisRawrfv0_4(BaseFormat):
         BorealisRawrf has the data field flattened in the
         site structured files.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['data']:
-                records[key][field] = records[key][field].flatten()
+                new_records[key][field] = new_records[key][field].flatten()
 
-        return records
+        return new_records
 
     @classmethod
     def is_restructureable(cls) -> bool:
