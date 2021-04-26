@@ -1372,7 +1372,8 @@ class BorealisRawacf(BorealisRawacfv0_4):
         unshared_fields_dims = super(BorealisRawacf,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_field_len_func('blanked_samples')],
+            'blanked_samples': [cls.
+                                find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims
@@ -1508,7 +1509,8 @@ class BorealisBfiq(BorealisBfiqv0_4):
         unshared_fields_dims = super(BorealisBfiq,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_field_len_func('blanked_samples')],
+            'blanked_samples': [cls.
+                                find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims
@@ -1657,7 +1659,8 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         unshared_fields_dims = super(BorealisAntennasIq,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_field_len_func('blanked_samples')],
+            'blanked_samples': [cls.
+                                find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims
