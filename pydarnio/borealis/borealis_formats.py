@@ -1372,7 +1372,7 @@ class BorealisRawacf(BorealisRawacfv0_4):
         unshared_fields_dims = super(BorealisRawacf,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_blanked_samples],
+            'blanked_samples': [cls.find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims
@@ -1387,7 +1387,8 @@ class BorealisRawacf(BorealisRawacfv0_4):
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
                                 arrays['num_blanked_samples'][record_num]],
-            'slice_interfacing': []
+            'slice_interfacing': [lambda arrays, record_num:
+                                  len(arrays['slice_interfacing'][record_num])]
             })
         return unshared_fields_dims
 
@@ -1507,7 +1508,7 @@ class BorealisBfiq(BorealisBfiqv0_4):
         unshared_fields_dims = super(BorealisBfiq,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_blanked_samples],
+            'blanked_samples': [cls.find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims
@@ -1522,7 +1523,8 @@ class BorealisBfiq(BorealisBfiqv0_4):
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
                                 arrays['num_blanked_samples'][record_num]],
-            'slice_interfacing': []
+            'slice_interfacing': [lambda arrays, record_num:
+                                  len(arrays['slice_interfacing'][record_num])]
             })
         return unshared_fields_dims
 
@@ -1655,7 +1657,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         unshared_fields_dims = super(BorealisAntennasIq,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_blanked_samples],
+            'blanked_samples': [cls.find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims
