@@ -41,7 +41,6 @@ Update noise values in SDarn fields when these can be calculated.
 
 """
 import logging
-import math
 import numpy as np
 
 from datetime import datetime
@@ -629,8 +628,8 @@ class BorealisConvert(BorealisRead):
                 # Borealis
                 'offset': np.int16(0),
                 'rxrise': np.int16(0),
-                'intt.sc': np.int16(math.floor(record_dict['int_time'])),
-                'intt.us': np.int32(math.fmod(record_dict['int_time'], 1.0) * \
+                'intt.sc': np.int16(np.floor(record_dict['int_time'])),
+                'intt.us': np.int32(np.fmod(record_dict['int_time'], 1.0) * \
                                     1e6),
                 'txpl': np.int16(record_dict['tx_pulse_len']),
                 'mpinc': np.int16(record_dict['tau_spacing']),
@@ -675,10 +674,10 @@ class BorealisConvert(BorealisRead):
                 'ptab': record_dict['pulses'].astype(np.int16),
                 'ltab': record_dict['lags'].astype(np.int16),
                 # timestamps in ms, convert to seconds and us.
-                'tsc': np.array([math.floor(x/1e3) for x in
+                'tsc': np.array([np.floor(x/1e3) for x in
                                  record_dict['sqn_timestamps']],
                                 dtype=np.int32),
-                'tus': np.array([math.fmod(x, 1000.0) * 1e3 for x in
+                'tus': np.array([np.fmod(x, 1000.0) * 1e3 for x in
                                  record_dict['sqn_timestamps']],
                                 dtype=np.int32),
                 'tatten': np.array([0] * record_dict['num_sequences'],
@@ -889,8 +888,8 @@ class BorealisConvert(BorealisRead):
                 # Borealis
                 'offset': np.int16(0),
                 'rxrise': np.int16(0),
-                'intt.sc': np.int16(math.floor(record_dict['int_time'])),
-                'intt.us': np.int32(math.fmod(record_dict['int_time'], 1.0) * \
+                'intt.sc': np.int16(np.floor(record_dict['int_time'])),
+                'intt.us': np.int32(np.fmod(record_dict['int_time'], 1.0) * \
                                     1e6),
                 'txpl': np.int16(record_dict['tx_pulse_len']),
                 'mpinc': np.int16(record_dict['tau_spacing']),
