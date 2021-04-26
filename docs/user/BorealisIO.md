@@ -28,8 +28,8 @@ IO class for any Borealis file. Similarly, if you would like to see the data in
 the arrays format, return the arrays attribute. This works regardless of how
 the original file was structured.
 
-In addition to file structure, there are various types of datasets (filetypes)
-that can be produced by Borealis. The filetypes that can be produced are:
+In addition to file structure, there are various types of data sets (file types)
+that can be produced by Borealis. The file types that can be produced are:
 
 
 - `'rawrf'`
@@ -38,7 +38,7 @@ produced and only would be done by request.
 
 
 - `'antennas_iq'`
-Decimated and filtered data from individual antennas, i and q samples.
+Downsampled data from individual antennas, i and q samples.
 
 
 - `'bfiq'`

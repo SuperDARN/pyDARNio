@@ -1,14 +1,16 @@
-![pydarn](imgs/pydarn_logo.png)
+![pydarnio](imgs/pydarnio_logo.png)
 
 PyDARNio is an open source python library for SuperDARN data reading, writing and converting.
 Currently the library support reading for DMAP files:
+
 - IQDAT
 - RAWACF
 - FITACF
 - GRID
 - MAP
 
-as well as Borealis HDF5 files:
+As well as Borealis HDF5 files:
+
 - IQDAT
 - BeamIQ
 - RAWACF

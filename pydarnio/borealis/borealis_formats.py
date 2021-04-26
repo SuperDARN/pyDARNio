@@ -11,6 +11,10 @@ BorealisBfiq
 BorealisAntennasIq
 BorealisRawrf
 as well as previous versions of these classes, currently including
+BorealisRawacfv0_5
+BorealisBfiqv0_5
+BorealisAntennasIqv0_5
+BorealisRawrfv0_5
 BorealisRawacfv0_4
 BorealisBfiqv0_4
 BorealisAntennasIqv0_4
@@ -41,6 +45,7 @@ See Also
   https://borealis.readthedocs.io/en/latest/borealis_data.html
 """
 
+import copy
 import numpy as np
 
 from collections import OrderedDict
@@ -151,13 +156,15 @@ class BorealisRawacfv0_4(BaseFormat):
 
         # dimensions provided in correlation_dimensions field as num_beams,
         # num_ranges, num_lags for the rawacf format.
+
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             record_dimensions = records[key]['correlation_dimensions']
             for field in ['main_acfs', 'intf_acfs', 'xcfs']:
-                records[key][field] = records[key][field].\
+                new_records[key][field] = new_records[key][field].\
                                         reshape(record_dimensions)
 
-        return records
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -184,11 +191,12 @@ class BorealisRawacfv0_4(BaseFormat):
         BorealisRawacf has the main_acfs, intf_acfs, and xcfs fields flattened
         in the site structured files.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['main_acfs', 'intf_acfs', 'xcfs']:
-                records[key][field] = records[key][field].flatten()
+                new_records[key][field] = new_records[key][field].flatten()
 
-        return records
+        return new_records
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -512,13 +520,14 @@ class BorealisBfiqv0_4(BaseFormat):
         site structured files, so this field is reshaped here to the
         correct dimensions given in data_dimensions.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             record_dimensions = records[key]['data_dimensions']
             for field in ['data']:
-                records[key][field] = records[key][field].\
+                new_records[key][field] = new_records[key][field].\
                         reshape(record_dimensions)
 
-        return records
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -545,11 +554,12 @@ class BorealisBfiqv0_4(BaseFormat):
         BorealisBfiq has the data field flattened in the
         site structured files.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['data']:
-                records[key][field] = records[key][field].flatten()
+                new_records[key][field] = new_records[key][field].flatten()
 
-        return records
+        return new_records
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -863,13 +873,14 @@ class BorealisAntennasIqv0_4(BaseFormat):
         site structured files, so this field is reshaped here to the correct
         data_dimensions given in the file.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             record_dimensions = records[key]['data_dimensions']
             for field in ['data']:
-                records[key][field] = records[key][field].\
+                new_records[key][field] = new_records[key][field].\
                         reshape(record_dimensions)
 
-        return records
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -896,11 +907,12 @@ class BorealisAntennasIqv0_4(BaseFormat):
         BorealisAntennasIq has the data field flattened in the
         site structured files.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['data']:
-                records[key][field] = records[key][field].flatten()
+                new_records[key][field] = new_records[key][field].flatten()
 
-        return records
+        return new_records
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -1137,13 +1149,14 @@ class BorealisRawrfv0_4(BaseFormat):
         BorealisRawrf has the data field flattened in the
         site structured files, so this field is reshaped in here.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             record_dimensions = records[key]['data_dimensions']
             for field in ['data']:
-                records[key][field] = records[key][field].\
-                                        reshape(record_dimensions)
+                new_records[key][field] = new_records[key][field].\
+                        reshape(record_dimensions)
 
-        return records
+        return new_records
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -1170,11 +1183,12 @@ class BorealisRawrfv0_4(BaseFormat):
         BorealisRawrf has the data field flattened in the
         site structured files.
         """
+        new_records = copy.deepcopy(records)
         for key in list(records.keys()):
             for field in ['data']:
-                records[key][field] = records[key][field].flatten()
+                new_records[key][field] = new_records[key][field].flatten()
 
-        return records
+        return new_records
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -1260,13 +1274,9 @@ class BorealisRawrfv0_4(BaseFormat):
             }
 
 
-# The following are the currently used classes, with additions according
-# to Borealis updates.
-
-class BorealisRawacf(BorealisRawacfv0_4):
+class BorealisRawacfv0_5(BorealisRawacfv0_4):
     """
-    Class containing Borealis Rawacf data fields and their types for the
-    current version of Borealis (v0.5).
+    Class containing Borealis Rawacf data fields and their types
 
     See Also
     --------
@@ -1311,7 +1321,7 @@ class BorealisRawacf(BorealisRawacfv0_4):
         from record to record, but it is also a single-element-per-record
         field.
         """
-        single_element_types = super(BorealisRawacf,
+        single_element_types = super(BorealisRawacfv0_5,
                                      cls).single_element_types()
         single_element_types.update({
             # the slice id of the file and dataset.
@@ -1342,7 +1352,7 @@ class BorealisRawacf(BorealisRawacfv0_4):
         within the sequence. Therefore, this bug was fixed by changing
         blanked_samples to an unshared field in Borealis v0.5.
         """
-        shared = super(BorealisRawacf, cls).shared_fields() + \
+        shared = super(BorealisRawacfv0_5, cls).shared_fields() + \
             ['slice_id', 'scheduling_mode', 'averaging_method']
         shared.remove('blanked_samples')
         return shared
@@ -1360,7 +1370,7 @@ class BorealisRawacf(BorealisRawacfv0_4):
         new slices may be added and interfaced to this slice and therefore
         slice_interfacing may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisRawacf,
+        unshared_fields_dims = super(BorealisRawacfv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.find_max_blanked_samples],
@@ -1373,7 +1383,7 @@ class BorealisRawacf(BorealisRawacfv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisRawacf,
+        unshared_fields_dims = super(BorealisRawacfv0_5,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
@@ -1387,7 +1397,7 @@ class BorealisRawacf(BorealisRawacfv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisRawacf,
+        array_specific = super(BorealisRawacfv0_5,
                                cls).array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
@@ -1397,10 +1407,9 @@ class BorealisRawacf(BorealisRawacfv0_4):
         return array_specific
 
 
-class BorealisBfiq(BorealisBfiqv0_4):
+class BorealisBfiqv0_5(BorealisBfiqv0_4):
     """
-    Class containing Borealis Bfiq data fields and their types for the
-    current version of Borealis (v0.5).
+    Class containing Borealis Bfiq data fields and their types
 
     See Also
     --------
@@ -1448,7 +1457,7 @@ class BorealisBfiq(BorealisBfiqv0_4):
         array-specific field as the number may vary from record to record,
         but it is also a single-element-per-record field.
         """
-        single_element_types = super(BorealisBfiq,
+        single_element_types = super(BorealisBfiqv0_5,
                                      cls).single_element_types()
         single_element_types.update({
             # the slice id of the file and dataset.
@@ -1477,7 +1486,7 @@ class BorealisBfiq(BorealisBfiqv0_4):
         was fixed by changing blanked_samples to an unshared field in Borealis
         v0.5.
         """
-        shared = super(BorealisBfiq, cls).shared_fields() + \
+        shared = super(BorealisBfiqv0_5, cls).shared_fields() + \
             ['slice_id', 'scheduling_mode']
         shared.remove('blanked_samples')
         return shared
@@ -1495,7 +1504,7 @@ class BorealisBfiq(BorealisBfiqv0_4):
         new slices may be added and interfaced to this slice and therefore
         slice_interfacing may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisBfiq,
+        unshared_fields_dims = super(BorealisBfiqv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.find_max_blanked_samples],
@@ -1508,7 +1517,7 @@ class BorealisBfiq(BorealisBfiqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisBfiq,
+        unshared_fields_dims = super(BorealisBfiqv0_5,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
@@ -1522,7 +1531,7 @@ class BorealisBfiq(BorealisBfiqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisBfiq,
+        array_specific = super(BorealisBfiqv0_5,
                                cls).array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
@@ -1532,10 +1541,9 @@ class BorealisBfiq(BorealisBfiqv0_4):
         return array_specific
 
 
-class BorealisAntennasIq(BorealisAntennasIqv0_4):
+class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
     """
-    Class containing Borealis Antennas iq data fields and their types for
-    Borealis current version (v0.5).
+    Class containing Borealis Antennas iq data fields and their types
 
     See Also
     --------
@@ -1578,7 +1586,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         array-specific field as the number may vary from record to record,
         but it is also a single-element-per-record field.
         """
-        single_element_types = super(BorealisAntennasIq,
+        single_element_types = super(BorealisAntennasIqv0_5,
                                      cls).single_element_types()
         single_element_types.update({
             # the slice id of the file and dataset.
@@ -1609,7 +1617,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         In Borealis v0.5, blanked_samples was added as an array
         field.
         """
-        array_dtypes = super(BorealisAntennasIq, cls).array_dtypes()
+        array_dtypes = super(BorealisAntennasIqv0_5, cls).array_dtypes()
         array_dtypes.update({
             # Samples that occur during TR switching (transmission times)
             "blanked_samples": np.uint32
@@ -1626,7 +1634,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         In Borealis v0.5, slice_id and scheduling_mode were added and these
         will be shared fields.
         """
-        shared = super(BorealisAntennasIq, cls).shared_fields() + \
+        shared = super(BorealisAntennasIqv0_5, cls).shared_fields() + \
             ['slice_id', 'scheduling_mode']
         return shared
 
@@ -1643,7 +1651,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         new slices may be added and interfaced to this slice and therefore
         the field may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisAntennasIq,
+        unshared_fields_dims = super(BorealisAntennasIqv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.find_max_blanked_samples],
@@ -1656,7 +1664,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisAntennasIq,
+        unshared_fields_dims = super(BorealisAntennasIqv0_5,
                                      cls).unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
@@ -1670,7 +1678,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisAntennasIq,
+        array_specific = super(BorealisAntennasIqv0_5,
                                cls).array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
@@ -1680,10 +1688,9 @@ class BorealisAntennasIq(BorealisAntennasIqv0_4):
         return array_specific
 
 
-class BorealisRawrf(BorealisRawrfv0_4):
+class BorealisRawrfv0_5(BorealisRawrfv0_4):
     """
-    Class containing Borealis Rawrf data fields and their types for current
-    Borealis version (v0.5).
+    Class containing Borealis Rawrf data fields and their types
 
     See Also
     --------
@@ -1716,7 +1723,7 @@ class BorealisRawrf(BorealisRawrfv0_4):
         In Borealis v0.5, scheduling_mode was added as a single
         element field.
         """
-        single_element_types = super(BorealisRawrf,
+        single_element_types = super(BorealisRawrfv0_5,
                                      cls).single_element_types()
         single_element_types.update({
             # A string describing the type of scheduling time at the time of
@@ -1741,12 +1748,397 @@ class BorealisRawrf(BorealisRawrfv0_4):
         In Borealis v0.5, blanked_samples was added as an array
         field.
         """
-        array_dtypes = super(BorealisRawrf, cls).array_dtypes()
+        array_dtypes = super(BorealisRawrfv0_5, cls).array_dtypes()
         array_dtypes.update({
             # Samples that occur during TR switching (transmission times)
             "blanked_samples": np.uint32
             })
         return array_dtypes
+
+
+# The following are the currently used classes, with additions according
+# to Borealis updates.
+
+class BorealisRawacf(BorealisRawacfv0_5):
+    """
+    Class containing Borealis Rawacf data fields and their types for the
+    current version of Borealis (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisRawacfv0_5
+    https://borealis.readthedocs.io/en/latest/borealis_data.html
+
+    Notes
+    -----
+    Rawacf data has been mixed, filtered, and decimated; beamformed and
+    combined into antenna arrays; then autocorrelated and correlated between
+    antenna arrays to produce matrices of num_ranges x num_lags.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, four fields were added to site files:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and
+    lp_status_word. Array structured files contain the same fields,
+    but with dims of [num_records].
+    """
+
+    @classmethod
+    def single_element_types(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Returns
+        -------
+        single_element_types
+            All the single-element fields in records of the
+            format, as a dictionary fieldname : type.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and lp_status_word were added as single element fields
+        """
+        single_element_types = super(BorealisRawacf,
+                                     cls).single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates an agc fault at least once during the integration
+            # period.
+            "agc_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates a low power condition at least once during the
+            # integration period.
+            "lp_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire
+            # integration period
+            "gps_locked": np.bool_,
+            # The max time diffe between GPS and system time during the
+            # integration period. In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float64
+        })
+        return single_element_types
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and lp_status_word were added to rawacf.
+        All are unshared fields because their values may not be the same from
+        record to record.
+        """
+        unshared_fields_dims = super(BorealisRawacf,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisRawacf,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+
+class BorealisBfiq(BorealisBfiqv0_5):
+    """
+    Class containing Borealis Bfiq data fields and their types for the
+    current version of Borealis (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisBfiqv0_5
+
+    Notes
+    -----
+    Bfiq data is beamformed i and q data. It has been mixed, filtered,
+    decimated to the final output receive rate, and it has been beamformed
+    and all channels have been combined into their arrays. No correlation
+    or averaging has occurred.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, four fields were added to site files:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and
+    lp_status_word. Array structured files contain the same fields,
+    but with dims of [num_records].
+
+    pulse_phase_offset was also added
+    """
+
+    @classmethod
+    def single_element_types(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Returns
+        -------
+        single_element_types
+            All the single-element fields in records of the
+            format, as a dictionary fieldname : type.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and lp_status_word were added as single element fields
+        """
+        single_element_types = super(BorealisBfiq,
+                                     cls).single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates an agc fault at least once during the
+            # integration period.
+            "agc_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates a low power condition at least once during
+            # the integration period.
+            "lp_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire
+            # integration period
+            "gps_locked": np.bool_,
+            # The max time diffe between GPS and system time during the
+            # integration period. In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float64
+        })
+        return single_element_types
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        lp_status_word and pulse_phase_offset were added to bfiq.
+        All are unshared fields because their values may not be the same from
+        record to record.
+        """
+        unshared_fields_dims = super(BorealisBfiq,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [cls.find_max_pulse_phase_offset]
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisBfiq,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [lambda arrays, record_num:
+                            0 if (arrays['pulse_phase_offset'].shape[1] == 0)
+                            else 
+                            list((arrays['num_sequences'][record_num],) +
+                            arrays['pulse_phase_offset'][record_num].shape[1:])],
+            })
+        return unshared_fields_dims
+
+
+class BorealisAntennasIq(BorealisAntennasIqv0_5):
+    """
+    Class containing Borealis Antennas iq data fields and their types for
+    Borealis current version (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisAntennasIqv0_5
+
+    Notes
+    -----
+    Antennas iq data is data with all channels separated. It has been mixed
+    and filtered, but it has not been beamformed or combined into the
+    entire antenna array data product.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, the following fields were added to the Borealis-produced
+    site structured files:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and lp_status_word.
+    Array structured files contain the same fields,
+    but with dims of [num_records].
+
+    pulse_phase_offset was also added to the site-structured files.
+    """
+
+    @classmethod
+    def single_element_types(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Returns
+        -------
+        single_element_types
+            All the single-element fields in records of the
+            format, as a dictionary fieldname : type.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and lp_status_word were added as single element fields
+        """
+        single_element_types = super(BorealisAntennasIq,
+                                     cls).single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates an agc fault at least once during the
+            # integration period.
+            "agc_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates a low power condition at least once during
+            # the integration period.
+            "lp_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire
+            # integration period
+            "gps_locked": np.bool_,
+            # The max time diffe between GPS and system time during the
+            # integration period. In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float64
+        })
+        return single_element_types
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        lp_status_word and pulse_phase_offset were added to the antennas_iq.
+        All are unshared fields because their values may not be the same from
+        record to record.
+        """
+        unshared_fields_dims = super(BorealisAntennasIq,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [cls.find_max_pulse_phase_offset]
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisAntennasIq,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [lambda arrays, record_num:
+                                   arrays['pulse_phase_offset'][record_num]],
+            })
+        return unshared_fields_dims
+
+
+class BorealisRawrf(BorealisRawrfv0_5):
+    """
+    Class containing Borealis Rawrf data fields and their types for current
+    Borealis version (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisRawrfv0_5
+
+    Notes
+    -----
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, the following fields were added to BorealisRawrf:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and
+    lp_status_word.
+    """
+
+    @classmethod
+    def single_element_types(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Returns
+        -------
+        single_element_types
+            All the single-element fields in records of the
+            format, as a dictionary fieldname : type.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        and lp_status_word were added as single element fields
+        """
+        single_element_types = super(BorealisRawrf,
+                                     cls).single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates an agc fault at least once during the
+            # integration period.
+            "agc_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates a low power condition at least once during
+            # the integration period.
+            "lp_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire
+            # integration period
+            "gps_locked": np.bool_,
+            # The max time diffe between GPS and system time during the
+            # integration period. In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float64
+        })
+        return single_element_types
 
 
 # borealis versions
@@ -1770,6 +2162,12 @@ borealis_version_dict = {
         'rawrf': BorealisRawrfv0_4
         },
     'v0.5': {
+        'bfiq': BorealisBfiqv0_5,
+        'rawacf': BorealisRawacfv0_5,
+        'antennas_iq': BorealisAntennasIqv0_5,
+        'rawrf': BorealisRawrfv0_5
+        },
+    'v0.6': {
         'bfiq': BorealisBfiq,
         'rawacf': BorealisRawacf,
         'antennas_iq': BorealisAntennasIq,

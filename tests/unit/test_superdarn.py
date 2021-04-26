@@ -327,6 +327,7 @@ class TestSDarnRead(unittest.TestCase):
 class TestDarnUtilities(unittest.TestCase):
     """
     Testing DarnUtilities class.
+    
     Note
     ----
     All methods in this class are static so there is no constructor testing
@@ -1020,12 +1021,3 @@ class TestSDarnWrite(unittest.TestCase):
         except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
             self.assertEqual(err.incorrect_params.keys(), {'v.min'})
             self.assertEqual(err.record_number, 2)
-
-
-if __name__ == '__main__':
-    """
-    Runs the above class in a unittest system.
-    Roughly takes 467 seconds.
-    """
-    pydarnio_logger.info("Starting SuperDARN io testing")
-    unittest.main()
