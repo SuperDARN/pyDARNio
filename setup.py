@@ -10,8 +10,8 @@ author:
 Marina Schmidt
 """
 
-from setuptools import setup, find_packages
 from os import path
+from setuptools import setup, find_packages
 import sys
 from subprocess import check_call
 from setuptools.command.install import install, orig

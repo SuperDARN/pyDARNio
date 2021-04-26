@@ -72,7 +72,7 @@ import pydarnio
 
 from glob import glob
 
-fitacf_files = glob('path/to/fitacf/files/<date><radar>.fitacf.bz2')
+fitacf_files = glob('path/to/fitacf/files/<date>*<radar>*.fitacf.bz2')
 
 # assuming they are named via date and time
 fitacf_files.sort()

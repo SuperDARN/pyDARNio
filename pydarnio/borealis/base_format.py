@@ -191,6 +191,9 @@ class BaseFormat():
     find_max_blanked_samples(records): int
         Find the max number of blanked samples between records in a site file,
         for restructuring to arrays.
+    find_max_pulse_phase_offset(records): list
+        Find the maximum shape of the phase encoding values between records in
+        a site style records file, for restructuring to arrays.
 
     Notes
     -----
@@ -902,9 +905,18 @@ class BaseFormat():
         # get array dims of the unshared fields arrays
         field_dimensions = {}
         for field in cls.unshared_fields():
-            dims = [dimension_function(data_dict) for
+            d = [dimension_function(data_dict) for
                     dimension_function in
                     cls.unshared_fields_dims_array()[field]]
+            
+            dims = []
+            for dim in d:
+                if isinstance(dim,list):
+                    for i in dim:
+                        dims.append(i)
+                else:
+                    dims.append(dim)
+
             field_dimensions[field] = dims
 
         # all fields to become arrays
@@ -1022,6 +1034,15 @@ class BaseFormat():
                     site_dims = [dimension_function(data_dict, record_num)
                                  for dimension_function in
                                  cls.unshared_fields_dims_site()[field]]
+                    dims = []
+                    for dim in site_dims:
+                        if isinstance(dim,list):
+                            for i in dim:
+                                dims.append(i)
+                        else:
+                            dims.append(dim)
+                    
+                    site_dims = dims
                     index_slice = [slice(0, i) for i in site_dims]
                     index_slice.insert(0, record_num)
                     index_slice = tuple(index_slice)
@@ -1116,7 +1137,6 @@ class BaseFormat():
         and 'slice_interfacing'.
         The number of blanked_samples is a dimension of the per-record array.
         """
-
         def find_max_field_len(records: OrderedDict) -> int:
             """
             Finds the maximum number of a field between records in a
@@ -1138,3 +1158,40 @@ class BaseFormat():
             return max_field_len
 
         return find_max_field_len
+
+    
+    @staticmethod
+    def find_max_pulse_phase_offset(records: OrderedDict) -> int:
+        """
+        Finds the maximum shape of the phase encoding values between records
+        in a Borealis site style records file.
+
+        Parameters
+        ----------
+        records
+            Site formatted records from a Borealis file, organized as one
+            record for each slice
+
+        Returns
+        -------
+        max_ppo_shape
+            list of largest dimensions found in the records
+
+        Notes
+        -----
+        Used by the unshared_fields_array_dims functions if the number of
+        dimensions varies per record.
+        """
+
+        first_key = list(records.keys())[0]
+        max_ppo_shape = records[first_key]["pulse_phase_offset"].shape
+        if max_ppo_shape[0] == 0:
+            return 0
+
+        for k in records:
+            shape = records[k]["pulse_phase_offset"].shape
+            tmp = np.array([shape, max_ppo_shape])
+            max_ppo_shape = tmp.max(axis=0)        
+
+        return list(max_ppo_shape)
+

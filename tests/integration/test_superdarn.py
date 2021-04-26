@@ -33,7 +33,13 @@ pydarnio_logger = logging.getLogger('pydarnio')
 
 class IntegrationSuperdarnio(unittest.TestCase):
     def setUp(self):
-        pass
+        self.test_file = ''
+
+
+    def tearDown(self):
+        if os.path.isfile(self.test_file):
+            os.remove(self.test_file)
+       del self.test_file
 
     def dmap_compare(self, dmap1: list, dmap2: list):
         # Quick simple tests that can be done before looping

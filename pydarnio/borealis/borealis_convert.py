@@ -19,10 +19,6 @@ BorealisConversionTypesError
 BorealisConvert2IqdatError
 BorealisConvert2RawacfError
 
-Notes
------
-BorealisConvert makes use of SDARNWrite to write to SuperDARN file types
-
 See Also
 --------
 BorealisRead
@@ -31,6 +27,10 @@ BorealisSiteRead
 BorealisSiteWrite
 BorealisArrayRead
 BorealisArrayWrite
+
+Notes
+-----
+BorealisConvert makes use of SDARNWrite to write to SuperDARN file types
 
 For more information on Borealis data files and how they convert to dmap,
 see: https://borealis.readthedocs.io/en/master/
@@ -215,14 +215,14 @@ class BorealisConvert(BorealisRead):
         try:
             first_key = list(self.records.keys())[0]
             self._borealis_slice_id = self.records[first_key]['slice_id']
-        except KeyError as e:
+        except KeyError as kerr:
             if borealis_slice_id is not None:
                 self._borealis_slice_id = int(borealis_slice_id)
             else:
                 raise borealis_exceptions.BorealisStructureError(
                     'The slice_id could not be found in the file: Borealis '
                     'files produced before Borealis v0.5 must provide the '
-                    'slice_id value to the BorealisConvert class.') from e
+                    'slice_id value to the BorealisConvert class.') from kerr
 
         self._sdarn_dmap_records = {}
         self._sdarn_dict = {}
@@ -298,8 +298,8 @@ class BorealisConvert(BorealisRead):
 
     def _write_to_sdarn(self) -> str:
         """
-        Write the Borealis records as SDARN DMap records to a file using pyDARNio
-        IO.
+        Write the Borealis records as SDARN DMap records to a file using
+        pyDARNio.
 
         Returns
         -------
@@ -351,7 +351,7 @@ class BorealisConvert(BorealisRead):
 
         Returns
         -------
-        True if convertible
+        True if convertible to the IQDAT format
         """
         if self.borealis_filetype != 'bfiq':
             raise borealis_exceptions.BorealisConversionTypesError(
@@ -361,9 +361,11 @@ class BorealisConvert(BorealisRead):
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                if not np.array_equal(record['blanked_samples'],
-                                      record['pulses'] *
-                                      sample_spacing):
+                normal_blanked_1 = record['pulses'] * sample_spacing
+                normal_blanked_2 = normal_blanked_1 + 1
+                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                blanked = np.sort(blanked)
+                if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2IqdatError(
                                 'Increased complexity: Borealis bfiq file'
@@ -404,7 +406,7 @@ class BorealisConvert(BorealisRead):
 
         Returns
         -------
-        True if convertible
+        True if convertible to the RAWACF format
         """
         if self.borealis_filetype != 'rawacf':
             raise borealis_exceptions.\
@@ -415,19 +417,21 @@ class BorealisConvert(BorealisRead):
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                if not np.array_equal(record['blanked_samples'],
-                                      record['pulses'] *
-                                      sample_spacing):
+                normal_blanked_1 = record['pulses'] * sample_spacing
+                normal_blanked_2 = normal_blanked_1 + 1
+                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                blanked = np.sort(blanked)
+                if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2RawacfError(
                                 'Increased complexity: Borealis rawacf file'
                                 ' record {} blanked_samples {} does not equate'
                                 ' to pulses array converted to sample number '
                                 '{} * {}'.format(record_key,
-                                          record['blanked_samples'],
-                                          record['pulses'],
-                                          int(record['tau_spacing'] /
-                                              record['tx_pulse_len'])))
+                                                 record['blanked_samples'],
+                                                 record['pulses'],
+                                                 int(record['tau_spacing'] /
+                                                     record['tx_pulse_len'])))
 
         return True
 
@@ -612,10 +616,8 @@ class BorealisConvert(BorealisRead):
                 # smsep is in us; conversion from seconds
                 'smsep': np.int16(1e6 / record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                # TODO: currently not implemented
-                'stat.agc': np.int16(0),
-                # TODO: currently not implemented
-                'stat.lopwr': np.int16(0),
+                'stat.agc': np.int16(record_dict['agc_status_word']),
+                'stat.lopwr': np.int16(record_dict['lp_status_word']),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented
@@ -770,13 +772,13 @@ class BorealisConvert(BorealisRead):
         if 'intf_acfs' in record_dict.keys():
             shaped_data['intf_acfs'] = record_dict['intf_acfs'].reshape(
                 record_dict['correlation_dimensions']).astype(np.complex64) *\
-                ((np.iinfo(np.int16).max**2  * scaling_factor) /
+                ((np.iinfo(np.int16).max**2 * scaling_factor) /
                  (record_dict['data_normalization_factor']**2))
         if 'xcfs' in record_dict.keys():
             shaped_data['xcfs'] = record_dict['xcfs'].reshape(
                 record_dict['correlation_dimensions']).astype(np.complex64) *\
                 ((np.iinfo(np.int16).max**2 * scaling_factor) /
-                (record_dict['data_normalization_factor']**2))
+                 (record_dict['data_normalization_factor']**2))
 
         # Borealis git tag version numbers. If not a tagged version,
         # then use 255.255
@@ -872,10 +874,8 @@ class BorealisConvert(BorealisRead):
                 'lagfr': np.int16(record_dict['first_range_rtt']),
                 'smsep': np.int16(1e6/record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                # TODO: currently not implemented
-                'stat.agc': np.int16(0),
-                # TODO: currently not implemented
-                'stat.lopwr': np.int16(0),
+                'stat.agc': np.int16(record_dict['agc_status_word']),
+                'stat.lopwr': np.int16(record_dict['lp_status_word']),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented
