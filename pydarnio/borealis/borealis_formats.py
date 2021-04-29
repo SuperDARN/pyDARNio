@@ -156,10 +156,9 @@ class BorealisRawacfv0_4(BaseFormat):
 
         # dimensions provided in correlation_dimensions field as num_beams,
         # num_ranges, num_lags for the rawacf format.
-
         new_records = copy.deepcopy(records)
         for key in list(records.keys()):
-            record_dimensions = records[key]['correlation_dimensions']
+            record_dimensions = new_records[key]['correlation_dimensions']
             for field in ['main_acfs', 'intf_acfs', 'xcfs']:
                 new_records[key][field] = new_records[key][field].\
                                         reshape(record_dimensions)
@@ -1154,7 +1153,7 @@ class BorealisRawrfv0_4(BaseFormat):
             record_dimensions = records[key]['data_dimensions']
             for field in ['data']:
                 new_records[key][field] = new_records[key][field].\
-                        reshape(record_dimensions)
+                                        reshape(record_dimensions)
 
         return new_records
 
@@ -1373,7 +1372,8 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         unshared_fields_dims = super(BorealisRawacfv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_blanked_samples],
+            'blanked_samples': [cls.
+                                find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims
@@ -1388,7 +1388,8 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
                                 arrays['num_blanked_samples'][record_num]],
-            'slice_interfacing': []
+            'slice_interfacing': [lambda arrays, record_num:
+                                  len(arrays['slice_interfacing'][record_num])]
             })
         return unshared_fields_dims
 
@@ -1507,7 +1508,8 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         unshared_fields_dims = super(BorealisBfiqv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_blanked_samples],
+            'blanked_samples': [cls.
+                                find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims
@@ -1522,7 +1524,8 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
                                 arrays['num_blanked_samples'][record_num]],
-            'slice_interfacing': []
+            'slice_interfacing': [lambda arrays, record_num:
+                                  len(arrays['slice_interfacing'][record_num])]
             })
         return unshared_fields_dims
 
@@ -1654,7 +1657,8 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         unshared_fields_dims = super(BorealisAntennasIqv0_5,
                                      cls).unshared_fields_dims_array()
         unshared_fields_dims.update({
-            'blanked_samples': [cls.find_max_blanked_samples],
+            'blanked_samples': [cls.
+                                find_max_field_len_func('blanked_samples')],
             'slice_interfacing': []
             })
         return unshared_fields_dims

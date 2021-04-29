@@ -36,11 +36,12 @@ Notes
   from site to arrayand vice versa.
 """
 
-from datetime import datetime
 import copy
 import numpy as np
 
 from collections import OrderedDict
+from datetime import datetime
+from typing import Callable
 
 from pydarnio import borealis_exceptions
 
@@ -927,6 +928,10 @@ class BaseFormat():
                 datatype = cls.single_element_types()[field]
             else:  # field in array_dtypes
                 datatype = cls.array_dtypes()[field]
+            if datatype == np.unicode_:
+                # unicode type needs to be explicitly set to have
+                # multiple chars (256)
+                datatype='|U256'
             empty_array = np.empty(array_dims, dtype=datatype)
             # initialize all values to NaN; some indices may not be filled
             # do to dimensions that are max values (num sequences, etc can
@@ -1110,7 +1115,7 @@ class BaseFormat():
         return max_beams
 
     @staticmethod
-    def find_max_blanked_samples(records: OrderedDict) -> int:
+    def find_max_field_len_func(field_name: str) -> Callable:
         """
         Finds the maximum number of blanked samples between records in a
         Borealis site style records file.
@@ -1123,20 +1128,37 @@ class BaseFormat():
 
         Returns
         -------
-        max_beams
-            The largest number of beams found in one record from the
-            file
-
+        find_max_field_len
+            The function that returns the largest len() of the field in all
+            records
         Notes
         -----
-        Used by unshared_fields_array_dims functions if the number of
-        blanked_samples is a dimension of the per-record array.
+        Used by unshared_fields_array_dims functions for 'blanked_samples'
+        and 'slice_interfacing'.
+        The number of blanked_samples is a dimension of the per-record array.
         """
-        max_blanked_samples = 0
-        for k in records:
-            if max_blanked_samples < len(records[k]["blanked_samples"]):
-                max_blanked_samples = len(records[k]["blanked_samples"])
-        return max_blanked_samples
+        def find_max_field_len(records: OrderedDict) -> int:
+            """
+            Finds the maximum number of a field between records in a
+            Borealis site style records file.
+            Parameters
+            ----------
+            records
+                Site formatted records from a Borealis file, organized as one
+                record for each slice
+            Returns
+            -------
+            max_field_len
+                The largest len() of the field in all records
+            """
+            max_field_len = 0
+            for k in records:
+                if max_field_len < len(records[k][field_name]):
+                    max_field_len = len(records[k][field_name])
+            return max_field_len
+
+        return find_max_field_len
+
     
     @staticmethod
     def find_max_pulse_phase_offset(records: OrderedDict) -> int:
@@ -1172,5 +1194,4 @@ class BaseFormat():
             max_ppo_shape = tmp.max(axis=0)        
 
         return list(max_ppo_shape)
-
 
