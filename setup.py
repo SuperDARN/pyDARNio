@@ -8,6 +8,16 @@ running the files.
 
 author:
 Marina Schmidt
+
+Disclaimer:
+pyDARNio is under the LGPL v3 license found in the root directory LICENSE.md
+Everyone is permitted to copy and distribute verbatim copies of this license
+document, but changing it is not allowed.
+
+This version of the GNU Lesser General Public License incorporates the terms
+and conditions of version 3 of the GNU General Public License,
+supplemented by the additional permissions listed below.
+
 """
 
 from os import path
@@ -24,14 +34,14 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # Setup information
 setup(
     name="pydarnio",
-    version="1.0.0",
+    version="1.1.0",
     long_description=long_description,
     long_description_content_type='text/markdown',
     description="Python library for reading and writing SuperDARN data",
     url='https://github.com/SuperDARN/pyDARNio.git',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'License :: OSI Approved :: GNU General Public License v3 (LGPLv3)',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7'],
     python_requires='>=3.6',
