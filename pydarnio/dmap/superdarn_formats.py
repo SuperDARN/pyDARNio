@@ -310,7 +310,9 @@ class Map():
         'w.min': 'f',
         'w.max': 'f',
         've.min': 'f',
-        've.max': 'f',
+        've.max': 'f'
+        }
+    partial_fields = {
         'vector.mlat': 'f',
         'vector.mlon': 'f',
         'vector.kvect': 'f',

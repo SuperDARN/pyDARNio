@@ -9,11 +9,12 @@ Python data IO library for the Super Dual Auroral Radar Network (SuperDARN).
 
 ## Changelog
 
-## Version 1.0 - Release!
+## Version 1.1 - Release!
 
 pyDARNio is released! Included are the following features:
-- Reading and writing DMap format IQDAT, RAWACF, FITACF, GRID/GRD and MAP files
-- Reading and writing HDF5 format files for Borealis radar data, as well as conversion to and from DMap format
+- Reading and writing of Borealis v0.6 HDF5 files
+- Bug fix with Slice interface with Borealis files
+- Bug fix on reading partial records with MAP DMAP files
 
 ## Documentation
 
@@ -62,7 +63,7 @@ For more information and tutorials on pyDARNio please see the [tutorial section]
 pyDARNio is always looking for testers and developers keen on learning python, github, and/or SuperDARN data visualizations! 
 Here are some ways to get started: 
 
-  - **Testing Pull Request**: to determine which [pull requests](https://github.com/SuperDARN/pyDARNio/pulls) need to be tested right away, filter them by their milestones (v1.1.0 is currently highest priority).
+  - **Testing Pull Request**: to determine which [pull requests](https://github.com/SuperDARN/pyDARNio/pulls) need to be tested right away, filter them by their milestones (v1.2.0 is currently highest priority).
   - **Getting involved in projects**: if you are looking to help in a specific area, look at pyDARNio's [projects tab](https://github.com/SuperDARN/pyDARNio/projects). The project you are interested in will give you information on what is needed to reach completion. This includes things currently in progress, and those awaiting reviews. 
   - **Answer questions**: if you want to try your hand at answering some pyDARNio questions, or adding to the discussion, look at pyDARNio's [issues](https://github.com/SuperDARN/pyDARNio/issues) and filter by labels.
   - **Become a developer**: if you want to practice those coding skills and add to the library, look at pyDARNio [issues](https://github.com/SuperDARN/pyDARNio/issues) and filter by milestone's to see what needs to get done right away. 
