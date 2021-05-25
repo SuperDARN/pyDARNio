@@ -41,7 +41,7 @@ setup(
     url='https://github.com/SuperDARN/pyDARNio.git',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
-        'License :: OSI Approved :: GNU General Public License v3 (LGPLv3)',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7'],
     python_requires='>=3.6',
