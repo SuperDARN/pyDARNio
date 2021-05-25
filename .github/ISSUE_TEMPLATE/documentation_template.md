@@ -40,6 +40,5 @@ about: propose updates to documentation
 
 ## Details
 
-*please describe and link to any readthedocs/code you are suggesting improvements/changes to be made.*
-
+*Please describe and link to any readthedocs/code you are suggesting improvements/changes to be made on.*
 
