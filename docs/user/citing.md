@@ -47,7 +47,9 @@ url={}
 
 ## DOI's 
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3727270.svg)](https://doi.org/10.5281/zenodo.3727270)
+- pyDARN v1.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3727270.svg)](https://doi.org/10.5281/zenodo.3727270)
+- pyDARN v1.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4792463.svg)](https://doi.org/10.5281/zenodo.4792463)
+
 
 ## Acknowledgements
 
