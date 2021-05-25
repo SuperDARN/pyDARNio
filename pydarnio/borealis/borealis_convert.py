@@ -361,9 +361,11 @@ class BorealisConvert(BorealisRead):
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                if not np.array_equal(record['blanked_samples'],
-                                      record['pulses'] *
-                                      sample_spacing):
+                normal_blanked_1 = record['pulses'] * sample_spacing
+                normal_blanked_2 = normal_blanked_1 + 1
+                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                blanked = np.sort(blanked)
+                if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2IqdatError(
                                 'Increased complexity: Borealis bfiq file'
@@ -415,9 +417,11 @@ class BorealisConvert(BorealisRead):
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                if not np.array_equal(record['blanked_samples'],
-                                      record['pulses'] *
-                                      sample_spacing):
+                normal_blanked_1 = record['pulses'] * sample_spacing
+                normal_blanked_2 = normal_blanked_1 + 1
+                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                blanked = np.sort(blanked)
+                if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2RawacfError(
                                 'Increased complexity: Borealis rawacf file'
@@ -612,10 +616,8 @@ class BorealisConvert(BorealisRead):
                 # smsep is in us; conversion from seconds
                 'smsep': np.int16(1e6 / record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                # TODO: currently not implemented
-                'stat.agc': np.int16(0),
-                # TODO: currently not implemented
-                'stat.lopwr': np.int16(0),
+                'stat.agc': np.int16(record_dict['agc_status_word']),
+                'stat.lopwr': np.int16(record_dict['lp_status_word']),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented
@@ -872,10 +874,8 @@ class BorealisConvert(BorealisRead):
                 'lagfr': np.int16(record_dict['first_range_rtt']),
                 'smsep': np.int16(1e6/record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                # TODO: currently not implemented
-                'stat.agc': np.int16(0),
-                # TODO: currently not implemented
-                'stat.lopwr': np.int16(0),
+                'stat.agc': np.int16(record_dict['agc_status_word']),
+                'stat.lopwr': np.int16(record_dict['lp_status_word']),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented

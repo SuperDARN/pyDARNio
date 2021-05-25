@@ -35,6 +35,17 @@ from borealis_bfiq_data_sets import (borealis_array_bfiq_data,
 
 pydarnio_logger = logging.getLogger('pydarnio')
 
+# Site Test files v0.6
+borealis_site_bfiq_file_v06 = ""
+borealis_site_rawacf_file_v06 = ""
+borealis_site_antennas_iq_file_v06 = ""
+borealis_site_rawrf_file_v06 = ""
+
+# Array Test files v0.6
+borealis_array_bfiq_file_v06 = ""
+borealis_array_rawacf_file_v06 = ""
+borealis_array_antennas_iq_file_v06 = ""
+
 # Site Test files v0.5
 borealis_site_bfiq_file_v05 = \
     "/home/marci/data/borealis-v05/20200303.2143.00.sas.0.bfiq.hdf5.site"
@@ -354,6 +365,25 @@ class TestBorealisRead_v05(TestBorealisRead_v04):
         self.rawacf_array_file_path = borealis_array_rawacf_file_v05
         self.bfiq_array_file_path = borealis_array_bfiq_file_v05
         self.antennas_array_file_path = borealis_array_antennas_iq_file_v05
+
+
+@pytest.mark.skip
+class TestBorealisRead_v06(TestBorealisRead_v05):
+    """
+    Testing class for BorealisSiteRead
+    """
+
+    def setUp(self):
+        self.rawacf_site_file_path = borealis_site_rawacf_file_v06
+        self.bfiq_site_file_path = borealis_site_bfiq_file_v06
+        self.antennas_site_file_path = borealis_site_antennas_iq_file_v06
+        self.rawrf_site_file_path = borealis_site_rawrf_file_v06
+        self.nonexistent_dir_path = './dog/somefile.rawacf'
+        self.nonexistent_file_path = '../test_files/somefile.rawacf'
+        self.empty_file_path = borealis_empty_file
+        self.rawacf_array_file_path = borealis_array_rawacf_file_v06
+        self.bfiq_array_file_path = borealis_array_bfiq_file_v06
+        self.antennas_array_file_path = borealis_array_antennas_iq_file_v06
 
 
 @pytest.mark.skip
@@ -798,6 +828,10 @@ class TestBorealisConvert(unittest.TestCase):
         self.bfiqv05_test_file = borealis_site_bfiq_file_v05
         self.rawacfv05_test_file = borealis_site_rawacf_file_v05
 
+        # Get v0.6 data from file
+        self.bfiqv06_test_file = borealis_site_bfiq_file_v06
+        self.rawacfv06_test_file = borealis_site_rawacf_file_v06
+
     def test_borealis_convert_to_rawacfv04(self):
         """
         Tests BorealisConvert to rawacf
@@ -845,6 +879,27 @@ class TestBorealisConvert(unittest.TestCase):
         write a SDARN DMap iqdat
         """
         _ = pydarnio.BorealisConvert(self.bfiqv05_test_file, "bfiq",
+                                     "test_bfiq.bfiq.dmap",
+                                     borealis_file_structure='site')
+        self.assertTrue(os.path.isfile("test_bfiq.bfiq.dmap"))
+        os.remove("test_bfiq.bfiq.dmap")
+
+    def test_borealis_convert_to_rawacfv06(self):
+        _ = pydarnio.BorealisConvert(self.rawacfv06_test_file, "rawacf",
+                                     "test_rawacf.rawacf.dmap",
+                                     borealis_file_structure='site')
+        self.assertTrue(os.path.isfile("test_rawacf.rawacf.dmap"))
+        os.remove("test_rawacf.rawacf.dmap")
+
+    def test_borealis_convert_to_iqdatv06(self):
+        """
+        Tests BorealisConvert to iqdat
+
+        Expected behaviour
+        ------------------
+        write a SDARN DMap iqdat
+        """
+        _ = pydarnio.BorealisConvert(self.bfiqv06_test_file, "bfiq",
                                      "test_bfiq.bfiq.dmap",
                                      borealis_file_structure='site')
         self.assertTrue(os.path.isfile("test_bfiq.bfiq.dmap"))
