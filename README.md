@@ -18,7 +18,7 @@ pyDARNio is released! Included are the following features:
 
 ## Documentation
 
-pyDARNo's documentation can found [here](https://pyDARNio.readthedocs.io/en/master)
+pyDARNio's documentation can found [here](https://pyDARNio.readthedocs.io/en/master)
 
 ## Getting Started
 
