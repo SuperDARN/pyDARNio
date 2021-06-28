@@ -11,12 +11,12 @@ import unittest
 
 import pyDARNio
 
-from pyDARNio.tests.utils.data_sets import dmap_data_sets
-from pyDARNio.tests.utils.data_sets import fitacf_data_sets
-from pyDARNio.tests.utils.data_sets import grid_data_sets
-from pyDARNio.tests.utils.data_sets import iqdat_data_sets
-from pyDARNio.tests.utils.data_sets import map_data_sets
-from pyDARNio.tests.utils.data_sets import rawacf_data_sets
+from pydarnio.tests.utils.data_sets import dmap_data_sets
+from pydarnio.tests.utils.data_sets import fitacf_data_sets
+from pydarnio.tests.utils.data_sets import grid_data_sets
+from pydarnio.tests.utils.data_sets import iqdat_data_sets
+from pydarnio.tests.utils.data_sets import map_data_sets
+from pydarnio.tests.utils.data_sets import rawacf_data_sets
 
 
 def get_test_files(test_file_type, test_dir=os.path.join("..", "testfiles")):
@@ -264,9 +264,9 @@ class TestRead(unittest.TestCase):
         corrupt_files = get_test_files("corrupt", test_dir=self.test_dir)
 
         for val in [(corrupt_files[0],
-                     pyDARNio.dmap_exceptions.DmapDataTypeError),
+                     pydarnio.dmap_exceptions.DmapDataTypeError),
                     (corrupt_files[1],
-                     pyDARNio.dmap_exceptions.NegativeByteError)]:
+                     pydarnio.dmap_exceptions.NegativeByteError)]:
             with self.subTest(val=val):
                 self.test_file = val[0]
                 with self.assertRaises(val[1]):
@@ -282,9 +282,9 @@ class TestRead(unittest.TestCase):
         corrupt_files = get_test_files("corrupt", test_dir=self.test_dir)
 
         for val in [(corrupt_files[0],
-                     pyDARNio.dmap_exceptions.MismatchByteError),
+                     pydarnio.dmap_exceptions.MismatchByteError),
                     (corrupt_files[1],
-                     pyDARNio.dmap_exceptions.NegativeByteError)]:
+                     pydarnio.dmap_exceptions.NegativeByteError)]:
             with self.subTest(val=val):
                 self.data = self.read_func(val[0])
                 with self.assertRaises(val[1]):
@@ -341,7 +341,7 @@ class TestRead(unittest.TestCase):
         self.data[40:] = self.test_file[37:]
 
         # Assert data from corrupted stream is corrupted
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
+        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
             self.local_file_record(self.corrupt_read_type, stream=True)
 
 
