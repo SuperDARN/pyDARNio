@@ -1,4 +1,3 @@
-# Copyright (C) 2020 NRL
 # Author: Angeline Burrell
 
 from collections import OrderedDict
