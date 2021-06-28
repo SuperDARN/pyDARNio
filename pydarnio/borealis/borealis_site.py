@@ -248,8 +248,8 @@ class BorealisSiteRead():
             (in ms since epoch).
         """
         pyDARNio_log.info("Reading Borealis {} {} file: {}"
-                        "".format(self.software_version,
-                                  self.borealis_filetype, self.filename))
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
 
         attribute_types = self.format.site_single_element_types()
         dataset_types = self.format.site_array_dtypes()
@@ -489,8 +489,8 @@ class BorealisSiteWrite():
             The filename written to.
         """
         pyDARNio_log.info("Writing Borealis {} {} file: {}"
-                        "".format(self.software_version,
-                                  self.borealis_filetype, self.filename))
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
 
         attribute_types = self.format.site_single_element_types()
         dataset_types = self.format.site_array_dtypes()

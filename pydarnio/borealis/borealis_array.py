@@ -55,14 +55,6 @@ class BorealisArrayRead():
     been restructured to no longer be read in record-by-record
     style.
 
-    See Also
-    --------
-    BaseFormat
-    BorealisRawacf
-    BorealisBfiq
-    BorealisAntennasIq
-    BorealisRawrf
-
     Attributes
     ----------
     filename: str
@@ -77,6 +69,14 @@ class BorealisArrayRead():
     arrays: dict
     software_version : str
     format: subclass of borealis_formats.BaseFormat
+
+    See Also
+    --------
+    BaseFormat
+    BorealisRawacf
+    BorealisBfiq
+    BorealisAntennasIq
+    BorealisRawrf
     """
 
     def __init__(self, filename: str, borealis_filetype: str):
@@ -222,20 +222,20 @@ class BorealisArrayRead():
 
         Reads the entire file.
 
-        See Also
-        --------
-        BaseFormat
-
         Returns
         -------
         arrays: dict
             Borealis data dictionary of arrays. Keys are data field names and
             unshared fields have a first dimension = number of records
             in the file.
+
+        See Also
+        --------
+        BaseFormat
         """
         pyDARNio_log.info("Reading Borealis {} {} file: {}"
-                        "".format(self.software_version,
-                                  self.borealis_filetype, self.filename))
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
 
         attribute_types = self.format.array_single_element_types()
         dataset_types = self.format.array_array_dtypes()
@@ -291,14 +291,6 @@ class BorealisArrayWrite():
     been restructured to no longer be read in record-by-record
     style.
 
-    See Also
-    --------
-    BaseFormat
-    BorealisRawacf
-    BorealisBfiq
-    BorealisAntennasIq
-    BorealisRawrf
-
     Attributes
     ----------
     filename: str
@@ -318,6 +310,14 @@ class BorealisArrayWrite():
         zlib is hdf5 default compression for fast reading. We want
         the fastest read possible for downstream users with this
         structure style.
+
+    See Also
+    --------
+    BaseFormat
+    BorealisRawacf
+    BorealisBfiq
+    BorealisAntennasIq
+    BorealisRawrf
     """
 
     def __init__(self, filename: str, borealis_arrays: dict,
@@ -461,18 +461,18 @@ class BorealisArrayWrite():
         """
         Write Borealis records to a file given filetype.
 
-        See Also
-        --------
-        BaseFormat
-
         Raises
         ------
         BorealisFileTypeError
+
+        See Also
+        --------
+        BaseFormat
         """
 
         pyDARNio_log.info("Writing Borealis {} {} file: {}"
-                        "".format(self.software_version,
-                                  self.borealis_filetype, self.filename))
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
 
         attribute_types = self.format.array_single_element_types()
         dataset_types = self.format.array_array_dtypes()

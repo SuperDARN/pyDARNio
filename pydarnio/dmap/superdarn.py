@@ -9,14 +9,14 @@ The file types that are supported:
     - Grid
     - Map
 
-Classes:
+Classes
 --------
 SDarnUtilities: utilites class that contains static methods for
 SuperDARN file type checking
 SDarnRead : Reads SuperDARN files types
 SDarnWrite : writes Dmap Record structure into a SuperDARN file type
 
-Exceptions:
+Exceptions
 -----------
 SuperDARNFieldMissingError
 SuperDARNExtraFieldError
@@ -39,7 +39,7 @@ import logging
 
 from typing import Union, List
 
-from pyDARNio import (DmapRead, DmapWrite, superdarn_exceptions,
+from pydarnio import (DmapRead, DmapWrite, superdarn_exceptions,
                       superdarn_formats, dmap2dict)
 
 pyDARNio_log = logging.getLogger('pyDARNio')
@@ -69,7 +69,8 @@ class SDarnUtilities():
         dict_list2set(dict_list)
             Converts a list of dictionaries to a set containing their keys
 
-    Future Work:
+    Future Work
+    -----------
         Add utilities for converting DMAP records to dictionaries containing
         only the values and dictionaries to DMAP records.
 
@@ -83,15 +84,15 @@ class SDarnUtilities():
         ex) Let A = {a, b, c} and B = {d, a, b}
         Then A - B = {c}
 
-        Parameters:
+        Parameters
         -----------
         dict1 : dict or set
             dictionary or set to subtract from
         dict2 : dict or set
             dictionary or set subtracting from dict1
 
-        Return:
-        ------
+        Returns
+        -------
         dict_diff : set
             difference between dict1 and dict2 keys or the sets
         """
@@ -106,13 +107,13 @@ class SDarnUtilities():
         """
         Converts a list of dictionaries to list of sets
 
-        Parameters:
+        Parameters
         -----------
         dict_list : list
             list of dictionaries
 
-        Return:
-        ------
+        Returns
+        -------
         complete_set : set
             set containing all dictionary key from the list of dicts
         """
@@ -135,7 +136,7 @@ class SDarnUtilities():
         Checks if any fields are missing from the record compared to the file
         structure.
 
-        Parameters:
+        Parameters
         -----------
         file_struct_list : List[dict]
             List of dictionaries for the possible file structure fields
@@ -144,7 +145,7 @@ class SDarnUtilities():
         rec_num : int
             Record number for better error message information
 
-        Raises:
+        Raises
         -------
         SuperDARNFieldMissing
         """
@@ -233,7 +234,8 @@ class SDarnUtilities():
             complete_dict.update(file_struct)
         incorrect_types_check = {param: complete_dict[param]
                                  for param in record.keys()
-                                 if record[param].data_type_fmt != complete_dict[param]}
+                                 if record[param].data_type_fmt !=
+                                 complete_dict[param]}
         if len(incorrect_types_check) > 0:
             raise superdarn_exceptions.\
                 SuperDARNDataFormatTypeError(incorrect_types_check, rec_num)
@@ -324,7 +326,7 @@ class SDarnRead(DmapRead):
             Is a list of dictionaries for the fields that are possible in a
             SuperDARN file type
 
-        Raises:
+        Raises
         -------
         SuperDARNFieldMissingError - when a field is missing from the SuperDARN
                                 file/stream type
@@ -484,6 +486,7 @@ class SDarnRead(DmapRead):
         # boundary to the map file. See missing_field_check
         # method in SDarnUtilities for more information.
         file_struct_list = [superdarn_formats.Map.types,
+                            superdarn_formats.Map.partial_fields,
                             superdarn_formats.Map.extra_fields,
                             superdarn_formats.Map.fit_fields,
                             superdarn_formats.Map.hmb_fields,
@@ -560,20 +563,20 @@ class SDarnWrite(DmapWrite):
         """
         Writes SuperDARN file type IQDAT
 
-        Parameters:
+        Parameters
         -----------
         filename : str
             The name of the IQDAT file including path
 
 
-        Raises:
+        Raises
         -------
         superDARNExtraFieldError - if there is an extra field
         SuperDARNFieldMissingError- if there is an missing field
         SuperDARNDataFormatTypeError - if there is a formatting error
                                like an incorrect data type format
 
-        See Also:
+        See Also
         ---------
         extra_field_check
         missing_field_check
@@ -593,20 +596,20 @@ class SDarnWrite(DmapWrite):
         """
         Writes SuperDARN file type RAWACF
 
-        Parameters:
+        Parameters
         -----------
         filename : str
             The name of the RAWACF file including path
 
 
-        Raises:
+        Raises
         -------
         superDARNExtraFieldError - if there is an extra field
         SuperDARNFieldMissingError- if there is an missing field
         SuperDARNDataFormatTypeError - if there is a formatting error
                                like an incorrect data type format
 
-        See Also:
+        See Also
         ---------
         extra_field_check
         missing_field_check
@@ -618,9 +621,9 @@ class SDarnWrite(DmapWrite):
         self._empty_record_check()
         file_struct_list = [superdarn_formats.Rawacf.types,
                             superdarn_formats.Rawacf.correlation_field,
+                            superdarn_formats.Rawacf.cross_correlation_field,
                             superdarn_formats.Rawacf.digitizing_field,
-                            superdarn_formats.Rawacf.fittex_field,
-                            superdarn_formats.Rawacf.cross_correlation_field]
+                            superdarn_formats.Rawacf.fittex_field]
         self.superDARN_file_structure_to_bytes(file_struct_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
@@ -629,20 +632,20 @@ class SDarnWrite(DmapWrite):
         """
         Writes SuperDARN file type FITACF
 
-        Parameters:
+        Parameters
         -----------
         filename : str
             The name of the FITACF file including path
 
 
-        Raises:
+        Raises
         -------
         superDARNExtraFieldError - if there is an extra field
         SuperDARNFieldMissingError- if there is an missing field
         SuperDARNDataFormatTypeError - if there is a formatting error
                                like an incorrect data type format
 
-        See Also:
+        See Also
         ---------
         extra_field_check
         missing_field_check
@@ -669,20 +672,20 @@ class SDarnWrite(DmapWrite):
         """
         Writes SuperDARN file type GRID
 
-        Parameters:
+        Parameters
         -----------
         filename : str
             The name of the GRID file including path
 
 
-        Raises:
+        Raises
         -------
         superDARNExtraFieldError - if there is an extra field
         SuperDARNFieldMissingError- if there is an missing field
         SuperDARNDataFormatTypeError - if there is a formatting error
                                like an incorrect data type format
 
-        See Also:
+        See Also
         ---------
         extra_field_check
         missing_field_check
@@ -708,20 +711,20 @@ class SDarnWrite(DmapWrite):
         """
         Writes SuperDARN file type MAP
 
-        Parameters:
+        Parameters
         -----------
         filename : str
             The name of the MAP file including path
 
 
-        Raises:
+        Raises
         -------
         superDARNExtraFieldError - if there is an extra field
         SuperDARNFieldMissingError- if there is an missing field
         SuperDARNDataFormatTypeError - if there is a formatting error
                                like an incorrect data type format
 
-        See Also:
+        See Also
         ---------
         extra_field_check
         missing_field_check
