@@ -8,7 +8,7 @@ import numpy as np
 
 from collections import OrderedDict
 
-from pydarnio import DmapScalar, DmapArray
+from pyDARNio import DmapScalar, DmapArray
 
 fitacf_data = [
     OrderedDict([('radar.revision.major',

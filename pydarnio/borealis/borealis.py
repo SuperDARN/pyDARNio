@@ -42,7 +42,7 @@ import logging
 from collections import OrderedDict
 from typing import Union
 
-from pydarnio import borealis_exceptions
+from pyDARNio import borealis_exceptions
 from .borealis_site import BorealisSiteRead, BorealisSiteWrite
 from .borealis_array import BorealisArrayRead, BorealisArrayWrite
 

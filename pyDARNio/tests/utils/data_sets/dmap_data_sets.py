@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from pydarnio import DmapArray, DmapScalar
+from pyDARNio import DmapArray, DmapScalar
 
 dmap_data = [{'RST.version': DmapScalar('RST.version', '4.1', 9, 's'),
               'stid': DmapScalar('stid', 3, 3, 'i'),

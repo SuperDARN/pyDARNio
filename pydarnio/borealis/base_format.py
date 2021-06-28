@@ -43,7 +43,7 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Callable
 
-from pydarnio import borealis_exceptions
+from pyDARNio import borealis_exceptions
 
 
 class BaseFormat():
