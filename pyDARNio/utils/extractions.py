@@ -1,4 +1,3 @@
-# Copyright 2020
 # Author: Angeline G. Burrell, U.S. Naval Research Laboratory (NRL)
 
 """
