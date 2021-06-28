@@ -6,7 +6,7 @@ Test data sets for DmapWrite
 from collections import OrderedDict
 import numpy as np
 
-from pyDARNio import DmapScalar, DmapArray
+from pydarnio import DmapScalar, DmapArray
 
 
 rawacf_data = [OrderedDict([('radar.revision.major',

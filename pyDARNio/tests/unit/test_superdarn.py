@@ -19,9 +19,9 @@ import numpy as np
 import os
 import unittest
 
-import pyDARNio
-from pyDARNio import superdarn_exceptions as sdarn_exp
-from pyDARNio.tests.utils import file_utils
+import pydarnio
+from pydarnio import superdarn_exceptions as sdarn_exp
+from pydarnio.tests.utils import file_utils
 
 pydarnio_logger = logging.getLogger('pydarnio')
 
@@ -35,7 +35,7 @@ class TestSDarnRead(file_utils.TestRead):
         self.test_dir = os.path.join("..", "testfiles")
         self.data = None
         self.rec = None
-        self.read_func = pyDARNio.SDarnRead
+        self.read_func = pydarnio.SDarnRead
         self.file_types = ["rawacf", "fitacf", "iqdat", "grid", "map"]
         self.corrupt_read_type = "rawacf"
 
@@ -63,8 +63,8 @@ class TestSDarnRead(file_utils.TestRead):
         # Test the first record
         self.assertIsInstance(self.rec, collections.deque)
         self.assertIsInstance(self.rec[0], collections.OrderedDict)
-        self.assertIsInstance(self.rec[0]['rxrise'], pyDARNio.DmapScalar)
-        self.assertIsInstance(self.rec[3]['tsc'], pyDARNio.DmapArray)
+        self.assertIsInstance(self.rec[0]['rxrise'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[3]['tsc'], pydarnio.DmapArray)
         self.assertIsInstance(self.rec[5]['mppul'].value, int)
         self.assertIsInstance(self.rec[6]['tnoise'].value, np.ndarray)
         self.assertEqual(self.rec[7]['channel'].value, 0)
@@ -90,8 +90,8 @@ class TestSDarnRead(file_utils.TestRead):
         # Test the first record
         self.assertIsInstance(self.rec, collections.deque)
         self.assertIsInstance(self.rec[0], collections.OrderedDict)
-        self.assertIsInstance(self.rec[4]['channel'], pyDARNio.DmapScalar)
-        self.assertIsInstance(self.rec[1]['ptab'], pyDARNio.DmapArray)
+        self.assertIsInstance(self.rec[4]['channel'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
         self.assertIsInstance(self.rec[7]['channel'].value, int)
         self.assertIsInstance(self.rec[2]['xcfd'].value, np.ndarray)
         self.assertEqual(self.rec[0]['xcfd'].dimension, 3)
@@ -116,8 +116,8 @@ class TestSDarnRead(file_utils.TestRead):
         # Test the first record
         self.assertIsInstance(self.rec, collections.deque)
         self.assertIsInstance(self.rec[0], collections.OrderedDict)
-        self.assertIsInstance(self.rec[4]['bmnum'], pyDARNio.DmapScalar)
-        self.assertIsInstance(self.rec[1]['ptab'], pyDARNio.DmapArray)
+        self.assertIsInstance(self.rec[4]['bmnum'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
         self.assertIsInstance(self.rec[7]['channel'].value, int)
         self.assertIsInstance(self.rec[2]['ltab'].value, np.ndarray)
         self.assertEqual(self.rec[0]['ptab'].dimension, 1)
@@ -142,8 +142,8 @@ class TestSDarnRead(file_utils.TestRead):
         # Test the first record
         self.assertIsInstance(self.rec, collections.deque)
         self.assertIsInstance(self.rec[0], collections.OrderedDict)
-        self.assertIsInstance(self.rec[4]['start.year'], pyDARNio.DmapScalar)
-        self.assertIsInstance(self.rec[1]['v.max'], pyDARNio.DmapArray)
+        self.assertIsInstance(self.rec[4]['start.year'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['v.max'], pydarnio.DmapArray)
         self.assertIsInstance(self.rec[7]['end.day'].value, int)
         self.assertIsInstance(self.rec[2]['stid'].value, np.ndarray)
         self.assertEqual(self.rec[0]['nvec'].dimension, 1)
@@ -169,8 +169,8 @@ class TestSDarnRead(file_utils.TestRead):
         self.assertIsInstance(self.rec, collections.deque)
         self.assertIsInstance(self.rec[0], collections.OrderedDict)
         self.assertIsInstance(self.rec[2]['IMF.flag'],
-                              pyDARNio.io.datastructures.DmapScalar)
-        self.assertIsInstance(self.rec[3]['stid'], pyDARNio.DmapArray)
+                              pydarnio.io.datastructures.DmapScalar)
+        self.assertIsInstance(self.rec[3]['stid'], pydarnio.DmapArray)
         self.assertIsInstance(self.rec[8]['IMF.flag'].value, int)
         self.assertIsInstance(self.rec[10]['stid'].value, np.ndarray)
         self.assertEqual(self.rec[3]['stid'].dimension, 1)
@@ -203,7 +203,7 @@ class TestSDarnUtilities(unittest.TestCase):
         for val in [(self.tdicts[0], self.tdicts[1], {'a'}),
                     (self.tdicts[1], self.tdicts[0], {'1', 'z'})]:
             with self.subTest(val=val):
-                out = pyDARNio.SDarnUtilities.dict_key_diff(val[0], val[1])
+                out = pydarnio.SDarnUtilities.dict_key_diff(val[0], val[1])
                 self.assertEqual(val[2], out)
 
     def test_dict_list2set(self):
@@ -217,7 +217,7 @@ class TestSDarnUtilities(unittest.TestCase):
         """
         dict_keys = {'a', 'c', 'd', 'rst', 'stid', 'vel', 'fitacf', 'rawacf',
                      'map'}
-        out = pyDARNio.SDarnUtilities.dict_list2set(self.tdicts)
+        out = pydarnio.SDarnUtilities.dict_list2set(self.tdicts)
         self.assertEqual(dict_keys, out)
 
     def test_extra_field_check_pass(self):
@@ -234,7 +234,7 @@ class TestSDarnUtilities(unittest.TestCase):
         nothing is returned or raised
         """
         out = {'a': 3, 'c': 3, 'd': 3, 'rst': 1, 'vel': 'd'}
-        pyDARNio.SDarnUtilities.extra_field_check(self.tdicts, out, 1)
+        pydarnio.SDarnUtilities.extra_field_check(self.tdicts, out, 1)
 
     def test_extra_field_check_fail(self):
         """
@@ -251,7 +251,7 @@ class TestSDarnUtilities(unittest.TestCase):
         """
         out = {'a': 3, 'b': 3, 'c': 2, 'd': 3, 'rst': 1, 'vel': 'd'}
         with self.assertRaises(sdarn_exp.SuperDARNExtraFieldError) as err:
-            pyDARNio.SDarnUtilities.extra_field_check(self.tdicts, out, 1)
+            pydarnio.SDarnUtilities.extra_field_check(self.tdicts, out, 1)
 
         self.assertEqual(err.exception.fields, {'b'})
 
@@ -272,7 +272,7 @@ class TestSDarnUtilities(unittest.TestCase):
         in_list[2].update(self.tdicts[2])
         for val in in_list:
             with self.subTest(val=val):
-                pyDARNio.SDarnUtilities.missing_field_check(self.tdicts,
+                pydarnio.SDarnUtilities.missing_field_check(self.tdicts,
                                                             val, 1)
 
     def test_missing_field_check_fail(self):
@@ -296,7 +296,7 @@ class TestSDarnUtilities(unittest.TestCase):
             with self.subTest(val=val):
                 with self.assertRaises(
                         sdarn_exp.SuperDARNFieldMissingError) as err:
-                    pyDARNio.SDarnUtilities.missing_field_check(self.tdicts,
+                    pydarnio.SDarnUtilities.missing_field_check(self.tdicts,
                                                                 val[0], 1)
 
                 # Items in tdicts, but not in rdict
@@ -309,25 +309,25 @@ class TestSDarnUtilities(unittest.TestCase):
 
         Note
         ----
-        This method only works on pyDARNio DMAP record data structure
+        This method only works on pydarnio DMAP record data structure
 
         Expected Behaviour
         ------------------
         Nothing - should not return or raise anything if the fields
         are the correct data format type
         """
-        rdict = {'a': pyDARNio.DmapScalar('a', 1, 1, self.tdicts[0]['a']),
-                 'c': pyDARNio.DmapScalar('a', 1, 1, self.tdicts[0]['c']),
-                 'd': pyDARNio.DmapArray('a', np.array([2.4, 2.4]), 1,
+        rdict = {'a': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['a']),
+                 'c': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['c']),
+                 'd': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
                                          self.tdicts[0]['d'], 1, [3]),
-                 'fitacf': pyDARNio.DmapScalar('a', 1, 1,
+                 'fitacf': pydarnio.DmapScalar('a', 1, 1,
                                                self.tdicts[-1]['fitacf']),
-                 'rawacf': pyDARNio.DmapScalar('a', 1, 1,
+                 'rawacf': pydarnio.DmapScalar('a', 1, 1,
                                                self.tdicts[-1]['rawacf']),
-                 'map': pyDARNio.DmapScalar('a', 1, 1,
+                 'map': pydarnio.DmapScalar('a', 1, 1,
                                             self.tdicts[-1]['map'])}
 
-        pyDARNio.SDarnUtilities.incorrect_types_check([self.tdicts[0],
+        pydarnio.SDarnUtilities.incorrect_types_check([self.tdicts[0],
                                                        self.tdicts[-1]],
                                                       rdict, 1)
 
@@ -345,19 +345,19 @@ class TestSDarnUtilities(unittest.TestCase):
         Raises SuperDARNDataFormatTypeError - because the field format types
         should not be the same.
         """
-        rdict = {'a': pyDARNio.DmapScalar('a', 1, 1, self.tdicts[0]['a']),
-                 'c': pyDARNio.DmapScalar('a', 1, 1, self.tdicts[0]['c']),
-                 'd': pyDARNio.DmapArray('a', np.array([2.4, 2.4]), 1,
+        rdict = {'a': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['a']),
+                 'c': pydarnio.DmapScalar('a', 1, 1, self.tdicts[0]['c']),
+                 'd': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
                                          self.tdicts[0]['d'], 1, [3]),
-                 'fitacf': pyDARNio.DmapScalar('a', 1, 1,
+                 'fitacf': pydarnio.DmapScalar('a', 1, 1,
                                                self.tdicts[-1]['rawacf']),
-                 'rawacf': pyDARNio.DmapScalar('a', 1, 1,
+                 'rawacf': pydarnio.DmapScalar('a', 1, 1,
                                                self.tdicts[-1]['rawacf']),
-                 'map': pyDARNio.DmapScalar('a', 1, 1,
+                 'map': pydarnio.DmapScalar('a', 1, 1,
                                             self.tdicts[-1]['map'])}
 
         with self.assertRaises(sdarn_exp.SuperDARNDataFormatTypeError) as err:
-            pyDARNio.SDarnUtilities.incorrect_types_check([self.tdicts[0],
+            pydarnio.SDarnUtilities.incorrect_types_check([self.tdicts[0],
                                                            self.tdicts[-1]],
                                                           rdict, 1)
 
@@ -371,7 +371,7 @@ class TestSDarnWrite(file_utils.TestWrite):
     def setUp(self):
         """ Runs before every test to create the test environment
         """
-        self.write_class = pyDARNio.SDarnWrite
+        self.write_class = pydarnio.SDarnWrite
         self.write_func = None
         self.data_type = "rawacf"
         self.data = []
@@ -416,7 +416,7 @@ class TestSDarnWrite(file_utils.TestWrite):
         """
         rnum = 0
         extra_name = "dummy"
-        extra_field = pyDARNio.DmapArray(extra_name, np.array([1, 2]), chr(1),
+        extra_field = pydarnio.DmapArray(extra_name, np.array([1, 2]), chr(1),
                                          'c', 1, [2])
         test_file_dict = file_utils.get_test_files("good")
 

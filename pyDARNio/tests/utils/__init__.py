@@ -5,8 +5,8 @@
 # ----------------------------------------------------------------------------
 
 # Import data sets
-from pyDARNio.tests.utils import data_sets
+from pydarnio.tests.utils import data_sets
 
 # Import testing utilities
-from pyDARNio.tests.utils import borealis_utils
-from pyDARNio.tests.utils import file_utils
+from pydarnio.tests.utils import borealis_utils
+from pydarnio.tests.utils import file_utils

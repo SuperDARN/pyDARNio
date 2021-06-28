@@ -89,8 +89,8 @@ class TestDmapWrite(file_utils.TestWrite):
                      {'channel': pydarnio.DmapArray('channel',
                                                     np.array(['d', 'c', 'r']),
                                                     1, 'c', 1, [3])}]
-        errors = [pyDARNio.dmap_exceptions.DmapDataError,
-                  pyDARNio.dmap_exceptions.DmapCharError]
+        errors = [pydarnio.dmap_exceptions.DmapDataError,
+                  pydarnio.dmap_exceptions.DmapCharError]
         for i, val in enumerate(errors):
             with self.subTest(val=val):
                 array = [dat_val for dat_val in self.data[i].values()][0]

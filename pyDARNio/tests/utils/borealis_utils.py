@@ -8,13 +8,13 @@ import os
 import tables
 import unittest
 
-import pyDARNio
-import pyDARNio.exceptions.borealis_exceptions as bor_exc
+import pydarnio
+import pydarnio.exceptions.borealis_exceptions as bor_exc
 
-from pyDARNio.tests.utils.file_utils import get_test_files, remove_temp_file
-import pyDARNio.tests.utils.data_sets.borealis_rawacf_data_sets as bor_rawacf
-import pyDARNio.tests.utils.data_sets.borealis_bfiq_data_sets as bor_bfiq
-import pyDARNio.tests.utils.data_sets.borealis_antennas_iq_data_sets \
+from pydarnio.tests.utils.file_utils import get_test_files, remove_temp_file
+import pydarnio.tests.utils.data_sets.borealis_rawacf_data_sets as bor_rawacf
+import pydarnio.tests.utils.data_sets.borealis_bfiq_data_sets as bor_bfiq
+import pydarnio.tests.utils.data_sets.borealis_antennas_iq_data_sets \
     as bor_antennas_iq
 
 
@@ -51,7 +51,7 @@ class TestReadBorealis(unittest.TestCase):
         self.data = None
         self.rec = None
         self.arr = None
-        self.read_func = pyDARNio.BorealisRead
+        self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq", "rawrf"]
         self.file_struct = "site"
         self.version = 4
@@ -464,7 +464,7 @@ class TestConvertBorealis(unittest.TestCase):
                 self.temp_file = "{:s}.temp.dmap".format(self.test_file)
 
                 # Run the data convertion
-                pyDARNio.BorealisConvert(
+                pydarnio.BorealisConvert(
                     self.test_file, val, self.temp_file,
                     borealis_file_structure=self.file_struct)
 

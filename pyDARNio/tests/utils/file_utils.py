@@ -9,7 +9,7 @@ import numpy as np
 import os
 import unittest
 
-import pyDARNio
+import pydarnio
 
 from pydarnio.tests.utils.data_sets import dmap_data_sets
 from pydarnio.tests.utils.data_sets import fitacf_data_sets
@@ -215,7 +215,7 @@ class TestRead(unittest.TestCase):
             self.skipTest('test directory is not included with pyDARNio')
 
         self.test_file = get_test_files("empty", test_dir=self.test_dir)[0]
-        self.assertRaises(pyDARNio.dmap_exceptions.EmptyFileError,
+        self.assertRaises(pydarnio.dmap_exceptions.EmptyFileError,
                           self.read_func, self.test_file)
 
     def test_good_open_file(self):
@@ -312,8 +312,8 @@ class TestRead(unittest.TestCase):
         # Test the output of the first record
         self.assertIsInstance(self.rec, collections.deque)
         self.assertIsInstance(self.rec[0], collections.OrderedDict)
-        self.assertIsInstance(self.rec[4]['channel'], pyDARNio.DmapScalar)
-        self.assertIsInstance(self.rec[1]['ptab'], pyDARNio.DmapArray)
+        self.assertIsInstance(self.rec[4]['channel'], pydarnio.DmapScalar)
+        self.assertIsInstance(self.rec[1]['ptab'], pydarnio.DmapArray)
         self.assertIsInstance(self.rec[7]['channel'].value, int)
         self.assertIsInstance(self.rec[2]['xcfd'].value, np.ndarray)
         self.assertEqual(self.rec[0]['xcfd'].dimension, 3)
@@ -387,7 +387,7 @@ class TestWrite(unittest.TestCase):
                 self.write_func = set_write_func(self.write_class, self.data,
                                                  val)
                 with self.assertRaises(
-                        pyDARNio.dmap_exceptions.FilenameRequiredError):
+                        pydarnio.dmap_exceptions.FilenameRequiredError):
                     self.write_func()
 
                 self.assertFalse(remove_temp_file(self.temp_file))
@@ -396,7 +396,7 @@ class TestWrite(unittest.TestCase):
         """
         Test raises DmapDataError if an empty record is given
         """
-        with self.assertRaises(pyDARNio.dmap_exceptions.DmapDataError):
+        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
             self.write_func = set_write_func(self.write_class, self.data,
                                              "rawacf")
             self.write_func(self.temp_file)
@@ -495,10 +495,10 @@ class TestReadWrite(unittest.TestCase):
 
                 # If this is a DMap type, get the value
                 for i, val in enumerate(comp_vals):
-                    if isinstance(val, pyDARNio.DmapScalar):
+                    if isinstance(val, pydarnio.DmapScalar):
                         self.assess_DmapType(val, 'scalar')
                         comp_vals[i] = val.value
-                    elif isinstance(val, pyDARNio.DmapArray):
+                    elif isinstance(val, pydarnio.DmapArray):
                         self.assess_DmapType(val, 'array')
                         comp_vals[i] = val.value.reshape(val.shape)
 

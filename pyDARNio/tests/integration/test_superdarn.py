@@ -165,8 +165,8 @@ class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
 class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
     def setUp(self):
         self.test_dir = os.path.join("..", "testdir")
-        self.read_class = pyDARNio.DmapRead
-        self.write_class = pyDARNio.SDarnWrite
+        self.read_class = pydarnio.DmapRead
+        self.write_class = pydarnio.SDarnWrite
         self.read_func = None
         self.write_func = None
         self.read_dmap = None

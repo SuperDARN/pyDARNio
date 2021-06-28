@@ -4,4 +4,4 @@
 # ----------------------------------------------------------------------------
 
 # Import testing utilities
-from pyDARNio.tests import utils
+from pydarnio.tests import utils
