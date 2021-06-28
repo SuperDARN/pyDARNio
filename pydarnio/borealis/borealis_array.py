@@ -42,7 +42,7 @@ import logging
 
 from typing import List
 
-from pyDARNio import borealis_exceptions, borealis_formats
+from pydarnio import borealis_exceptions, borealis_formats
 
 from .borealis_utilities import BorealisUtilities
 

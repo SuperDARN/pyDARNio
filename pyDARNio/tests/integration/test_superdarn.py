@@ -6,9 +6,9 @@ import logging
 import numpy as np
 import os
 
-import pyDARNio
-from pyDARNio import superdarn_exceptions as sdarn_exc
-from pyDARNio.tests.utils import file_utils
+import pydarnio
+from pydarnio import superdarn_exceptions as sdarn_exc
+from pydarnio.tests.utils import file_utils
 
 pydarnio_logger = logging.getLogger('pyDARNio')
 
@@ -16,8 +16,8 @@ pydarnio_logger = logging.getLogger('pyDARNio')
 class TestSDarnReadWrite(file_utils.TestReadWrite):
     def setUp(self):
         self.test_dir = os.path.join("..", "testdir")
-        self.read_class = pyDARNio.SDarnRead
-        self.write_class = pyDARNio.SDarnWrite
+        self.read_class = pydarnio.SDarnRead
+        self.write_class = pydarnio.SDarnWrite
         self.read_func = None
         self.write_func = None
         self.read_dmap = None
@@ -36,8 +36,8 @@ class TestSDarnReadWrite(file_utils.TestReadWrite):
 class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
     def setUp(self):
         self.test_dir = os.path.join("..", "testdir")
-        self.read_class = pyDARNio.SDarnRead
-        self.write_class = pyDARNio.DmapWrite
+        self.read_class = pydarnio.SDarnRead
+        self.write_class = pydarnio.DmapWrite
         self.read_func = None
         self.write_func = None
         self.read_dmap = None
@@ -97,7 +97,7 @@ class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
         # Set the missing field name and record number
         rnum = 0
         extra_key = 'dummy'
-        extra_field = {extra_key: pyDARNio.DmapScalar(
+        extra_field = {extra_key: pydarnio.DmapScalar(
             name=extra_key, value=extra_key, data_type=9, data_type_fmt='s')}
         self.set_file_types()
 
@@ -145,7 +145,7 @@ class TestSDarnReadDmapWrite(file_utils.TestReadWrite):
                 read_dict[0]['stid'] = np.int8(read_dict[0]['stid'])
 
                 # Convert from dict to Dmap
-                self.read_dmap = pyDARNio.dict2dmap(read_dict)
+                self.read_dmap = pydarnio.dict2dmap(read_dict)
 
                 # Write the Dmap data
                 self.write_func = file_utils.set_write_func(self.write_class,
@@ -196,7 +196,7 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
                     val[0])
 
                 # Convert from dict to Dmap
-                self.read_dmap = pyDARNio.dict2dmap(read_dict)
+                self.read_dmap = pydarnio.dict2dmap(read_dict)
 
                 # Write the Dmap data
                 self.write_func = file_utils.set_write_func(self.write_class,
@@ -230,7 +230,7 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
                 read_dict[0]['stid'] = np.int8(read_dict[0]['stid'])
 
                 # Convert from dict to Dmap
-                self.read_dmap = pyDARNio.dict2dmap(read_dict)
+                self.read_dmap = pydarnio.dict2dmap(read_dict)
 
                 # Write the Dmap data
                 self.write_func = file_utils.set_write_func(self.write_class,
@@ -268,10 +268,10 @@ class TestDmapReadSDarnWrite(file_utils.TestReadWrite):
                 self.write_func(self.temp_file)
 
                 # Read in again using SDarnRead
-                self.read_class = pyDARNio.SDarnRead
+                self.read_class = pydarnio.SDarnRead
                 self.set_read_func(val[0])
                 self.written_dmap = self.read_func()
-                self.read_class = pyDARNio.DmapRead  # Reset the reading class
+                self.read_class = pydarnio.DmapRead  # Reset the reading class
 
                 # Assert the read and written data are the same
                 self.dmap_list_compare()

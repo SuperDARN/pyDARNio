@@ -43,7 +43,7 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Callable
 
-from pyDARNio import borealis_exceptions
+from pydarnio import borealis_exceptions
 
 
 class BaseFormat():
@@ -1194,4 +1194,3 @@ class BaseFormat():
             max_ppo_shape = tmp.max(axis=0)        
 
         return list(max_ppo_shape)
-

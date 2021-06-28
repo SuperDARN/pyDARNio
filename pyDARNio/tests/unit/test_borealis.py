@@ -18,8 +18,8 @@ And supports conversion of the following Borealis -> SDARN DMap types:
 import logging
 import os
 
-import pyDARNio
-from pyDARNio.tests.utils import borealis_utils
+import pydarnio
+from pydarnio.tests.utils import borealis_utils
 
 pyDARNio_logger = logging.getLogger('pyDARNio')
 
@@ -35,7 +35,7 @@ class TestBorealisReadSitev04(borealis_utils.TestReadBorealis):
         self.data = None
         self.rec = None
         self.arr = None
-        self.read_func = pyDARNio.BorealisRead
+        self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq"]
         self.file_struct = "site"
         self.version = 4
@@ -56,7 +56,7 @@ class TestBorealisReadSitev05(borealis_utils.TestReadBorealis):
         self.data = None
         self.rec = None
         self.arr = None
-        self.read_func = pyDARNio.BorealisRead
+        self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq"]
         self.file_struct = "site"
         self.version = 5
@@ -77,7 +77,7 @@ class TestBorealisReadArrayv04(borealis_utils.TestReadBorealis):
         self.data = None
         self.rec = None
         self.arr = None
-        self.read_func = pyDARNio.BorealisRead
+        self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq"]
         self.file_struct = "array"
         self.version = 4
@@ -98,7 +98,7 @@ class TestBorealisReadArrayv05(borealis_utils.TestReadBorealis):
         self.data = None
         self.rec = None
         self.arr = None
-        self.read_func = pyDARNio.BorealisRead
+        self.read_func = pydarnio.BorealisRead
         self.file_types = ["rawacf", "bfiq", "antennas_iq"]
         self.file_struct = "array"
         self.version = 5
@@ -114,8 +114,8 @@ class TestBorealisWriteSite(borealis_utils.TestWriteBorealis):
     """
 
     def setUp(self):
-        self.write_func = pyDARNio.BorealisWrite
-        self.read_func = pyDARNio.BorealisRead
+        self.write_func = pydarnio.BorealisWrite
+        self.read_func = pydarnio.BorealisRead
         self.data_type = None
         self.data = []
         self.temp_data = []
@@ -135,8 +135,8 @@ class TestBorealisWriteArray(borealis_utils.TestWriteBorealis):
     """
 
     def setUp(self):
-        self.write_func = pyDARNio.BorealisWrite
-        self.read_func = pyDARNio.BorealisRead
+        self.write_func = pydarnio.BorealisWrite
+        self.read_func = pydarnio.BorealisRead
         self.data_type = None
         self.data = []
         self.temp_data = []
