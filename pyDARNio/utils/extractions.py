@@ -1,4 +1,4 @@
-# Copyright 2020 
+# Copyright 2020
 # Author: Angeline G. Burrell, U.S. Naval Research Laboratory (NRL)
 
 """
@@ -11,6 +11,7 @@ import numpy as np
 from typing import Dict, List
 
 pyDARNio_log = logging.getLogger('pyDARNio')
+
 
 def datetime_from_records(records: List[dict], yr_key='time.yr',
                           mo_key='time.mo', dy_key='time.dy', hr_key='time.hr',
@@ -81,6 +82,7 @@ def datetime_from_records(records: List[dict], yr_key='time.yr',
 
     return dtimes
 
+
 def time_series_from_records(records: List[dict], target_keys: List[str],
                              time_kwargs={}, time_key='rec_time'):
     """ Extract lists of data values as time series
@@ -101,7 +103,8 @@ def time_series_from_records(records: List[dict], target_keys: List[str],
     -------
     time_series : Dict[np.array]
         Dict of lists that contain the time-series data from the target keys
-        plus time, which has the key specified in the input parameter `time_key`
+        plus time, which has the key specified in the input parameter
+        `time_key`
 
     Raises
     ------
@@ -166,8 +169,7 @@ def time_series_from_records(records: List[dict], target_keys: List[str],
         time_series[tkey] = np.asarray(time_series[tkey])
 
     return time_series
-            
-            
+
 
 def scans_from_records(records: List[dict]):
     """ Set up scans for easy locating
