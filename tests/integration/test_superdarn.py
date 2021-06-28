@@ -7,7 +7,7 @@ import numpy as np
 import os
 import unittest
 
-import pydarn
+import pydarnio
 
 import fitacf_data_sets
 import grid_data_sets
@@ -28,12 +28,18 @@ iqdat_stream = "../testfiles/20160316.1945.01.rkn.stream.iqdat.bz2"
 grid_file = "../testfiles/20180220.C0.rkn.grid"
 grid_stream = "../testfiles/20180220.C0.rkn.stream.grid.bz2"
 
-pydarn_logger = logging.getLogger('pydarn')
+pydarnio_logger = logging.getLogger('pydarnio')
 
 
 class IntegrationSuperdarnio(unittest.TestCase):
     def setUp(self):
-        pass
+        self.test_file = ''
+
+
+    def tearDown(self):
+        if os.path.isfile(self.test_file):
+            os.remove(self.test_file)
+       del self.test_file
 
     def dmap_compare(self, dmap1: list, dmap2: list):
         # Quick simple tests that can be done before looping
@@ -47,9 +53,9 @@ class IntegrationSuperdarnio(unittest.TestCase):
             diff_fields2 = set(record2) - set(record1)
             self.assertEqual(len(diff_fields2), 0)
             for field, val_obj in record1.items():
-                if isinstance(val_obj, pydarn.DmapScalar):
+                if isinstance(val_obj, pydarnio.DmapScalar):
                     self.assertEqual(record2[field], val_obj)
-                elif isinstance(val_obj, pydarn.DmapArray):
+                elif isinstance(val_obj, pydarnio.DmapArray):
                     self.compare_dmap_array(record2[field], val_obj)
                 elif isinstance(val_obj, np.ndarray):
                     if np.array_equal(record2[field], val_obj):
@@ -81,9 +87,9 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test DmapRead reading an rawacf and SDarnWrite writing
         the rawacf file
         """
-        dmap = pydarn.DmapRead(rawacf_file)
+        dmap = pydarnio.DmapRead(rawacf_file)
         dmap_data = dmap.read_records()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_rawacf("test_rawacf.rawacf")
         self.assertTrue(os.path.isfile("test_rawacf.rawacf"))
         os.remove("test_rawacf.rawacf")
@@ -94,10 +100,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         file
         """
         rawacf_data = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        rawacf_write = pydarn.SDarnWrite(rawacf_data, "test_rawacf.rawacf")
+        rawacf_write = pydarnio.SDarnWrite(rawacf_data, "test_rawacf.rawacf")
         rawacf_write.write_rawacf()
 
-        rawacf_read = pydarn.SDarnRead("test_rawacf.rawacf")
+        rawacf_read = pydarnio.SDarnRead("test_rawacf.rawacf")
         rawacf_read_data = rawacf_read.read_rawacf()
         self.dmap_compare(rawacf_read_data, rawacf_data)
         os.remove("test_rawacf.rawacf")
@@ -109,12 +115,12 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(rawacf_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         stream_data = dmap.read_rawacf()
         dmap_stream_data = dmap.get_dmap_records
-        dmap_write = pydarn.SDarnWrite(stream_data)
+        dmap_write = pydarnio.SDarnWrite(stream_data)
         dmap_write.write_rawacf("test_rawacf.rawacf")
-        dmap_read = pydarn.SDarnRead("test_rawacf.rawacf")
+        dmap_read = pydarnio.SDarnRead("test_rawacf.rawacf")
         _ = dmap_read.read_records()
         dmap_data = dmap_read.get_dmap_records
         self.dmap_compare(dmap_stream_data, dmap_data)
@@ -129,13 +135,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         rawacf_missing_field = copy.deepcopy(rawacf_data_sets.rawacf_data)
         del rawacf_missing_field[0]['nave']
-        dmap_write = pydarn.DmapWrite(rawacf_missing_field)
+        dmap_write = pydarnio.DmapWrite(rawacf_missing_field)
         dmap_write.write_dmap("test_missing_rawacf.rawacf")
 
-        darn_read = pydarn.SDarnRead("test_missing_rawacf.rawacf")
+        darn_read = pydarnio.SDarnRead("test_missing_rawacf.rawacf")
         try:
             darn_read.read_rawacf()
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'nave'})
             self.assertEqual(err.record_number, 0)
 
@@ -151,13 +157,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         rawacf_extra_field = copy.deepcopy(rawacf_data_sets.rawacf_data)
         rawacf_extra_field[0].update({'dummy': 'dummy'})
         rawacf_extra_field[0].move_to_end('dummy', last=False)
-        dmap_write = pydarn.DmapWrite(rawacf_extra_field, )
+        dmap_write = pydarnio.DmapWrite(rawacf_extra_field, )
         dmap_write.write_dmap("test_extra_rawacf.rawacf")
 
-        darn_read = pydarn.SDarnRead("test_extra_rawacf.rawacf")
+        darn_read = pydarnio.SDarnRead("test_extra_rawacf.rawacf")
         try:
             darn_read.read_rawacf()
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 0)
         os.remove("test_extra_rawacf.rawacf")
@@ -168,10 +174,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         rawacf file
         """
         rawacf_dict_data = copy.deepcopy(rawacf_dict_sets.rawacf_dict_data)
-        dmap_rawacf = pydarn.dict2dmap(rawacf_dict_data)
-        darn_read = pydarn.SDarnWrite(dmap_rawacf)
+        dmap_rawacf = pydarnio.dict2dmap(rawacf_dict_data)
+        darn_read = pydarnio.SDarnWrite(dmap_rawacf)
         darn_read.write_rawacf("test_rawacf.rawacf")
-        dmap_read = pydarn.DmapRead("test_rawacf.rawacf")
+        dmap_read = pydarnio.DmapRead("test_rawacf.rawacf")
         dmap_data = dmap_read.read_records()
         dmap_data = dmap_read.get_dmap_records
         self.dmap_compare(dmap_data, dmap_rawacf)
@@ -186,9 +192,9 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         rawacf_dict_data = copy.deepcopy(rawacf_dict_sets.rawacf_dict_data)
         rawacf_dict_data[0]['stid'] = np.int8(rawacf_dict_data[0]['stid'])
-        dmap_rawacf = pydarn.dict2dmap(rawacf_dict_data)
-        darn_write = pydarn.SDarnWrite(dmap_rawacf)
-        with self.assertRaises(pydarn.superdarn_exceptions.
+        dmap_rawacf = pydarnio.dict2dmap(rawacf_dict_data)
+        darn_write = pydarnio.SDarnWrite(dmap_rawacf)
+        with self.assertRaises(pydarnio.superdarn_exceptions.
                                SuperDARNDataFormatTypeError):
             darn_write.write_rawacf("test_rawacf.rawacf")
 
@@ -201,12 +207,12 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         rawacf_dict_data = copy.deepcopy(rawacf_dict_sets.rawacf_dict_data)
         rawacf_dict_data[0]['stid'] = np.int8(rawacf_dict_data[0]['stid'])
-        dmap_rawacf = pydarn.dict2dmap(rawacf_dict_data)
-        dmap_write = pydarn.DmapWrite(dmap_rawacf)
+        dmap_rawacf = pydarnio.dict2dmap(rawacf_dict_data)
+        dmap_write = pydarnio.DmapWrite(dmap_rawacf)
         dmap_write.write_dmap("test_incorrect_rawacf.rawacf")
 
-        darn_read = pydarn.SDarnRead("test_incorrect_rawacf.rawacf")
-        with self.assertRaises(pydarn.superdarn_exceptions.
+        darn_read = pydarnio.SDarnRead("test_incorrect_rawacf.rawacf")
+        with self.assertRaises(pydarnio.superdarn_exceptions.
                                SuperDARNDataFormatTypeError):
             darn_read.read_rawacf()
 
@@ -215,11 +221,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test DmapRead reading an fitacf and SDarnWrite writing
         the fitacf file
         """
-        dmap = pydarn.SDarnRead(fitacf_file)
+        dmap = pydarnio.SDarnRead(fitacf_file)
         dmap_data = dmap.read_fitacf()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_fitacf("test_fitacf.fitacf")
-        fitacf_read = pydarn.SDarnRead("test_fitacf.fitacf")
+        fitacf_read = pydarnio.SDarnRead("test_fitacf.fitacf")
         fitacf_read_data = fitacf_read.read_fitacf()
         self.dmap_compare(dmap_data, fitacf_read_data)
         os.remove("test_fitacf.fitacf")
@@ -230,9 +236,9 @@ class IntegrationSuperdarnio(unittest.TestCase):
         file
         """
         fitacf_data = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        fitacf_write = pydarn.SDarnWrite(fitacf_data, "test_fitacf.fitacf")
+        fitacf_write = pydarnio.SDarnWrite(fitacf_data, "test_fitacf.fitacf")
         fitacf_write.write_fitacf()
-        fitacf_read = pydarn.SDarnRead("test_fitacf.fitacf")
+        fitacf_read = pydarnio.SDarnRead("test_fitacf.fitacf")
         fitacf_read_data = fitacf_read.read_fitacf()
         self.dmap_compare(fitacf_read_data, fitacf_data)
         os.remove("test_fitacf.fitacf")
@@ -244,13 +250,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(fitacf_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         stream_data = dmap.read_fitacf()
         dmap_stream_data = dmap.get_dmap_records
-        dmap_write = pydarn.SDarnWrite(stream_data)
+        dmap_write = pydarnio.SDarnWrite(stream_data)
         dmap_write.write_fitacf("test_fitacf.fitacf")
         self.assertTrue(os.path.isfile("test_fitacf.fitacf"))
-        dmap = pydarn.SDarnRead("test_fitacf.fitacf")
+        dmap = pydarnio.SDarnRead("test_fitacf.fitacf")
         _ = dmap.read_fitacf()
         dmap_read_data = dmap.get_dmap_records
         self.dmap_compare(dmap_stream_data, dmap_read_data)
@@ -260,11 +266,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test DmapRead reading a fitacf file then writing it with SDarnWrite
         then reading it again with SDarnRead
         """
-        dmap = pydarn.DmapRead(fitacf_file)
+        dmap = pydarnio.DmapRead(fitacf_file)
         dmap_data = dmap.read_records()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_fitacf("test_fitacf.fitacf")
-        darn_read = pydarn.SDarnRead("test_fitacf.fitacf")
+        darn_read = pydarnio.SDarnRead("test_fitacf.fitacf")
         fitacf_data = darn_read.read_fitacf()
         self.dmap_compare(dmap_data, fitacf_data)
         os.remove("test_fitacf.fitacf")
@@ -275,10 +281,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         SDarnRead to read the file
         """
         fitacf_data = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        fitacf_write = pydarn.SDarnWrite(fitacf_data, "test_fitacf.fitacf")
+        fitacf_write = pydarnio.SDarnWrite(fitacf_data, "test_fitacf.fitacf")
         fitacf_write.write_fitacf()
 
-        fitacf_read = pydarn.SDarnRead("test_fitacf.fitacf")
+        fitacf_read = pydarnio.SDarnRead("test_fitacf.fitacf")
         fitacf_read_data = fitacf_read.read_fitacf()
         self.dmap_compare(fitacf_read_data, fitacf_data)
         os.remove("test_fitacf.fitacf")
@@ -289,10 +295,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         to read the file
         """
         fitacf_data = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        fitacf_write = pydarn.DmapWrite(fitacf_data, "test_fitacf.fitacf")
+        fitacf_write = pydarnio.DmapWrite(fitacf_data, "test_fitacf.fitacf")
         fitacf_write.write_dmap()
 
-        fitacf_read = pydarn.SDarnRead("test_fitacf.fitacf")
+        fitacf_read = pydarnio.SDarnRead("test_fitacf.fitacf")
         fitacf_read_data = fitacf_read.read_fitacf()
         self.dmap_compare(fitacf_read_data, fitacf_data)
         os.remove("test_fitacf.fitacf")
@@ -304,12 +310,12 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(fitacf_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         stream_data = dmap.read_fitacf()
         dmap_stream_data = dmap.get_dmap_records
-        dmap_write = pydarn.DmapWrite()
+        dmap_write = pydarnio.DmapWrite()
         dmap_write_stream = dmap_write.write_dmap_stream(stream_data)
-        dmap_read = pydarn.SDarnRead(dmap_write_stream, True)
+        dmap_read = pydarnio.SDarnRead(dmap_write_stream, True)
         dmap_read_data = dmap_read.read_fitacf()
         dmap_read_data = dmap_read.get_dmap_records
 
@@ -322,12 +328,12 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(fitacf_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.DmapRead(dmap_stream, True)
+        dmap = pydarnio.DmapRead(dmap_stream, True)
         stream_data = dmap.read_records()
         dmap_stream_data = dmap.get_dmap_records
-        dmap_write = pydarn.SDarnWrite(stream_data)
+        dmap_write = pydarnio.SDarnWrite(stream_data)
         dmap_write.write_fitacf("test_fitacf.fitacf")
-        dmap = pydarn.SDarnRead("test_fitacf.fitacf")
+        dmap = pydarnio.SDarnRead("test_fitacf.fitacf")
         dmap_data = dmap.read_fitacf()
         dmap_data = dmap.get_dmap_records
         self.dmap_compare(dmap_stream_data, dmap_data)
@@ -339,10 +345,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         the fitacf stream
         """
         fitacf_data = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        fitacf_write = pydarn.DmapWrite()
+        fitacf_write = pydarnio.DmapWrite()
         fitacf_stream = fitacf_write.write_dmap_stream(fitacf_data)
 
-        fitacf_read = pydarn.SDarnRead(fitacf_stream, True)
+        fitacf_read = pydarnio.SDarnRead(fitacf_stream, True)
         fitacf_read_data = fitacf_read.read_fitacf()
         self.dmap_compare(fitacf_read_data, fitacf_data)
 
@@ -355,13 +361,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         fitacf_missing_field = copy.deepcopy(fitacf_data_sets.fitacf_data)
         del fitacf_missing_field[0]['nave']
-        dmap_write = pydarn.DmapWrite(fitacf_missing_field)
+        dmap_write = pydarnio.DmapWrite(fitacf_missing_field)
         dmap_write.write_dmap("test_missing_fitacf.fitacf")
 
-        darn_read = pydarn.SDarnRead("test_missing_fitacf.fitacf")
+        darn_read = pydarnio.SDarnRead("test_missing_fitacf.fitacf")
         try:
             darn_read.read_fitacf()
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'nave'})
             self.assertEqual(err.record_number, 0)
 
@@ -378,13 +384,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         fitacf_extra_field = copy.deepcopy(fitacf_data_sets.fitacf_data)
         fitacf_extra_field[0].update({'dummy': 'dummy'})
         fitacf_extra_field[0].move_to_end('dummy', last=False)
-        dmap_write = pydarn.DmapWrite(fitacf_extra_field, )
+        dmap_write = pydarnio.DmapWrite(fitacf_extra_field, )
         dmap_write.write_dmap("test_extra_fitacf.fitacf")
 
-        darn_read = pydarn.SDarnRead("test_extra_fitacf.fitacf")
+        darn_read = pydarnio.SDarnRead("test_extra_fitacf.fitacf")
         try:
             darn_read.read_fitacf()
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 0)
         os.remove("test_extra_fitacf.fitacf")
@@ -394,11 +400,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test DmapRead reading an fitacf and SDarnWrite writing
         the fitacf file
         """
-        dmap = pydarn.SDarnRead(iqdat_file)
+        dmap = pydarnio.SDarnRead(iqdat_file)
         dmap_data = dmap.read_iqdat()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_iqdat("test_iqdat.iqdat")
-        iqdat_read = pydarn.SDarnRead("test_iqdat.iqdat")
+        iqdat_read = pydarnio.SDarnRead("test_iqdat.iqdat")
         iqdat_read_data = iqdat_read.read_iqdat()
         self.dmap_compare(dmap_data, iqdat_read_data)
         os.remove("test_iqdat.iqdat")
@@ -409,9 +415,9 @@ class IntegrationSuperdarnio(unittest.TestCase):
         file
         """
         iqdat_data = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        iqdat_write = pydarn.SDarnWrite(iqdat_data, "test_iqdat.iqdat")
+        iqdat_write = pydarnio.SDarnWrite(iqdat_data, "test_iqdat.iqdat")
         iqdat_write.write_iqdat()
-        iqdat_read = pydarn.SDarnRead("test_iqdat.iqdat")
+        iqdat_read = pydarnio.SDarnRead("test_iqdat.iqdat")
         iqdat_read_data = iqdat_read.read_iqdat()
         self.dmap_compare(iqdat_read_data, iqdat_data)
         os.remove("test_iqdat.iqdat")
@@ -423,13 +429,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(iqdat_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         stream_data = dmap.read_iqdat()
         dmap_stream_data = dmap.get_dmap_records
-        dmap_write = pydarn.SDarnWrite(stream_data)
+        dmap_write = pydarnio.SDarnWrite(stream_data)
         dmap_write.write_iqdat("test_iqdat.iqdat")
         self.assertTrue(os.path.isfile("test_iqdat.iqdat"))
-        dmap = pydarn.SDarnRead("test_iqdat.iqdat")
+        dmap = pydarnio.SDarnRead("test_iqdat.iqdat")
         _ = dmap.read_iqdat()
         dmap_read_data = dmap.get_dmap_records
         self.dmap_compare(dmap_stream_data, dmap_read_data)
@@ -439,11 +445,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test SDarnRead reads from a stream and SDarnWrite writes
         to a iqdat file
         """
-        dmap = pydarn.DmapRead(iqdat_file)
+        dmap = pydarnio.DmapRead(iqdat_file)
         dmap_data = dmap.read_records()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_iqdat("test_iqdat.iqdat")
-        darn_read = pydarn.SDarnRead("test_iqdat.iqdat")
+        darn_read = pydarnio.SDarnRead("test_iqdat.iqdat")
         iqdat_data = darn_read.read_iqdat()
         self.dmap_compare(dmap_data, iqdat_data)
         os.remove("test_iqdat.iqdat")
@@ -454,10 +460,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         SDarnRead to read the file
         """
         iqdat_data = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        iqdat_write = pydarn.SDarnWrite(iqdat_data, "test_iqdat.iqdat")
+        iqdat_write = pydarnio.SDarnWrite(iqdat_data, "test_iqdat.iqdat")
         iqdat_write.write_iqdat()
 
-        iqdat_read = pydarn.SDarnRead("test_iqdat.iqdat")
+        iqdat_read = pydarnio.SDarnRead("test_iqdat.iqdat")
         iqdat_read_data = iqdat_read.read_iqdat()
         self.dmap_compare(iqdat_read_data, iqdat_data)
         os.remove("test_iqdat.iqdat")
@@ -468,10 +474,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         to read the file
         """
         iqdat_data = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        iqdat_write = pydarn.DmapWrite(iqdat_data, "test_iqdat.iqdat")
+        iqdat_write = pydarnio.DmapWrite(iqdat_data, "test_iqdat.iqdat")
         iqdat_write.write_dmap()
 
-        iqdat_read = pydarn.SDarnRead("test_iqdat.iqdat")
+        iqdat_read = pydarnio.SDarnRead("test_iqdat.iqdat")
         iqdat_read_data = iqdat_read.read_iqdat()
         self.dmap_compare(iqdat_read_data, iqdat_data)
         os.remove("test_iqdat.iqdat")
@@ -483,11 +489,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(iqdat_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         dmap_stream_data = dmap.read_iqdat()
-        dmap_write = pydarn.DmapWrite()
+        dmap_write = pydarnio.DmapWrite()
         dmap_write_stream = dmap_write.write_dmap_stream(dmap_stream_data)
-        dmap_read = pydarn.SDarnRead(dmap_write_stream, True)
+        dmap_read = pydarnio.SDarnRead(dmap_write_stream, True)
         dmap_read_data = dmap_read.read_iqdat()
         self.dmap_compare(dmap_stream_data, dmap_read_data)
 
@@ -498,11 +504,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(iqdat_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.DmapRead(dmap_stream, True)
+        dmap = pydarnio.DmapRead(dmap_stream, True)
         dmap_stream_data = dmap.read_records()
-        dmap_write = pydarn.SDarnWrite(dmap_stream_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_stream_data)
         dmap_write.write_iqdat("test_iqdat.iqdat")
-        dmap = pydarn.SDarnRead("test_iqdat.iqdat")
+        dmap = pydarnio.SDarnRead("test_iqdat.iqdat")
         dmap_data = dmap.read_iqdat()
         self.dmap_compare(dmap_stream_data, dmap_data)
         os.remove("test_iqdat.iqdat")
@@ -513,10 +519,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         the iqdat stream
         """
         iqdat_data = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        iqdat_write = pydarn.DmapWrite()
+        iqdat_write = pydarnio.DmapWrite()
         iqdat_stream = iqdat_write.write_dmap_stream(iqdat_data)
 
-        iqdat_read = pydarn.SDarnRead(iqdat_stream, True)
+        iqdat_read = pydarnio.SDarnRead(iqdat_stream, True)
         iqdat_read_data = iqdat_read.read_iqdat()
         self.dmap_compare(iqdat_read_data, iqdat_data)
 
@@ -529,13 +535,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         iqdat_missing_field = copy.deepcopy(iqdat_data_sets.iqdat_data)
         del iqdat_missing_field[0]['nave']
-        dmap_write = pydarn.DmapWrite(iqdat_missing_field)
+        dmap_write = pydarnio.DmapWrite(iqdat_missing_field)
         dmap_write.write_dmap("test_missing_iqdat.iqdat")
 
-        darn_read = pydarn.SDarnRead("test_missing_iqdat.iqdat")
+        darn_read = pydarnio.SDarnRead("test_missing_iqdat.iqdat")
         try:
             darn_read.read_iqdat()
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'nave'})
             self.assertEqual(err.record_number, 0)
 
@@ -551,13 +557,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         iqdat_extra_field = copy.deepcopy(iqdat_data_sets.iqdat_data)
         iqdat_extra_field[0].update({'dummy': 'dummy'})
         iqdat_extra_field[0].move_to_end('dummy', last=False)
-        dmap_write = pydarn.DmapWrite(iqdat_extra_field, )
+        dmap_write = pydarnio.DmapWrite(iqdat_extra_field, )
         dmap_write.write_dmap("test_extra_iqdat.iqdat")
 
-        darn_read = pydarn.SDarnRead("test_extra_iqdat.iqdat")
+        darn_read = pydarnio.SDarnRead("test_extra_iqdat.iqdat")
         try:
             darn_read.read_iqdat()
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 0)
         os.remove("test_extra_iqdat.iqdat")
@@ -567,11 +573,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test DmapRead reading an grid and SDarnWrite writing
         the grid file
         """
-        dmap = pydarn.SDarnRead(grid_file)
+        dmap = pydarnio.SDarnRead(grid_file)
         dmap_data = dmap.read_grid()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_grid("test_grid.grid")
-        grid_read = pydarn.SDarnRead("test_grid.grid")
+        grid_read = pydarnio.SDarnRead("test_grid.grid")
         grid_read_data = grid_read.read_grid()
         self.dmap_compare(dmap_data, grid_read_data)
         os.remove("test_grid.grid")
@@ -582,10 +588,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         file
         """
         grid_data = copy.deepcopy(grid_data_sets.grid_data)
-        grid_write = pydarn.SDarnWrite(grid_data, "test_grid.grid")
+        grid_write = pydarnio.SDarnWrite(grid_data, "test_grid.grid")
         grid_write.write_grid()
 
-        grid_read = pydarn.SDarnRead("test_grid.grid")
+        grid_read = pydarnio.SDarnRead("test_grid.grid")
         grid_read_data = grid_read.read_grid()
         self.dmap_compare(grid_read_data, grid_data)
         os.remove("test_grid.grid")
@@ -597,12 +603,12 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(grid_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         dmap_stream_data = dmap.read_grid()
-        dmap_write = pydarn.SDarnWrite(dmap_stream_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_stream_data)
         dmap_write.write_grid("test_grid.grid")
         self.assertTrue(os.path.isfile("test_grid.grid"))
-        dmap = pydarn.SDarnRead("test_grid.grid")
+        dmap = pydarnio.SDarnRead("test_grid.grid")
         dmap_data = dmap.read_grid()
         self.dmap_compare(dmap_stream_data, dmap_data)
 
@@ -611,11 +617,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test DmapRead reading a grid file then writing it with SDarnWrite
         then reading it again with SDarnRead
         """
-        dmap = pydarn.DmapRead(grid_file)
+        dmap = pydarnio.DmapRead(grid_file)
         dmap_data = dmap.read_records()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_grid("test_grid.grid")
-        darn_read = pydarn.SDarnRead("test_grid.grid")
+        darn_read = pydarnio.SDarnRead("test_grid.grid")
         grid_data = darn_read.read_grid()
         self.dmap_compare(dmap_data, grid_data)
         os.remove("test_grid.grid")
@@ -626,10 +632,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         SDarnRead to read the file
         """
         grid_data = copy.deepcopy(grid_data_sets.grid_data)
-        grid_write = pydarn.SDarnWrite(grid_data, "test_grid.grid")
+        grid_write = pydarnio.SDarnWrite(grid_data, "test_grid.grid")
         grid_write.write_grid()
 
-        grid_read = pydarn.SDarnRead("test_grid.grid")
+        grid_read = pydarnio.SDarnRead("test_grid.grid")
         grid_read_data = grid_read.read_grid()
         self.dmap_compare(grid_read_data, grid_data)
         os.remove("test_grid.grid")
@@ -640,10 +646,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         to read the file
         """
         grid_data = copy.deepcopy(grid_data_sets.grid_data)
-        grid_write = pydarn.DmapWrite(grid_data, "test_grid.grid")
+        grid_write = pydarnio.DmapWrite(grid_data, "test_grid.grid")
         grid_write.write_dmap()
 
-        grid_read = pydarn.SDarnRead("test_grid.grid")
+        grid_read = pydarnio.SDarnRead("test_grid.grid")
         grid_read_data = grid_read.read_grid()
         self.dmap_compare(grid_read_data, grid_data)
         os.remove("test_grid.grid")
@@ -655,11 +661,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(grid_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         dmap_stream_data = dmap.read_grid()
-        dmap_write = pydarn.DmapWrite()
+        dmap_write = pydarnio.DmapWrite()
         dmap_write_stream = dmap_write.write_dmap_stream(dmap_stream_data)
-        dmap_read = pydarn.SDarnRead(dmap_write_stream, True)
+        dmap_read = pydarnio.SDarnRead(dmap_write_stream, True)
         dmap_read_data = dmap_read.read_grid()
         self.dmap_compare(dmap_stream_data, dmap_read_data)
 
@@ -670,11 +676,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(grid_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.DmapRead(dmap_stream, True)
+        dmap = pydarnio.DmapRead(dmap_stream, True)
         dmap_stream_data = dmap.read_records()
-        dmap_write = pydarn.SDarnWrite(dmap_stream_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_stream_data)
         dmap_write.write_grid("test_grid.grid")
-        dmap = pydarn.SDarnRead("test_grid.grid")
+        dmap = pydarnio.SDarnRead("test_grid.grid")
         dmap_data = dmap.read_grid()
         self.dmap_compare(dmap_stream_data, dmap_data)
         os.remove("test_grid.grid")
@@ -685,10 +691,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         the grid stream
         """
         grid_data = copy.deepcopy(grid_data_sets.grid_data)
-        grid_write = pydarn.DmapWrite()
+        grid_write = pydarnio.DmapWrite()
         grid_stream = grid_write.write_dmap_stream(grid_data)
 
-        grid_read = pydarn.SDarnRead(grid_stream, True)
+        grid_read = pydarnio.SDarnRead(grid_stream, True)
         grid_read_data = grid_read.read_grid()
         self.dmap_compare(grid_read_data, grid_data)
 
@@ -701,13 +707,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         grid_missing_field = copy.deepcopy(grid_data_sets.grid_data)
         del grid_missing_field[0]['stid']
-        dmap_write = pydarn.DmapWrite(grid_missing_field)
+        dmap_write = pydarnio.DmapWrite(grid_missing_field)
         dmap_write.write_dmap("test_missing_grid.grid")
 
-        darn_read = pydarn.SDarnRead("test_missing_grid.grid")
+        darn_read = pydarnio.SDarnRead("test_missing_grid.grid")
         try:
             darn_read.read_grid()
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'stid'})
             self.assertEqual(err.record_number, 0)
 
@@ -723,13 +729,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         grid_extra_field = copy.deepcopy(grid_data_sets.grid_data)
         grid_extra_field[0].update({'dummy': 'dummy'})
         grid_extra_field[0].move_to_end('dummy', last=False)
-        dmap_write = pydarn.DmapWrite(grid_extra_field, )
+        dmap_write = pydarnio.DmapWrite(grid_extra_field, )
         dmap_write.write_dmap("test_extra_grid.grid")
 
-        darn_read = pydarn.SDarnRead("test_extra_grid.grid")
+        darn_read = pydarnio.SDarnRead("test_extra_grid.grid")
         try:
             darn_read.read_grid()
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 0)
         os.remove("test_extra_grid.grid")
@@ -739,11 +745,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test DmapRead reading an map and SDarnWrite writing
         the map file
         """
-        dmap = pydarn.SDarnRead(map_file)
+        dmap = pydarnio.SDarnRead(map_file)
         dmap_data = dmap.read_map()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_map("test_map.map")
-        map_read = pydarn.SDarnRead("test_map.map")
+        map_read = pydarnio.SDarnRead("test_map.map")
         map_read_data = map_read.read_map()
         self.dmap_compare(dmap_data, map_read_data)
         os.remove("test_map.map")
@@ -754,10 +760,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         file
         """
         map_data = copy.deepcopy(map_data_sets.map_data)
-        map_write = pydarn.SDarnWrite(map_data, "test_map.map")
+        map_write = pydarnio.SDarnWrite(map_data, "test_map.map")
         map_write.write_map()
 
-        map_read = pydarn.SDarnRead("test_map.map")
+        map_read = pydarnio.SDarnRead("test_map.map")
         map_read_data = map_read.read_map()
         self.dmap_compare(map_read_data, map_data)
         os.remove("test_map.map")
@@ -769,12 +775,12 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(map_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         dmap_stream_data = dmap.read_map()
-        dmap_write = pydarn.SDarnWrite(dmap_stream_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_stream_data)
         dmap_write.write_map("test_map.map")
         self.assertTrue(os.path.isfile("test_map.map"))
-        dmap = pydarn.SDarnRead("test_map.map")
+        dmap = pydarnio.SDarnRead("test_map.map")
         dmap_data = dmap.read_map()
         self.dmap_compare(dmap_stream_data, dmap_data)
 
@@ -783,11 +789,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         Test DmapRead reading a map file then writing it with SDarnWrite
         then reading it again with SDarnRead
         """
-        dmap = pydarn.DmapRead(map_file)
+        dmap = pydarnio.DmapRead(map_file)
         dmap_data = dmap.read_records()
-        dmap_write = pydarn.SDarnWrite(dmap_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_data)
         dmap_write.write_map("test_map.map")
-        darn_read = pydarn.SDarnRead("test_map.map")
+        darn_read = pydarnio.SDarnRead("test_map.map")
         map_data = darn_read.read_map()
         self.dmap_compare(dmap_data, map_data)
         os.remove("test_map.map")
@@ -798,10 +804,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         SDarnRead to read the file
         """
         map_data = copy.deepcopy(map_data_sets.map_data)
-        map_write = pydarn.SDarnWrite(map_data, "test_map.map")
+        map_write = pydarnio.SDarnWrite(map_data, "test_map.map")
         map_write.write_map()
 
-        map_read = pydarn.SDarnRead("test_map.map")
+        map_read = pydarnio.SDarnRead("test_map.map")
         map_read_data = map_read.read_map()
         self.dmap_compare(map_read_data, map_data)
         os.remove("test_map.map")
@@ -812,10 +818,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         to read the file
         """
         map_data = copy.deepcopy(map_data_sets.map_data)
-        map_write = pydarn.DmapWrite(map_data, "test_map.map")
+        map_write = pydarnio.DmapWrite(map_data, "test_map.map")
         map_write.write_dmap()
 
-        map_read = pydarn.SDarnRead("test_map.map")
+        map_read = pydarnio.SDarnRead("test_map.map")
         map_read_data = map_read.read_map()
         self.dmap_compare(map_read_data, map_data)
         os.remove("test_map.map")
@@ -827,11 +833,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(map_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         dmap_stream_data = dmap.read_map()
-        dmap_write = pydarn.DmapWrite()
+        dmap_write = pydarnio.DmapWrite()
         dmap_write_stream = dmap_write.write_dmap_stream(dmap_stream_data)
-        dmap_read = pydarn.SDarnRead(dmap_write_stream, True)
+        dmap_read = pydarnio.SDarnRead(dmap_write_stream, True)
         dmap_read_data = dmap_read.read_map()
         self.dmap_compare(dmap_stream_data, dmap_read_data)
 
@@ -842,11 +848,11 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         with bz2.open(map_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.DmapRead(dmap_stream, True)
+        dmap = pydarnio.DmapRead(dmap_stream, True)
         dmap_stream_data = dmap.read_records()
-        dmap_write = pydarn.SDarnWrite(dmap_stream_data)
+        dmap_write = pydarnio.SDarnWrite(dmap_stream_data)
         dmap_write.write_map("test_map.map")
-        dmap = pydarn.SDarnRead("test_map.map")
+        dmap = pydarnio.SDarnRead("test_map.map")
         dmap_data = dmap.read_map()
         self.dmap_compare(dmap_stream_data, dmap_data)
         os.remove("test_map.map")
@@ -857,10 +863,10 @@ class IntegrationSuperdarnio(unittest.TestCase):
         the map stream
         """
         map_data = copy.deepcopy(map_data_sets.map_data)
-        map_write = pydarn.DmapWrite()
+        map_write = pydarnio.DmapWrite()
         map_stream = map_write.write_dmap_stream(map_data)
 
-        map_read = pydarn.SDarnRead(map_stream, True)
+        map_read = pydarnio.SDarnRead(map_stream, True)
         map_read_data = map_read.read_map()
         self.dmap_compare(map_read_data, map_data)
 
@@ -873,13 +879,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         """
         map_missing_field = copy.deepcopy(map_data_sets.map_data)
         del map_missing_field[0]['stid']
-        dmap_write = pydarn.DmapWrite(map_missing_field)
+        dmap_write = pydarnio.DmapWrite(map_missing_field)
         dmap_write.write_dmap("test_missing_map.map")
 
-        darn_read = pydarn.SDarnRead("test_missing_map.map")
+        darn_read = pydarnio.SDarnRead("test_missing_map.map")
         try:
             darn_read.read_map()
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'stid'})
             self.assertEqual(err.record_number, 0)
 
@@ -895,13 +901,13 @@ class IntegrationSuperdarnio(unittest.TestCase):
         map_extra_field = copy.deepcopy(map_data_sets.map_data)
         map_extra_field[0].update({'dummy': 'dummy'})
         map_extra_field[0].move_to_end('dummy', last=False)
-        dmap_write = pydarn.DmapWrite(map_extra_field, )
+        dmap_write = pydarnio.DmapWrite(map_extra_field, )
         dmap_write.write_dmap("test_extra_map.map")
 
-        darn_read = pydarn.SDarnRead("test_extra_map.map")
+        darn_read = pydarnio.SDarnRead("test_extra_map.map")
         try:
             darn_read.read_map()
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 0)
         os.remove("test_extra_map.map")
@@ -912,6 +918,6 @@ if __name__ == '__main__':
     Runs the above class in a unittest system.
     Roughly takes 467 seconds.
     """
-    pydarn_logger.info("Starting DMAP testing")
+    pydarnio_logger.info("Starting DMAP testing")
 
     unittest.main()

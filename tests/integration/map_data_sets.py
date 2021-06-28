@@ -8,7 +8,7 @@ import numpy as np
 
 from collections import OrderedDict
 
-from pydarn import DmapScalar, DmapArray
+from pydarnio import DmapScalar, DmapArray
 map_data = [OrderedDict([
     ('start.year', DmapScalar(name='start.year', value=2017,
                               data_type=2, data_type_fmt='h')),

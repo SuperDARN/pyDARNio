@@ -22,7 +22,7 @@ import os
 import pytest
 import unittest
 
-import pydarn
+import pydarnio
 
 import map_data_sets
 import grid_data_sets
@@ -30,7 +30,7 @@ import fitacf_data_sets
 import iqdat_data_sets
 import rawacf_data_sets
 
-pydarn_logger = logging.getLogger('pydarn')
+pydarnio_logger = logging.getLogger('pydarnio')
 
 # Test files
 rawacf_stream = "../testfiles/20170410.1801.00.sas.stream.rawacf.bz2"
@@ -61,7 +61,7 @@ class TestSDarnRead(unittest.TestCase):
 
         Expected behaviour: raise FileNotFoundError
         """
-        self.assertRaises(FileNotFoundError, pydarn.SDarnRead,
+        self.assertRaises(FileNotFoundError, pydarnio.SDarnRead,
                           './dog/somefile.rawacf')
 
     def test_incorrect_file(self):
@@ -70,7 +70,7 @@ class TestSDarnRead(unittest.TestCase):
 
         Expected behaviour: raises FileNotFoundError
         """
-        self.assertRaises(FileNotFoundError, pydarn.SDarnRead,
+        self.assertRaises(FileNotFoundError, pydarnio.SDarnRead,
                           '../testfiles/somefile.rawacf')
 
     def test_empty_file(self):
@@ -79,8 +79,8 @@ class TestSDarnRead(unittest.TestCase):
 
         Expected behaviour: raise EmptyFileError
         """
-        self.assertRaises(pydarn.dmap_exceptions.EmptyFileError,
-                          pydarn.SDarnRead, '../testfiles/empty.rawacf')
+        self.assertRaises(pydarnio.dmap_exceptions.EmptyFileError,
+                          pydarnio.SDarnRead, '../testfiles/empty.rawacf')
 
     def test_open_rawacf(self):
         """
@@ -92,7 +92,7 @@ class TestSDarnRead(unittest.TestCase):
             - bytearray is not empty
         """
         file_path = rawacf_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         self.assertIsInstance(dm.dmap_bytearr, bytearray)
         self.assertGreater(dm.dmap_end_bytes, 0)
 
@@ -106,7 +106,7 @@ class TestSDarnRead(unittest.TestCase):
             - bytearray is not empty
         """
         file_path = fitacf_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         self.assertIsInstance(dm.dmap_bytearr, bytearray)
         self.assertGreater(dm.dmap_end_bytes, 0)
 
@@ -120,7 +120,7 @@ class TestSDarnRead(unittest.TestCase):
             - bytearray is not empty
         """
         file_path = map_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         self.assertIsInstance(dm.dmap_bytearr, bytearray)
         self.assertGreater(dm.dmap_end_bytes, 0)
 
@@ -134,7 +134,7 @@ class TestSDarnRead(unittest.TestCase):
             - bytearray is not empty
         """
         file_path = grid_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         self.assertIsInstance(dm.dmap_bytearr, bytearray)
         self.assertGreater(dm.dmap_end_bytes, 0)
 
@@ -148,7 +148,7 @@ class TestSDarnRead(unittest.TestCase):
             - bytearray is not empty
         """
         file_path = iqdat_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         self.assertIsInstance(dm.dmap_bytearr, bytearray)
         self.assertGreater(dm.dmap_end_bytes, 0)
 
@@ -162,13 +162,13 @@ class TestSDarnRead(unittest.TestCase):
             - returns expected values
         """
         file_path = iqdat_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         _ = dm.read_iqdat()
         dm_records = dm.get_dmap_records
         self.assertIsInstance(dm_records, collections.deque)
         self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[0]['rxrise'], pydarn.DmapScalar)
-        self.assertIsInstance(dm_records[3]['tsc'], pydarn.DmapArray)
+        self.assertIsInstance(dm_records[0]['rxrise'], pydarnio.DmapScalar)
+        self.assertIsInstance(dm_records[3]['tsc'], pydarnio.DmapArray)
         self.assertIsInstance(dm_records[5]['mppul'].value, int)
         self.assertIsInstance(dm_records[6]['tnoise'].value, np.ndarray)
         self.assertEqual(dm_records[7]['channel'].value, 0)
@@ -183,13 +183,13 @@ class TestSDarnRead(unittest.TestCase):
             - returns expected values
         """
         file_path = rawacf_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         dm_records = dm.read_rawacf()
         dm_records = dm.get_dmap_records
         self.assertIsInstance(dm_records, collections.deque)
         self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['channel'], pydarn.DmapScalar)
-        self.assertIsInstance(dm_records[1]['ptab'], pydarn.DmapArray)
+        self.assertIsInstance(dm_records[4]['channel'], pydarnio.DmapScalar)
+        self.assertIsInstance(dm_records[1]['ptab'], pydarnio.DmapArray)
         self.assertIsInstance(dm_records[7]['channel'].value, int)
         self.assertIsInstance(dm_records[2]['xcfd'].value, np.ndarray)
         self.assertEqual(dm_records[0]['xcfd'].dimension, 3)
@@ -203,13 +203,13 @@ class TestSDarnRead(unittest.TestCase):
             - returns expected values
         """
         file_path = fitacf_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         dm_records = dm.read_fitacf()
         dm_records = dm.get_dmap_records
         self.assertIsInstance(dm_records, collections.deque)
         self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['bmnum'], pydarn.DmapScalar)
-        self.assertIsInstance(dm_records[1]['ptab'], pydarn.DmapArray)
+        self.assertIsInstance(dm_records[4]['bmnum'], pydarnio.DmapScalar)
+        self.assertIsInstance(dm_records[1]['ptab'], pydarnio.DmapArray)
         self.assertIsInstance(dm_records[7]['channel'].value, int)
         self.assertIsInstance(dm_records[2]['ltab'].value, np.ndarray)
         self.assertEqual(dm_records[0]['ptab'].dimension, 1)
@@ -223,13 +223,13 @@ class TestSDarnRead(unittest.TestCase):
             - returns expected values
         """
         file_path = grid_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         _ = dm.read_grid()
         dm_records = dm.get_dmap_records
         self.assertIsInstance(dm_records, collections.deque)
         self.assertIsInstance(dm_records[0], collections.OrderedDict)
-        self.assertIsInstance(dm_records[4]['start.year'], pydarn.DmapScalar)
-        self.assertIsInstance(dm_records[1]['v.max'], pydarn.DmapArray)
+        self.assertIsInstance(dm_records[4]['start.year'], pydarnio.DmapScalar)
+        self.assertIsInstance(dm_records[1]['v.max'], pydarnio.DmapArray)
         self.assertIsInstance(dm_records[7]['end.day'].value, int)
         self.assertIsInstance(dm_records[2]['stid'].value, np.ndarray)
         self.assertEqual(dm_records[0]['nvec'].dimension, 1)
@@ -243,14 +243,14 @@ class TestSDarnRead(unittest.TestCase):
             - returns expected values
         """
         file_path = map_file
-        dm = pydarn.SDarnRead(file_path)
+        dm = pydarnio.SDarnRead(file_path)
         _ = dm.read_map()
         dm_records = dm.get_dmap_records
         self.assertIsInstance(dm_records, collections.deque)
         self.assertIsInstance(dm_records[0], collections.OrderedDict)
         self.assertIsInstance(dm_records[2]['IMF.flag'],
-                              pydarn.io.datastructures.DmapScalar)
-        self.assertIsInstance(dm_records[3]['stid'], pydarn.DmapArray)
+                              pydarnio.io.datastructures.DmapScalar)
+        self.assertIsInstance(dm_records[3]['stid'], pydarnio.DmapArray)
         self.assertIsInstance(dm_records[8]['IMF.flag'].value, int)
         self.assertIsInstance(dm_records[10]['stid'].value, np.ndarray)
         self.assertEqual(dm_records[3]['stid'].dimension, 1)
@@ -263,8 +263,8 @@ class TestSDarnRead(unittest.TestCase):
 
         Expected behaviour: raises pydmap exception
         """
-        dmap = pydarn.SDarnRead(corrupt_file1)
-        with self.assertRaises(pydarn.dmap_exceptions.DmapDataTypeError):
+        dmap = pydarnio.SDarnRead(corrupt_file1)
+        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataTypeError):
             dmap.read_rawacf()
 
     def test_read_currupt_file2(self):
@@ -273,8 +273,8 @@ class TestSDarnRead(unittest.TestCase):
 
         Expected behaviour: raises pydmap exception
         """
-        dmap = pydarn.SDarnRead(corrupt_file2)
-        with self.assertRaises(pydarn.dmap_exceptions.NegativeByteError):
+        dmap = pydarnio.SDarnRead(corrupt_file2)
+        with self.assertRaises(pydarnio.dmap_exceptions.NegativeByteError):
             dmap.read_rawacf()
 
     def test_dmap_read_stream(self):
@@ -291,13 +291,13 @@ class TestSDarnRead(unittest.TestCase):
         # stream of bytes without actually uncompressing the file
         with bz2.open(rawacf_stream) as fp:
             dmap_stream = fp.read()
-        dmap = pydarn.SDarnRead(dmap_stream, True)
+        dmap = pydarnio.SDarnRead(dmap_stream, True)
         dmap_data = dmap.read_rawacf()
         dmap_data = dmap.get_dmap_records
         self.assertIsInstance(dmap_data, collections.deque)
         self.assertIsInstance(dmap_data[0], collections.OrderedDict)
-        self.assertIsInstance(dmap_data[4]['channel'], pydarn.DmapScalar)
-        self.assertIsInstance(dmap_data[1]['ptab'], pydarn.DmapArray)
+        self.assertIsInstance(dmap_data[4]['channel'], pydarnio.DmapScalar)
+        self.assertIsInstance(dmap_data[1]['ptab'], pydarnio.DmapArray)
         self.assertIsInstance(dmap_data[7]['channel'].value, int)
         self.assertIsInstance(dmap_data[2]['xcfd'].value, np.ndarray)
         self.assertEqual(dmap_data[0]['xcfd'].dimension, 3)
@@ -318,8 +318,8 @@ class TestSDarnRead(unittest.TestCase):
         corrupt_stream = bytearray(dmap_stream[0:36])
         corrupt_stream[36:40] = bytearray(str(os.urandom(4)).encode('utf-8'))
         corrupt_stream[40:] = dmap_stream[37:]
-        dmap = pydarn.SDarnRead(corrupt_stream, True)
-        with self.assertRaises(pydarn.dmap_exceptions.DmapDataError):
+        dmap = pydarnio.SDarnRead(corrupt_stream, True)
+        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
             dmap.read_rawacf()
 
 
@@ -327,6 +327,7 @@ class TestSDarnRead(unittest.TestCase):
 class TestDarnUtilities(unittest.TestCase):
     """
     Testing DarnUtilities class.
+    
     Note
     ----
     All methods in this class are static so there is no constructor testing
@@ -347,9 +348,9 @@ class TestDarnUtilities(unittest.TestCase):
         b = {'1': 'a', 'c': 'd', 'd': 4, 'z': 'dog'}
         solution_a_b = {'a'}
         solution_b_a = {'1', 'z'}
-        diff_set = pydarn.SDarnUtilities.dict_key_diff(a, b)
+        diff_set = pydarnio.SDarnUtilities.dict_key_diff(a, b)
         self.assertEqual(diff_set, solution_a_b)
-        diff_set = pydarn.SDarnUtilities.dict_key_diff(b, a)
+        diff_set = pydarnio.SDarnUtilities.dict_key_diff(b, a)
         self.assertEqual(diff_set, solution_b_a)
 
     def test_dict_list2set(self):
@@ -369,7 +370,7 @@ class TestDarnUtilities(unittest.TestCase):
         complete_set = {'a', 'b', 'c',
                         'rst', 'stid', 'vel',
                         'fitacf', 'rawacf', 'map'}
-        dict_set = pydarn.SDarnUtilities.dict_list2set([dict1, dict2, dict3])
+        dict_set = pydarnio.SDarnUtilities.dict_list2set([dict1, dict2, dict3])
         self.assertEqual(dict_set, complete_set)
 
     def test_extra_field_check_pass(self):
@@ -388,7 +389,7 @@ class TestDarnUtilities(unittest.TestCase):
         dict2 = {'rst': '4.1', 'stid': 3, 'vel': [2.3, 4.5]}
         dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
         test_dict = {'a': 3, 'b': 3, 'c': 3, 'rst': 1, 'vel': 'd'}
-        pydarn.SDarnUtilities.extra_field_check([dict1, dict2, dict3],
+        pydarnio.SDarnUtilities.extra_field_check([dict1, dict2, dict3],
                                                 test_dict, 1)
 
     def test_extra_field_check_fail(self):
@@ -409,9 +410,9 @@ class TestDarnUtilities(unittest.TestCase):
 
         test_dict = {'a': 3, 'b': 3, 'c': 2, 'd': 3, 'rst': 1, 'vel': 'd'}
         try:
-            pydarn.SDarnUtilities.extra_field_check([dict1, dict2, dict3],
+            pydarnio.SDarnUtilities.extra_field_check([dict1, dict2, dict3],
                                                     test_dict, 1)
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'d'})
 
     def test_missing_field_check_pass_mixed_dict(self):
@@ -430,7 +431,7 @@ class TestDarnUtilities(unittest.TestCase):
         test_dict = {}
         test_dict.update(dict1)
         test_dict.update(dict3)
-        pydarn.SDarnUtilities.missing_field_check([dict1, dict2,
+        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2,
                                                   dict3],
                                                   test_dict, 1)
 
@@ -456,12 +457,12 @@ class TestDarnUtilities(unittest.TestCase):
         test_dict = {'a': 3, 'b': 3, 'c': 2, 'd': 2,
                      'stid': 's', 'rst': 1, 'vel': 'd'}
 
-        pydarn.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
+        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
                                                   test_dict, 1)
         test_dict = {}
         test_dict.update(dict1)
         test_dict.update(dict3)
-        pydarn.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
+        pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
                                                   test_dict, 1)
 
     def test_missing_field_check_fail2(self):
@@ -485,9 +486,9 @@ class TestDarnUtilities(unittest.TestCase):
                      'fitacf': 3, 'map': 4}
 
         try:
-            pydarn.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
+            pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
                                                       test_dict, 1)
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'c', 'rst', 'rawacf'})
 
     def test_missing_field_check_fail(self):
@@ -511,9 +512,9 @@ class TestDarnUtilities(unittest.TestCase):
                      'fitacf': 3, 'map': 4}
 
         try:
-            pydarn.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
+            pydarnio.SDarnUtilities.missing_field_check([dict1, dict2, dict3],
                                                       test_dict, 1)
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'c', 'rawacf'})
 
     def test_incorrect_types_check_pass(self):
@@ -523,7 +524,7 @@ class TestDarnUtilities(unittest.TestCase):
 
         Note
         ----
-        This method only works on pydarn DMAP record data structure
+        This method only works on pydarnio DMAP record data structure
 
         Expected Behaviour
         ------------------
@@ -533,15 +534,15 @@ class TestDarnUtilities(unittest.TestCase):
         dict1 = {'a': 's', 'b': 'i', 'c': 'f'}
         dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
 
-        test_dict = {'a': pydarn.DmapScalar('a', 1, 1, 's'),
-                     'b': pydarn.DmapScalar('a', 1, 1, 'i'),
-                     'c': pydarn.DmapArray('a', np.array([2.4, 2.4]), 1,
+        test_dict = {'a': pydarnio.DmapScalar('a', 1, 1, 's'),
+                     'b': pydarnio.DmapScalar('a', 1, 1, 'i'),
+                     'c': pydarnio.DmapArray('a', np.array([2.4, 2.4]), 1,
                                            'f', 1, [3]),
-                     'fitacf': pydarn.DmapScalar('a', 1, 1, 'f'),
-                     'rawacf': pydarn.DmapScalar('a', 1, 1, 's'),
-                     'map': pydarn.DmapScalar('a', 1, 1, 'm')}
+                     'fitacf': pydarnio.DmapScalar('a', 1, 1, 'f'),
+                     'rawacf': pydarnio.DmapScalar('a', 1, 1, 's'),
+                     'map': pydarnio.DmapScalar('a', 1, 1, 'm')}
 
-        pydarn.SDarnUtilities.incorrect_types_check([dict1, dict3],
+        pydarnio.SDarnUtilities.incorrect_types_check([dict1, dict3],
                                                     test_dict, 1)
 
     def test_incorrect_types_check_fail(self):
@@ -551,7 +552,7 @@ class TestDarnUtilities(unittest.TestCase):
 
         Note
         ----
-        This method only works on pydarn DMAP record data structure
+        This method only works on pydarnio DMAP record data structure
 
         Expected Behaviour
         ------------------
@@ -562,17 +563,17 @@ class TestDarnUtilities(unittest.TestCase):
         dict1 = {'a': 's', 'b': 'i', 'c': 'f'}
         dict3 = {'fitacf': 'f', 'rawacf': 's', 'map': 'm'}
 
-        test_dict = {'a': pydarn.DmapScalar('a', 1, 1, 's'),
-                     'b': pydarn.DmapScalar('a', 1, 1, 'i'),
-                     'c': pydarn.DmapArray('a', np.array([2.4, 2.4]),
+        test_dict = {'a': pydarnio.DmapScalar('a', 1, 1, 's'),
+                     'b': pydarnio.DmapScalar('a', 1, 1, 'i'),
+                     'c': pydarnio.DmapArray('a', np.array([2.4, 2.4]),
                                            1, 'f', 1, [3]),
-                     'fitacf': pydarn.DmapScalar('a', 1, 1, 's'),
-                     'rawacf': pydarn.DmapScalar('a', 1, 1, 's'),
-                     'map': pydarn.DmapScalar('a', 1, 1, 'm')}
+                     'fitacf': pydarnio.DmapScalar('a', 1, 1, 's'),
+                     'rawacf': pydarnio.DmapScalar('a', 1, 1, 's'),
+                     'map': pydarnio.DmapScalar('a', 1, 1, 'm')}
         try:
-            pydarn.SDarnUtilities.incorrect_types_check([dict1, dict3],
+            pydarnio.SDarnUtilities.incorrect_types_check([dict1, dict3],
                                                         test_dict, 1)
-        except pydarn.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
             self.assertEqual(err.incorrect_params, {'fitacf': 'f'})
 
 
@@ -593,7 +594,7 @@ class TestSDarnWrite(unittest.TestCase):
         Contains file name of the data if given to it.
         """
         rawacf_data = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        darn = pydarn.SDarnWrite(rawacf_data, "rawacf_test.rawacf")
+        darn = pydarnio.SDarnWrite(rawacf_data, "rawacf_test.rawacf")
         self.assertEqual(darn.filename, "rawacf_test.rawacf")
 
     def test_empty_record(self):
@@ -605,8 +606,8 @@ class TestSDarnWrite(unittest.TestCase):
         ------------------
         Raise DmapDataError if no data is provided to the constructor
         """
-        with self.assertRaises(pydarn.dmap_exceptions.DmapDataError):
-            pydarn.SDarnWrite([], 'dummy_file.acf')
+        with self.assertRaises(pydarnio.dmap_exceptions.DmapDataError):
+            pydarnio.SDarnWrite([], 'dummy_file.acf')
 
     def test_incorrect_filename_input_using_write_methods(self):
         """
@@ -618,8 +619,8 @@ class TestSDarnWrite(unittest.TestCase):
         what do we write to.
         """
         rawacf_data = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        dmap_data = pydarn.SDarnWrite(rawacf_data)
-        with self.assertRaises(pydarn.dmap_exceptions.FilenameRequiredError):
+        dmap_data = pydarnio.SDarnWrite(rawacf_data)
+        with self.assertRaises(pydarnio.dmap_exceptions.FilenameRequiredError):
             dmap_data.write_rawacf()
             dmap_data.write_fitacf()
             dmap_data.write_iqdat()
@@ -640,11 +641,11 @@ class TestSDarnWrite(unittest.TestCase):
         rawacf_missing_field = copy.deepcopy(rawacf_data_sets.rawacf_data)
         del rawacf_missing_field[2]['nave']
 
-        dmap = pydarn.SDarnWrite(rawacf_missing_field)
+        dmap = pydarnio.SDarnWrite(rawacf_missing_field)
 
         try:
             dmap.write_rawacf("test_rawacf.rawacf")
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'nave'})
             self.assertEqual(err.record_number, 2)
 
@@ -659,13 +660,13 @@ class TestSDarnWrite(unittest.TestCase):
         has an extra field dummy
         """
         rawacf_extra_field = copy.deepcopy(rawacf_data_sets.rawacf_data)
-        rawacf_extra_field[1]['dummy'] = pydarn.DmapScalar('dummy', 'nothing',
+        rawacf_extra_field[1]['dummy'] = pydarnio.DmapScalar('dummy', 'nothing',
                                                            chr(1), 's')
-        dmap = pydarn.SDarnWrite(rawacf_extra_field)
+        dmap = pydarnio.SDarnWrite(rawacf_extra_field)
 
         try:
             dmap.write_rawacf("test_rawacf.rawacf")
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 1)
 
@@ -682,11 +683,11 @@ class TestSDarnWrite(unittest.TestCase):
         rawacf_incorrect_fmt = copy.deepcopy(rawacf_data_sets.rawacf_data)
         rawacf_incorrect_fmt[2]['scan'] = \
             rawacf_incorrect_fmt[2]['scan']._replace(data_type_fmt='c')
-        dmap = pydarn.SDarnWrite(rawacf_incorrect_fmt)
+        dmap = pydarnio.SDarnWrite(rawacf_incorrect_fmt)
 
         try:
             dmap.write_rawacf("test_rawacf.rawacf")
-        except pydarn.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
             self.assertEqual(err.incorrect_params['scan'], 'h')
             self.assertEqual(err.record_number, 2)
 
@@ -700,7 +701,7 @@ class TestSDarnWrite(unittest.TestCase):
         """
         rawacf_data = copy.deepcopy(rawacf_data_sets.rawacf_data)
 
-        dmap = pydarn.SDarnWrite(rawacf_data)
+        dmap = pydarnio.SDarnWrite(rawacf_data)
 
         dmap.write_rawacf("test_rawacf.rawacf")
         # only testing the file is created since it should only be created
@@ -719,7 +720,7 @@ class TestSDarnWrite(unittest.TestCase):
         fitacf file is produced
         """
         fitacf_data = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        dmap = pydarn.SDarnWrite(fitacf_data)
+        dmap = pydarnio.SDarnWrite(fitacf_data)
 
         dmap.write_fitacf("test_fitacf.fitacf")
         self.assertTrue(os.path.isfile("test_fitacf.fitacf"))
@@ -737,11 +738,11 @@ class TestSDarnWrite(unittest.TestCase):
         """
         fitacf_missing_field = copy.deepcopy(fitacf_data_sets.fitacf_data)
         del fitacf_missing_field[0]['stid']
-        dmap = pydarn.SDarnWrite(fitacf_missing_field)
+        dmap = pydarnio.SDarnWrite(fitacf_missing_field)
 
         try:
             dmap.write_fitacf("test_fitacf.fitacf")
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'stid'})
             self.assertEqual(err.record_number, 0)
 
@@ -756,14 +757,14 @@ class TestSDarnWrite(unittest.TestCase):
         has an extra field dummy
         """
         fitacf_extra_field = copy.deepcopy(fitacf_data_sets.fitacf_data)
-        fitacf_extra_field[1]['dummy'] = pydarn.DmapArray('dummy',
+        fitacf_extra_field[1]['dummy'] = pydarnio.DmapArray('dummy',
                                                           np.array([1, 2]),
                                                           chr(1), 'c', 1, [2])
-        dmap = pydarn.SDarnWrite(fitacf_extra_field)
+        dmap = pydarnio.SDarnWrite(fitacf_extra_field)
 
         try:
             dmap.write_fitacf("test_fitacf.fitacf")
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 1)
 
@@ -781,11 +782,11 @@ class TestSDarnWrite(unittest.TestCase):
         fitacf_incorrect_fmt = copy.deepcopy(fitacf_data_sets.fitacf_data)
         fitacf_incorrect_fmt[1]['ltab'] = \
             fitacf_incorrect_fmt[1]['ltab']._replace(data_type_fmt='s')
-        dmap = pydarn.SDarnWrite(fitacf_incorrect_fmt)
+        dmap = pydarnio.SDarnWrite(fitacf_incorrect_fmt)
 
         try:
             dmap.write_fitacf("test_fitacf.fitacf")
-        except pydarn.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
             self.assertEqual(err.incorrect_params['ltab'], 'h')
             self.assertEqual(err.record_number, 1)
 
@@ -798,7 +799,7 @@ class TestSDarnWrite(unittest.TestCase):
         iqdat file is produced
         """
         iqdat_data = copy.deepcopy(iqdat_data_sets.iqdat_data)
-        dmap = pydarn.SDarnWrite(iqdat_data)
+        dmap = pydarnio.SDarnWrite(iqdat_data)
 
         dmap.write_iqdat("test_iqdat.iqdat")
         self.assertTrue(os.path.isfile("test_iqdat.iqdat"))
@@ -817,11 +818,11 @@ class TestSDarnWrite(unittest.TestCase):
 
         iqdat_missing_field = copy.deepcopy(iqdat_data_sets.iqdat_data)
         del iqdat_missing_field[1]['chnnum']
-        dmap = pydarn.SDarnWrite(iqdat_missing_field)
+        dmap = pydarnio.SDarnWrite(iqdat_missing_field)
 
         try:
             dmap.write_iqdat("test_iqdat.iqdat")
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'chnnum'})
             self.assertEqual(err.record_number, 1)
 
@@ -837,12 +838,12 @@ class TestSDarnWrite(unittest.TestCase):
         """
         iqdat_extra_field = copy.deepcopy(iqdat_data_sets.iqdat_data)
         iqdat_extra_field[2]['dummy'] = \
-            pydarn.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
-        dmap = pydarn.SDarnWrite(iqdat_extra_field)
+            pydarnio.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
+        dmap = pydarnio.SDarnWrite(iqdat_extra_field)
 
         try:
             dmap.write_iqdat("test_iqdat.iqdat")
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 2)
 
@@ -859,11 +860,11 @@ class TestSDarnWrite(unittest.TestCase):
         iqdat_incorrect_fmt = copy.deepcopy(iqdat_data_sets.iqdat_data)
         iqdat_incorrect_fmt[2]['lagfr'] = \
             iqdat_incorrect_fmt[2]['lagfr']._replace(data_type_fmt='d')
-        dmap = pydarn.SDarnWrite(iqdat_incorrect_fmt)
+        dmap = pydarnio.SDarnWrite(iqdat_incorrect_fmt)
 
         try:
             dmap.write_iqdat("test_iqdat.iqdat")
-        except pydarn.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
             self.assertEqual(err.incorrect_params['lagfr'], 'h')
             self.assertEqual(err.record_number, 2)
 
@@ -876,7 +877,7 @@ class TestSDarnWrite(unittest.TestCase):
         map file is produced
         """
         map_data = copy.deepcopy(map_data_sets.map_data)
-        dmap = pydarn.SDarnWrite(map_data)
+        dmap = pydarnio.SDarnWrite(map_data)
 
         dmap.write_map("test_map.map")
         self.assertTrue(os.path.isfile("test_map.map"))
@@ -894,11 +895,11 @@ class TestSDarnWrite(unittest.TestCase):
         """
         map_missing_field = copy.deepcopy(map_data_sets.map_data)
         del map_missing_field[0]['IMF.Kp']
-        dmap = pydarn.SDarnWrite(map_missing_field)
+        dmap = pydarnio.SDarnWrite(map_missing_field)
 
         try:
             dmap.write_map("test_map.map")
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'IMF.Kp'})
             self.assertEqual(err.record_number, 0)
 
@@ -914,12 +915,12 @@ class TestSDarnWrite(unittest.TestCase):
         """
         map_extra_field = copy.deepcopy(map_data_sets.map_data)
         map_extra_field[1]['dummy'] = \
-            pydarn.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
-        dmap = pydarn.SDarnWrite(map_extra_field)
+            pydarnio.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
+        dmap = pydarnio.SDarnWrite(map_extra_field)
 
         try:
             dmap.write_map("test_map.map")
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 1)
 
@@ -936,11 +937,11 @@ class TestSDarnWrite(unittest.TestCase):
         map_incorrect_fmt = copy.deepcopy(map_data_sets.map_data)
         map_incorrect_fmt[2]['IMF.Bx'] = \
             map_incorrect_fmt[2]['IMF.Bx']._replace(data_type_fmt='i')
-        dmap = pydarn.SDarnWrite(map_incorrect_fmt)
+        dmap = pydarnio.SDarnWrite(map_incorrect_fmt)
 
         try:
             dmap.write_map("test_map.map")
-        except pydarn.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
             self.assertEqual(err.incorrect_params.keys(), {'IMF.Bx'})
             self.assertEqual(err.record_number, 2)
 
@@ -953,7 +954,7 @@ class TestSDarnWrite(unittest.TestCase):
         grid file is produced
         """
         grid_data = copy.deepcopy(grid_data_sets.grid_data)
-        dmap = pydarn.SDarnWrite(grid_data)
+        dmap = pydarnio.SDarnWrite(grid_data)
 
         dmap.write_grid("test_grid.grid")
         self.assertTrue(os.path.isfile("test_grid.grid"))
@@ -971,11 +972,11 @@ class TestSDarnWrite(unittest.TestCase):
         """
         grid_missing_field = copy.deepcopy(grid_data_sets.grid_data)
         del grid_missing_field[1]['start.year']
-        dmap = pydarn.SDarnWrite(grid_missing_field)
+        dmap = pydarnio.SDarnWrite(grid_missing_field)
 
         try:
             dmap.write_grid("test_grid.grid")
-        except pydarn.superdarn_exceptions.SuperDARNFieldMissingError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNFieldMissingError as err:
             self.assertEqual(err.fields, {'start.year'})
             self.assertEqual(err.record_number, 1)
 
@@ -991,12 +992,12 @@ class TestSDarnWrite(unittest.TestCase):
         """
         grid_extra_field = copy.deepcopy(grid_data_sets.grid_data)
         grid_extra_field[0]['dummy'] = \
-            pydarn.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
-        dmap = pydarn.SDarnWrite(grid_extra_field)
+            pydarnio.DmapArray('dummy', np.array([1, 2]), chr(1), 'c', 1, [2])
+        dmap = pydarnio.SDarnWrite(grid_extra_field)
 
         try:
             dmap.write_grid("test_grid.grid")
-        except pydarn.superdarn_exceptions.SuperDARNExtraFieldError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNExtraFieldError as err:
             self.assertEqual(err.fields, {'dummy'})
             self.assertEqual(err.record_number, 0)
 
@@ -1013,19 +1014,10 @@ class TestSDarnWrite(unittest.TestCase):
         grid_incorrect_fmt = copy.deepcopy(grid_data_sets.grid_data)
         grid_incorrect_fmt[2]['v.min'] = \
             grid_incorrect_fmt[2]['v.min']._replace(data_type_fmt='d')
-        dmap = pydarn.SDarnWrite(grid_incorrect_fmt)
+        dmap = pydarnio.SDarnWrite(grid_incorrect_fmt)
 
         try:
             dmap.write_grid("test_grid.grid")
-        except pydarn.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
+        except pydarnio.superdarn_exceptions.SuperDARNDataFormatTypeError as err:
             self.assertEqual(err.incorrect_params.keys(), {'v.min'})
             self.assertEqual(err.record_number, 2)
-
-
-if __name__ == '__main__':
-    """
-    Runs the above class in a unittest system.
-    Roughly takes 467 seconds.
-    """
-    pydarn_logger.info("Starting SuperDARN io testing")
-    unittest.main()

@@ -46,7 +46,7 @@ from collections import OrderedDict
 from pathlib2 import Path
 from typing import Union
 
-from pyDARNio import borealis_exceptions, borealis_formats
+from pydarnio import borealis_exceptions, borealis_formats
 
 from .borealis_utilities import BorealisUtilities
 
@@ -248,8 +248,8 @@ class BorealisSiteRead():
             (in ms since epoch).
         """
         pyDARNio_log.info("Reading Borealis {} {} file: {}"
-                        "".format(self.software_version,
-                                  self.borealis_filetype, self.filename))
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
 
         attribute_types = self.format.site_single_element_types()
         dataset_types = self.format.site_array_dtypes()
@@ -489,8 +489,8 @@ class BorealisSiteWrite():
             The filename written to.
         """
         pyDARNio_log.info("Writing Borealis {} {} file: {}"
-                        "".format(self.software_version,
-                                  self.borealis_filetype, self.filename))
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
 
         attribute_types = self.format.site_single_element_types()
         dataset_types = self.format.site_array_dtypes()
