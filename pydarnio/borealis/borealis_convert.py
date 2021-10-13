@@ -392,7 +392,9 @@ class BorealisConvert(BorealisRead):
 
         The file is convertible if:
             - the origin filetype is rawacf
-            - the blanked_samples array = pulses array for all records
+            - the blanked_samples array = pulses array for all records with Borealis v0.5 or older;
+            - the blanked_samples array is the same as the pulses array * sample number, but also
+              blanks the sample after each pulse, for Borealis v0.6 or newer
             - the pulse_phase_offset array contains all zeroes for all records
 
         TODO: should this fail for multiple beams in the same
@@ -415,6 +417,7 @@ class BorealisConvert(BorealisRead):
                                                  self.borealis_filetype,
                                                  self.__allowed_conversions)
         else:  # There are some specific things to check
+            
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
@@ -434,7 +437,7 @@ class BorealisConvert(BorealisRead):
                 else:
                     # Rawacf generated with borealis v0.6 or newer, or untagged version
                     normal_blanked_1 = record['pulses'] * sample_spacing
-                    if normal_blanked_1 == record['blanked_samples']:
+                    if np.array_equal(normal_blanked_1, record['blanked_samples']):
                         # If file generated with untagged borealis version, it could be like v0.5
                         # and still have valid blanked samples, so we check that
                         blanked = normal_blanked_1
@@ -447,9 +450,9 @@ class BorealisConvert(BorealisRead):
                     raise borealis_exceptions.\
                             BorealisConvert2RawacfError(
                                 'Increased complexity: Borealis rawacf file'
-                                ' record {} blanked_samples {} does not equate'
-                                ' to pulses array converted to sample number '
-                                '{} * {}'.format(record_key,
+                                ' record {} blanked_samples {} is not correct'
+                                ' for pulses array converted to sample number '
+                                '{} * {}.'.format(record_key,
                                                  record['blanked_samples'],
                                                  record['pulses'],
                                                  int(record['tau_spacing'] /
