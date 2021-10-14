@@ -851,6 +851,20 @@ class BorealisConvert(BorealisRead):
                 # place the SDARN-style array in the dict
                 correlation_dict[key] = new_data
 
+            # AGC Status Word only introduced in Borealis v0.6 onwards,
+            # so it can be set to zero if not present
+            if 'agc_status_word' not in record_dict.keys():
+                agc_sw = 0
+            else:
+                agc_sw = record_dict['agc_status_word']
+
+            # Low Power Status Word only introduced in Borealis v0.6 onwards,
+            # so it can be set to zero if not present
+            if 'lp_status_word' not in record_dict.keys():
+                lp_sw = 0
+            else:
+                lp_sw = record_dict['lp_status_word']
+
             sdarn_record_dict = {
                 'radar.revision.major': np.int8(borealis_major_revision),
                 'radar.revision.minor': np.int8(borealis_minor_revision),
@@ -899,8 +913,8 @@ class BorealisConvert(BorealisRead):
                 'lagfr': np.int16(record_dict['first_range_rtt']),
                 'smsep': np.int16(1e6/record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                'stat.agc': np.int16(record_dict['agc_status_word']),
-                'stat.lopwr': np.int16(record_dict['lp_status_word']),
+                'stat.agc': np.int16(agc_sw),
+                'stat.lopwr': np.int16(lp_sw),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented
