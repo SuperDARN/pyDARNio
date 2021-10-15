@@ -362,21 +362,42 @@ class BorealisConvert(BorealisRead):
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                normal_blanked_1 = record['pulses'] * sample_spacing
-                normal_blanked_2 = normal_blanked_1 + 1
-                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
-                blanked = np.sort(blanked)
+
+                # Check to see if tagged version. If not, use 255.255
+                if record['borealis_git_hash'][0] == 'v' and \
+                        record['borealis_git_hash'][2] == '.':
+                    borealis_major_revision = record['borealis_git_hash'][1]
+                    borealis_minor_revision = record['borealis_git_hash'][3]
+                else:
+                    borealis_major_revision = 255
+                    borealis_minor_revision = 255
+
+                if borealis_major_revision == 0 and borealis_minor_revision <= 5:
+                    # Bfiq generated with borealis v0.5 or older
+                    blanked = record['pulses'] * sample_spacing
+                else:
+                    # Bfiq generated with borealis v0.6 or newer, or untagged version
+                    normal_blanked_1 = record['pulses'] * sample_spacing
+                    if np.array_equal(normal_blanked_1, record['blanked_samples']):
+                        # If file generated with untagged borealis version, it could be like v0.5
+                        # and still have valid blanked samples, so we check that
+                        blanked = normal_blanked_1
+                    else:
+                        normal_blanked_2 = normal_blanked_1 + 1
+                        blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                        blanked = np.sort(blanked)
+
                 if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2IqdatError(
-                                'Increased complexity: Borealis bfiq file'
-                                ' record {} blanked_samples {} does not equate'
-                                ' to pulses array converted to sample number '
-                                '{} * {}'.format(record_key,
-                                                 record['blanked_samples'],
-                                                 record['pulses'],
-                                                 int(record['tau_spacing'] /
-                                                     record['tx_pulse_len'])))
+                                'Increased complexity: Borealis rawacf file'
+                                ' record {} blanked_samples {} is not correct'
+                                ' for pulses array converted to sample number '
+                                '{} * {}.'.format(record_key,
+                                                  record['blanked_samples'],
+                                                  record['pulses'],
+                                                  int(record['tau_spacing'] /
+                                                      record['tx_pulse_len'])))
                 if not all([x == 0 for x in record['pulse_phase_offset']]):
                     raise borealis_exceptions.\
                             BorealisConvert2IqdatError(
@@ -453,10 +474,10 @@ class BorealisConvert(BorealisRead):
                                 ' record {} blanked_samples {} is not correct'
                                 ' for pulses array converted to sample number '
                                 '{} * {}.'.format(record_key,
-                                                 record['blanked_samples'],
-                                                 record['pulses'],
-                                                 int(record['tau_spacing'] /
-                                                     record['tx_pulse_len'])))
+                                                  record['blanked_samples'],
+                                                  record['pulses'],
+                                                  int(record['tau_spacing'] /
+                                                      record['tx_pulse_len'])))
 
         return True
 
