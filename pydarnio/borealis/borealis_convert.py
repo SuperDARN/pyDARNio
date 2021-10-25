@@ -364,10 +364,11 @@ class BorealisConvert(BorealisRead):
                                      record['tx_pulse_len'])
 
                 # Check to see if tagged version. If not, use 255.255
-                if record['borealis_git_hash'][0] == 'v' and \
-                        record['borealis_git_hash'][2] == '.':
-                    borealis_major_revision = record['borealis_git_hash'][1]
-                    borealis_minor_revision = record['borealis_git_hash'][3]
+                git_hash = record['borealis_git_hash'].split('-')[0]
+                major_version, minor_version = git_hash.split('.')
+                if major_version[0] == 'v':
+                    borealis_major_revision = major_version[1:]
+                    borealis_minor_revision = minor_version
                 else:
                     borealis_major_revision = 255
                     borealis_minor_revision = 255
@@ -390,7 +391,7 @@ class BorealisConvert(BorealisRead):
                 if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2IqdatError(
-                                'Increased complexity: Borealis rawacf file'
+                                'Increased complexity: Borealis bfiq file'
                                 ' record {} blanked_samples {} is not correct'
                                 ' for pulses array converted to sample number '
                                 '{} * {}.'.format(record_key,
@@ -444,10 +445,11 @@ class BorealisConvert(BorealisRead):
                                      record['tx_pulse_len'])
 
                 # Check to see if tagged version. If not, use 255.255
-                if record['borealis_git_hash'][0] == 'v' and \
-                        record['borealis_git_hash'][2] == '.':
-                    borealis_major_revision = record['borealis_git_hash'][1]
-                    borealis_minor_revision = record['borealis_git_hash'][3]
+                git_hash = record['borealis_git_hash'].split('-')[0]
+                major_version, minor_version = git_hash.split('.')
+                if major_version[0] == 'v':
+                    borealis_major_revision = major_version[1:]
+                    borealis_minor_revision = minor_version
                 else:
                     borealis_major_revision = 255
                     borealis_minor_revision = 255
