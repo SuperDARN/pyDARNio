@@ -42,6 +42,7 @@ Update noise values in SDarn fields when these can be calculated.
 """
 import logging
 import numpy as np
+import deepdish as dd
 
 from datetime import datetime
 from typing import Union
@@ -361,21 +362,43 @@ class BorealisConvert(BorealisRead):
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                normal_blanked_1 = record['pulses'] * sample_spacing
-                normal_blanked_2 = normal_blanked_1 + 1
-                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
-                blanked = np.sort(blanked)
+
+                # Check to see if tagged version. If not, use 255.255
+                git_hash = record['borealis_git_hash'].split('-')[0]
+                major_version, minor_version = git_hash.split('.')
+                if major_version[0] == 'v':
+                    borealis_major_revision = major_version[1:]
+                    borealis_minor_revision = minor_version
+                else:
+                    borealis_major_revision = 255
+                    borealis_minor_revision = 255
+
+                if borealis_major_revision == 0 and borealis_minor_revision <= 5:
+                    # Bfiq generated with borealis v0.5 or older
+                    blanked = record['pulses'] * sample_spacing
+                else:
+                    # Bfiq generated with borealis v0.6 or newer, or untagged version
+                    normal_blanked_1 = record['pulses'] * sample_spacing
+                    if np.array_equal(normal_blanked_1, record['blanked_samples']):
+                        # If file generated with untagged borealis version, it could be like v0.5
+                        # and still have valid blanked samples, so we check that
+                        blanked = normal_blanked_1
+                    else:
+                        normal_blanked_2 = normal_blanked_1 + 1
+                        blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                        blanked = np.sort(blanked)
+
                 if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2IqdatError(
                                 'Increased complexity: Borealis bfiq file'
-                                ' record {} blanked_samples {} does not equate'
-                                ' to pulses array converted to sample number '
-                                '{} * {}'.format(record_key,
-                                                 record['blanked_samples'],
-                                                 record['pulses'],
-                                                 int(record['tau_spacing'] /
-                                                     record['tx_pulse_len'])))
+                                ' record {} blanked_samples {} is not correct'
+                                ' for pulses array converted to sample number '
+                                '{} * {}.'.format(record_key,
+                                                  record['blanked_samples'],
+                                                  record['pulses'],
+                                                  int(record['tau_spacing'] /
+                                                      record['tx_pulse_len'])))
                 if not all([x == 0 for x in record['pulse_phase_offset']]):
                     raise borealis_exceptions.\
                             BorealisConvert2IqdatError(
@@ -391,7 +414,9 @@ class BorealisConvert(BorealisRead):
 
         The file is convertible if:
             - the origin filetype is rawacf
-            - the blanked_samples array = pulses array for all records
+            - the blanked_samples array = pulses array for all records with Borealis v0.5 or older;
+            - the blanked_samples array is the same as the pulses array * sample number, but also
+              blanks the sample after each pulse, for Borealis v0.6 or newer
             - the pulse_phase_offset array contains all zeroes for all records
 
         TODO: should this fail for multiple beams in the same
@@ -414,24 +439,47 @@ class BorealisConvert(BorealisRead):
                                                  self.borealis_filetype,
                                                  self.__allowed_conversions)
         else:  # There are some specific things to check
+            
             for record_key, record in self.borealis_records.items():
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
-                normal_blanked_1 = record['pulses'] * sample_spacing
-                normal_blanked_2 = normal_blanked_1 + 1
-                blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
-                blanked = np.sort(blanked)
+
+                # Check to see if tagged version. If not, use 255.255
+                git_hash = record['borealis_git_hash'].split('-')[0]
+                major_version, minor_version = git_hash.split('.')
+                if major_version[0] == 'v':
+                    borealis_major_revision = major_version[1:]
+                    borealis_minor_revision = minor_version
+                else:
+                    borealis_major_revision = 255
+                    borealis_minor_revision = 255
+
+                if borealis_major_revision == 0 and borealis_minor_revision <= 5:
+                    # Rawacf generated with borealis v0.5 or older
+                    blanked = record['pulses'] * sample_spacing
+                else:
+                    # Rawacf generated with borealis v0.6 or newer, or untagged version
+                    normal_blanked_1 = record['pulses'] * sample_spacing
+                    if np.array_equal(normal_blanked_1, record['blanked_samples']):
+                        # If file generated with untagged borealis version, it could be like v0.5
+                        # and still have valid blanked samples, so we check that
+                        blanked = normal_blanked_1
+                    else:
+                        normal_blanked_2 = normal_blanked_1 + 1
+                        blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
+                        blanked = np.sort(blanked)
+
                 if not np.array_equal(record['blanked_samples'], blanked):
                     raise borealis_exceptions.\
                             BorealisConvert2RawacfError(
                                 'Increased complexity: Borealis rawacf file'
-                                ' record {} blanked_samples {} does not equate'
-                                ' to pulses array converted to sample number '
-                                '{} * {}'.format(record_key,
-                                                 record['blanked_samples'],
-                                                 record['pulses'],
-                                                 int(record['tau_spacing'] /
-                                                     record['tx_pulse_len'])))
+                                ' record {} blanked_samples {} is not correct'
+                                ' for pulses array converted to sample number '
+                                '{} * {}.'.format(record_key,
+                                                  record['blanked_samples'],
+                                                  record['pulses'],
+                                                  int(record['tau_spacing'] /
+                                                      record['tx_pulse_len'])))
 
         return True
 
@@ -567,6 +615,20 @@ class BorealisConvert(BorealisRead):
 
             int_data = np.array(int_data, dtype=np.int16)
 
+            # AGC Status Word only introduced in Borealis v0.6 onwards,
+            # so it can be set to zero if not present
+            if 'agc_status_word' not in record_dict.keys():
+                agc_sw = 0
+            else:
+                agc_sw = record_dict['agc_status_word']
+
+            # Low Power Status Word only introduced in Borealis v0.6 onwards,
+            # so it can be set to zero if not present
+            if 'lp_status_word' not in record_dict.keys():
+                lp_sw = 0
+            else:
+                lp_sw = record_dict['lp_status_word']
+
             # flattening done in convert_to_dmap_datastructures
             sdarn_record_dict = {
                 'radar.revision.major': np.int8(borealis_major_revision),
@@ -616,8 +678,8 @@ class BorealisConvert(BorealisRead):
                 # smsep is in us; conversion from seconds
                 'smsep': np.int16(1e6 / record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                'stat.agc': np.int16(record_dict['agc_status_word']),
-                'stat.lopwr': np.int16(record_dict['lp_status_word']),
+                'stat.agc': np.int16(agc_sw),
+                'stat.lopwr': np.int16(lp_sw),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented
@@ -826,6 +888,20 @@ class BorealisConvert(BorealisRead):
                 # place the SDARN-style array in the dict
                 correlation_dict[key] = new_data
 
+            # AGC Status Word only introduced in Borealis v0.6 onwards,
+            # so it can be set to zero if not present
+            if 'agc_status_word' not in record_dict.keys():
+                agc_sw = 0
+            else:
+                agc_sw = record_dict['agc_status_word']
+
+            # Low Power Status Word only introduced in Borealis v0.6 onwards,
+            # so it can be set to zero if not present
+            if 'lp_status_word' not in record_dict.keys():
+                lp_sw = 0
+            else:
+                lp_sw = record_dict['lp_status_word']
+
             sdarn_record_dict = {
                 'radar.revision.major': np.int8(borealis_major_revision),
                 'radar.revision.minor': np.int8(borealis_minor_revision),
@@ -874,8 +950,8 @@ class BorealisConvert(BorealisRead):
                 'lagfr': np.int16(record_dict['first_range_rtt']),
                 'smsep': np.int16(1e6/record_dict['rx_sample_rate']),
                 'ercod': np.int16(0),
-                'stat.agc': np.int16(record_dict['agc_status_word']),
-                'stat.lopwr': np.int16(record_dict['lp_status_word']),
+                'stat.agc': np.int16(agc_sw),
+                'stat.lopwr': np.int16(lp_sw),
                 # TODO: currently not implemented
                 'noise.search': np.float32(record_dict['noise_at_freq'][0]),
                 # TODO: currently not implemented
