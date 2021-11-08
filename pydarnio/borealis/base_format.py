@@ -936,7 +936,10 @@ class BaseFormat():
             # initialize all values to NaN; some indices may not be filled
             # do to dimensions that are max values (num sequences, etc can
             # change between records)
-            empty_array[:] = np.NaN
+            if datatype is np.int64 or datatype is np.uint32:
+                empty_array[:] = -1
+            else:
+                empty_array[:] = np.NaN
             temp_array_dict[field] = empty_array
 
         # iterate through the records, filling the unshared and array only
