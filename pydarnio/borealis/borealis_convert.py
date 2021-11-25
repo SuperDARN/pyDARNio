@@ -419,11 +419,6 @@ class BorealisConvert(BorealisRead):
               blanks the sample after each pulse, for Borealis v0.6 or newer
             - the pulse_phase_offset array contains all zeroes for all records
 
-        TODO: should this fail for multiple beams in the same
-        integration time. IE, is it ok for dmap files to have multiple
-        records with same origin time and timestamps due to a different
-        beam azimuth.
-
         Raises
         ------
         BorealisConversionTypesError
