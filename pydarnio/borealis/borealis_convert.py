@@ -855,7 +855,14 @@ class BorealisConvert(BorealisRead):
         for beam_index, beam in enumerate(record_dict['beam_nums']):
             # this beam, all ranges lag 0
             lag_zero = shaped_data['main_acfs'][beam_index, :, 0]
-            lag_zero[-10:] = shaped_data['main_acfs'][beam_index, -10:, -1]
+
+            # Historically, the following line was un-commented. It's purpose was to replace the lag0 data for far
+            # ranges which were contaminated by the second pulse in a sequence. However, it only worked for a small
+            # subset of conditions; specifically, it failed for experiments where the second pulse occurred earlier
+            # or the number of range gates was larger than normal. This replacement is now handled in borealis, and
+            # is more flexible to deal with the variety of different conditions possible from experiments.
+            # lag_zero[-10:] = shaped_data['main_acfs'][beam_index, -10:, -1]
+
             lag_zero_power = (lag_zero.real**2 + lag_zero.imag**2)**0.5
 
             correlation_dict = {}
