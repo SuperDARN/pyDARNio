@@ -869,13 +869,11 @@ class BorealisConvert(BorealisRead):
             for key in shaped_data:
                 # num_ranges x num_lags (complex)
                 this_correlation = shaped_data[key][beam_index, :, :-1]
-                # set the lag0 to the alternate lag0 for the end of the
-                # array (when interference of first pulse would occur)
-                this_correlation[-10:, 0] = \
-                    shaped_data[key][beam_index, -10:, -1]
-                # shape num_beams x num_ranges x num_la gs, now
-                # num_ranges x num_lags-1 b/c alternate lag-0 combined
-                # with lag-0 (only used for last ranges)
+
+                ##### Similar to above, this line has been commented out to avoid far-range lag0 replacement
+                ##### as it is now handled in borealis.
+                # this_correlation[-10:, 0] = \
+                #     shaped_data[key][beam_index, -10:, -1]
 
                 # (num_ranges x num_lags, flattened)
                 flattened_data = np.array(this_correlation).flatten()
