@@ -933,9 +933,9 @@ class BaseFormat():
                 # multiple chars (256)
                 datatype='|U256'
             empty_array = np.empty(array_dims, dtype=datatype)
-            # initialize all values to NaN; some indices may not be filled
-            # do to dimensions that are max values (num sequences, etc can
-            # change between records)
+            # Some indices may not be filled due to dimensions that are maximum values (num_sequences, etc. can change
+            # between records), so they are initialized with a known value first.
+            # Initialize floating-point values to NaN, and integer values to -1.
             if datatype is np.int64 or datatype is np.uint32:
                 empty_array[:] = -1
             else:
