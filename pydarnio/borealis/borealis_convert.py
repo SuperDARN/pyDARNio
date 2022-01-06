@@ -419,11 +419,6 @@ class BorealisConvert(BorealisRead):
               blanks the sample after each pulse, for Borealis v0.6 or newer
             - the pulse_phase_offset array contains all zeroes for all records
 
-        TODO: should this fail for multiple beams in the same
-        integration time. IE, is it ok for dmap files to have multiple
-        records with same origin time and timestamps due to a different
-        beam azimuth.
-
         Raises
         ------
         BorealisConversionTypesError
@@ -517,12 +512,12 @@ class BorealisConvert(BorealisRead):
         try:
             recs = []
             for record in self.borealis_records.items():
-                sdarn_record_dict = \
+                record_dict_list = \
                         self.__convert_bfiq_record(self.borealis_slice_id,
                                                    record,
                                                    self.borealis_filename,
                                                    self.scaling_factor)
-                recs.append(sdarn_record_dict)
+                recs.extend(record_dict_list)
             self._sdarn_dict = recs
             self._sdarn_dmap_records = dict2dmap(recs)
         except Exception as e:
@@ -532,7 +527,7 @@ class BorealisConvert(BorealisRead):
     def __convert_bfiq_record(borealis_slice_id: int,
                               borealis_bfiq_record: tuple,
                               origin_string: str,
-                              scaling_factor: int = 1) -> dict:
+                              scaling_factor: int = 1) -> list:
         """
         Converts a single record dict of Borealis bfiq data to a SDARN DMap
         record dict.
@@ -587,6 +582,7 @@ class BorealisConvert(BorealisRead):
         offset = 2 * record_dict['antenna_arrays_order'].shape[0] * \
             record_dict['num_samps']
 
+        record_dict_list = []
         for beam_index, beam in enumerate(record_dict['beam_nums']):
             # grab this beam's data
             # shape is now num_antenna_arrays x num_sequences
@@ -754,7 +750,8 @@ class BorealisConvert(BorealisRead):
                                  dtype=np.int32),
                 'data': int_data
             }
-        return sdarn_record_dict
+            record_dict_list.append(sdarn_record_dict)
+        return record_dict_list
 
     def _convert_rawacf_to_rawacf(self):
         """
@@ -779,12 +776,12 @@ class BorealisConvert(BorealisRead):
         try:
             recs = []
             for record in self.borealis_records.items():
-                sdarn_record_dict = \
+                record_dict_list = \
                         self.__convert_rawacf_record(self.borealis_slice_id,
                                                      record,
                                                      self.borealis_filename,
                                                      self.scaling_factor)
-                recs.append(sdarn_record_dict)
+                recs.extend(record_dict_list)
             self._sdarn_dict = recs
             self._sdarn_dmap_records = dict2dmap(recs)
         except Exception as e:
@@ -794,7 +791,7 @@ class BorealisConvert(BorealisRead):
     def __convert_rawacf_record(borealis_slice_id: int,
                                 borealis_rawacf_record: tuple,
                                 origin_string: str,
-                                scaling_factor: int = 1) -> dict:
+                                scaling_factor: int = 1) -> list:
         """
         Converts a single record dict of Borealis rawacf data to a SDARN DMap
         record dict.
@@ -852,6 +849,7 @@ class BorealisConvert(BorealisRead):
             borealis_major_revision = 255
             borealis_minor_revision = 255
 
+        record_dict_list = []
         for beam_index, beam in enumerate(record_dict['beam_nums']):
             # this beam, all ranges lag 0
             lag_zero = shaped_data['main_acfs'][beam_index, :, 0]
@@ -1000,5 +998,6 @@ class BorealisConvert(BorealisRead):
                 'acfd': correlation_dict['main_acfs'],
                 'xcfd': correlation_dict['xcfs']
             }
+            record_dict_list.append(sdarn_record_dict)
 
-        return sdarn_record_dict
+        return record_dict_list
