@@ -853,20 +853,25 @@ class BorealisConvert(BorealisRead):
         for beam_index, beam in enumerate(record_dict['beam_nums']):
             # this beam, all ranges lag 0
             lag_zero = shaped_data['main_acfs'][beam_index, :, 0]
-            lag_zero[-10:] = shaped_data['main_acfs'][beam_index, -10:, -1]
+
+            # Historically, the following line was un-commented. It's purpose was to replace the lag0 data for far
+            # ranges which were contaminated by the second pulse in a sequence. However, it only worked for a small
+            # subset of conditions; specifically, it failed for experiments where the second pulse occurred earlier
+            # or the number of range gates was larger than normal. This replacement is now handled in borealis, and
+            # is more flexible to deal with the variety of different conditions possible from experiments.
+            # lag_zero[-10:] = shaped_data['main_acfs'][beam_index, -10:, -1]
+
             lag_zero_power = (lag_zero.real**2 + lag_zero.imag**2)**0.5
 
             correlation_dict = {}
             for key in shaped_data:
                 # num_ranges x num_lags (complex)
                 this_correlation = shaped_data[key][beam_index, :, :-1]
-                # set the lag0 to the alternate lag0 for the end of the
-                # array (when interference of first pulse would occur)
-                this_correlation[-10:, 0] = \
-                    shaped_data[key][beam_index, -10:, -1]
-                # shape num_beams x num_ranges x num_la gs, now
-                # num_ranges x num_lags-1 b/c alternate lag-0 combined
-                # with lag-0 (only used for last ranges)
+
+                ##### Similar to above, this line has been commented out to avoid far-range lag0 replacement
+                ##### as it is now handled in borealis.
+                # this_correlation[-10:, 0] = \
+                #     shaped_data[key][beam_index, -10:, -1]
 
                 # (num_ranges x num_lags, flattened)
                 flattened_data = np.array(this_correlation).flatten()
