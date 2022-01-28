@@ -9,12 +9,14 @@ Python data IO library for the Super Dual Auroral Radar Network (SuperDARN).
 
 ## Changelog
 
-## Version 1.1 - Release!
+## Version 1.1.1 - Release!
 
-pyDARNio is released! Included are the following features:
-- Reading and writing of Borealis v0.6 HDF5 files
-- Bug fix with Slice interface with Borealis files
-- Bug fix on reading partial records with MAP DMAP files
+pyDARNio is released! This is a patch release to address the following issues:
+- Bug fix with initializing empty arrays when converting HDF5 files from site- to array-structured
+- Bug fixes with converting files from HDF5 to DMAP
+  - correctly check blanked_samples
+  - support multiple beams per record
+  - replacement of far-range lag0 data in rawacf conversion
 
 ## Documentation
 
