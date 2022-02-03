@@ -187,6 +187,10 @@ class Fitacf():
         'x_sd_s': 'f',
         'x_sd_phi': 'f'
     }
+    fitacf3_fields = {
+        'elv_fitted': 'f',
+        'elv_error': 'f'
+    }
 
 
 class Grid():

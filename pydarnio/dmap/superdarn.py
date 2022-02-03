@@ -442,7 +442,8 @@ class SDarnRead(DmapRead):
         file_struct_list = [superdarn_formats.Fitacf.types,
                             superdarn_formats.Fitacf.extra_fields,
                             superdarn_formats.Fitacf.fitted_fields,
-                            superdarn_formats.Fitacf.elevation_fields]
+                            superdarn_formats.Fitacf.elevation_fields,
+                            superdarn_formats.Fitacf.fitacf3_fields]
         self._read_darn_records(file_struct_list)
         self.records = dmap2dict(self._dmap_records)
         return self.records
@@ -663,7 +664,9 @@ class SDarnWrite(DmapWrite):
         file_struct_list = [superdarn_formats.Fitacf.types,
                             superdarn_formats.Fitacf.extra_fields,
                             superdarn_formats.Fitacf.fitted_fields,
-                            superdarn_formats.Fitacf.elevation_fields]
+                            superdarn_formats.Fitacf.elevation_fields,
+                            superdarn_formats.Fitacf.fitacf3_fields
+                           ]
         self.superDARN_file_structure_to_bytes(file_struct_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
