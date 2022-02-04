@@ -666,10 +666,9 @@ class SDarnWrite(DmapWrite):
         file_struct_list = [superdarn_formats.Fitacf.types,
                             superdarn_formats.Fitacf.extra_fields,
                             superdarn_formats.Fitacf.fitted_fields,
-                            superdarn_formats.xcf_fields,
-                            superdarn_formats.xcf_fields_fitacf3,
-                            superdarn_formats.xcf_fields_fitacf2,
-                            superdarn_formats.Fitacf.fitacf3_fields
+                            superdarn_formats.Fitacf.xcf_fields,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf3,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf2
                            ]
         self.superDARN_file_structure_to_bytes(file_struct_list)
         with open(self.filename, 'wb') as f:
