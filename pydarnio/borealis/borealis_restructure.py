@@ -132,6 +132,7 @@ class BorealisRestructure(object):
         self.borealis_structure = self.determine_borealis_structure()
 
         # TODO: Call to some restructure method here.
+        self.restructure()
 
     def __repr__(self):
         """ for representation of the class object"""
@@ -197,3 +198,23 @@ class BorealisRestructure(object):
             structure = 'site'
         return structure
 
+    def restructure(self):
+        """
+        Top-level method for restructuring Borealis HDF5 files. Calls
+        the appropriate restructuring method based on the direction of
+        restructuring, i.e. site-to-array or array-to-site.
+        """
+        if self.borealis_structure == self.outfile_structure:
+            print("File {infile} is already structured in {struct} style."
+                  "".format(infile=self.infile_name, struct=self.outfile_structure))
+
+        if self.borealis_structure == 'array':
+            self.array_to_site_restructure()
+        else:
+            self.site_to_array_restructure()
+
+    def array_to_site_restructure(self):
+        pass
+
+    def site_to_array_restructure(self):
+        pass
