@@ -207,8 +207,9 @@ class BorealisRestructure(object):
         if self.borealis_structure == self.outfile_structure:
             print("File {infile} is already structured in {struct} style."
                   "".format(infile=self.infile_name, struct=self.outfile_structure))
+            return
 
-        if self.borealis_structure == 'array':
+        if self.outfile_structure == 'site':
             self.array_to_site_restructure()
         else:
             self.site_to_array_restructure()
