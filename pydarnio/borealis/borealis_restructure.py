@@ -128,6 +128,9 @@ class BorealisRestructure(object):
             raise borealis_exceptions.ConvertFileOverWriteError(
                     self.infile_name)
 
+        self.record_names = self.get_record_names(infile_name)
+        self.borealis_structure = self.determine_borealis_structure()
+
         # TODO: Call to some restructure method here.
 
     def __repr__(self):
@@ -147,3 +150,50 @@ class BorealisRestructure(object):
                "".format(infile=self.infile_name,
                          borealis_structure=self.outfile_structure,
                          outfile=self.outfile_name)
+
+    @staticmethod
+    def get_record_names(borealis_hdf5_file: str):
+        """
+        Gets the top-level names of the records stored in the Borealis
+        HDF5 file specified.
+
+        Parameters
+        ----------
+        borealis_hdf5_file
+            Borealis file to read. Either array- or site-structured.
+
+        Returns
+        -------
+        record_names
+            List of the top-level keys of the HDF5 file.
+
+        Raises
+        ------
+
+        See Also
+        --------
+
+        """
+        with h5py.File(borealis_hdf5_file, 'r') as f:
+            key_view = f.keys()
+            record_names = [str(key) for key in key_view]
+
+        return record_names
+
+    def determine_borealis_structure(self):
+        """
+        Determines the type of Borealis HDF5 file structure based on
+        the names of the top-level records in the HDF5 file.
+
+        Returns
+        -------
+        structure
+            The Borealis HDF5 file structure of the input file. Either
+            'site' or 'array'.
+        """
+        if 'borealis_git_hash' in self.record_names:
+            structure = 'array'
+        else:
+            structure = 'site'
+        return structure
+
