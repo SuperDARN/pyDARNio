@@ -229,7 +229,7 @@ class BorealisRestructure(object):
             raise borealis_exceptions.BorealisStructureError(
                 ' {} Could not find the borealis_git_hash required to '
                 'determine file version. Data file may be corrupted. {}'
-                ''.format(self.filename, err)) from err
+                ''.format(self.infile_name, err)) from err
 
         if version not in borealis_formats.borealis_version_dict:
             raise borealis_exceptions.BorealisVersionError(self.infile_name,
@@ -238,7 +238,23 @@ class BorealisRestructure(object):
             self._borealis_version = version
 
         self._format = borealis_formats.borealis_version_dict[
-                self._borealis_version][self.borealis_filetype]
+                self.software_version][self.borealis_filetype]
+
+        if self.format.is_restructurable():
+            try:
+                # TODO: One by one, create a record from the arrays and save to file
+                pass
+            except Exception as err:
+                raise borealis_exceptions.BorealisRestructureError(
+                    'Records for {}: Error restructuring {} from array to site '
+                    'style: {}'
+                    ''.format(self.infile_name, self.format.__name__, err)) from err
+
+        else:
+            raise borealis_exceptions.BorealisRestructureError(
+                'Records for {}: File format {} not recognized as '
+                'restructureable from array to site style'
+                ''.format(self.infile_name, self.format.__name__))
 
     def site_to_array_restructure(self):
 
@@ -260,5 +276,37 @@ class BorealisRestructure(object):
             self._borealis_version = version
 
         self._format = borealis_formats.borealis_version_dict[
-            self._borealis_version][self.borealis_filetype]
+            self.software_version][self.borealis_filetype]
 
+        if self.format.is_restructurable():
+            try:
+                # TODO: Use the number of records and the first record to create the correct
+                #   array shapes (may need to extend some for zero-padding later)
+                # TODO: Iterate over the records and add them into the arrays
+                pass
+            except Exception as err:
+                raise borealis_exceptions.BorealisRestructureError(
+                    'Records for {}: Error restructuring {} from site to array '
+                    'style: {}'
+                    ''.format(self.infile_name, self.format.__name__, err)) from err
+
+        else:
+            raise borealis_exceptions.BorealisRestructureError(
+                'Records for {}: File format {} not recognized as '
+                'restructureable from site to array style'
+                ''.format(self.infile_name, self.format.__name__))
+
+    @property
+    def software_version(self):
+        """
+        The version of the file, taken from the 'borealis_git_hash' in the
+        first record, in the init.
+        """
+        return self._borealis_version
+
+    @property
+    def format(self):
+        """
+        The format class used for the file, from the borealis_formats module.
+        """
+        return self._format
