@@ -49,6 +49,7 @@ from datetime import datetime
 from typing import Union
 
 from pydarnio import (borealis_exceptions, BorealisRead)
+from pydarnio.borealis import borealis_formats
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 
@@ -130,6 +131,10 @@ class BorealisRestructure(object):
 
         self.record_names = self.get_record_names(infile_name)
         self.borealis_structure = self.determine_borealis_structure()
+
+        # Initialize to None, will be updated in restructure()
+        self._borealis_version = None
+        self._format = None
 
         # TODO: Call to some restructure method here.
         self.restructure()
@@ -215,7 +220,45 @@ class BorealisRestructure(object):
             self.site_to_array_restructure()
 
     def array_to_site_restructure(self):
-        pass
+
+        # Find the version number
+        try:
+            version = dd.io.load(self.infile_name,
+                                 group='/borealis_git_hash').split('-')[0]
+        except ValueError as err:
+            raise borealis_exceptions.BorealisStructureError(
+                ' {} Could not find the borealis_git_hash required to '
+                'determine file version. Data file may be corrupted. {}'
+                ''.format(self.filename, err)) from err
+
+        if version not in borealis_formats.borealis_version_dict:
+            raise borealis_exceptions.BorealisVersionError(self.infile_name,
+                                                           version)
+        else:
+            self._borealis_version = version
+
+        self._format = borealis_formats.borealis_version_dict[
+                self._borealis_version][self.borealis_filetype]
 
     def site_to_array_restructure(self):
-        pass
+
+        # Find the version number
+        try:
+            version = dd.io.load(self.infile_name,
+                                 group='/{}/borealis_git_hash'
+                                       ''.format(self.record_names[0])).split('-')[0]
+        except (IndexError, ValueError) as err:
+            # Shouldn't happen unless file somehow is corrupted
+            raise borealis_exceptions.BorealisStructureError(
+                ' {} Could not find the borealis_git_hash required to '
+                'determine read version. Data file may be corrupted. {}'
+                ''.format(self.infile_name, err)) from err
+
+        if version not in borealis_formats.borealis_version_dict:
+            raise borealis_exceptions.BorealisVersionError(self.infile_name, version)
+        else:
+            self._borealis_version = version
+
+        self._format = borealis_formats.borealis_version_dict[
+            self._borealis_version][self.borealis_filetype]
+
