@@ -49,7 +49,7 @@ import deepdish as dd
 import logging
 import numpy as np
 from datetime import datetime
-from typing import Union
+from typing import Union, OrderedDict
 
 from pydarnio import (borealis_exceptions, BorealisRead)
 from pydarnio.borealis import borealis_formats
@@ -268,7 +268,58 @@ class BorealisRestructure(object):
             dataset_types = self.format.site_dtypes()
             try:
                 # TODO: One by one, create a record from the arrays and save to file
-                pass
+                sqn_timestamps_array = dd.io.load(self.infile_name, '/sqn_timestamps')
+                for record_num, seq_timestamp in enumerate(sqn_timestamps_array):
+                    # format dictionary key in the same way it is done
+                    # in datawrite on site
+                    seq_datetime = datetime.utcfromtimestamp(seq_timestamp[0])
+                    epoch = datetime.utcfromtimestamp(0)
+                    key = str(int((seq_datetime - epoch).total_seconds() * 1000))
+
+                    # Make this fresh every time, to reduce memory footprint
+                    timestamp_dict = OrderedDict()
+                    timestamp_dict[key] = dict()
+                    # populate shared fields in each record,
+                    for field in self.format.shared_fields():
+                        field_data = dd.io.load(self.infile_name, '/{}'.format(field))
+                        timestamp_dict[key][field] = field_data
+
+                    # populate site specific fields using given functions
+                    # that take both the arrays data and the record number
+                    # TODO: Can this be done with partial loading?
+                    for field in self.format.site_specific_fields():
+                        timestamp_dict[key][field] = self.format.site_specific_fields_generate(
+                        )[field](data_dict, record_num)
+
+                    # TODO: Can this be done with partial loading?
+                    for field in self.format.unshared_fields():
+                        if field in self.format.single_element_types():
+                            datatype = self.format.single_element_types()[field]
+                            # field is not an array, single element per record.
+                            # unshared_field_dims_site should give empty list.
+                            timestamp_dict[key][field] = datatype(data_dict[field]
+                                                                  [record_num])
+                        else:  # field in array_dtypes
+                            datatype = self.format.array_dtypes()[field]
+                            # need to get the dims correct, not always equal to the max
+                            site_dims = [dimension_function(data_dict, record_num)
+                                         for dimension_function in
+                                         self.format.unshared_fields_dims_site()[field]]
+                            dims = []
+                            for dim in site_dims:
+                                if isinstance(dim, list):
+                                    for i in dim:
+                                        dims.append(i)
+                                else:
+                                    dims.append(dim)
+
+                            site_dims = dims
+                            index_slice = [slice(0, i) for i in site_dims]
+                            index_slice.insert(0, record_num)
+                            index_slice = tuple(index_slice)
+                            timestamp_dict[key][field] = data_dict[field][index_slice]
+
+                timestamp_dict = self.format.flatten_site_arrays(timestamp_dict)
             except Exception as err:
                 raise borealis_exceptions.BorealisRestructureError(
                     'Records for {}: Error restructuring {} from array to site '
