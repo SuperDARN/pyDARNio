@@ -203,11 +203,12 @@ class BorealisRestructure(object):
         --------
 
         """
+        hdf5_default_attrs = ['CLASS', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION', 'TITLE', 'VERSION']
         with h5py.File(borealis_hdf5_file, 'r') as f:
             key_view = f.keys()
             scalars = f.attrs   # Attributes for the HDF5 file, including scalar fields
             record_names = [key for key in key_view]
-            record_names.extend([val for val in scalars])
+            record_names.extend([val for val in scalars if val not in hdf5_default_attrs])
 
         return record_names
 
