@@ -372,7 +372,7 @@ class BorealisRestructure(object):
         self._format = borealis_formats.borealis_version_dict[
             self.software_version][self.borealis_filetype]
 
-        if self.format.is_restructurable():
+        if self.format.is_restructureable():
             attribute_types = self.format.array_single_element_types()
             dataset_types = self.format.array_array_dtypes()
             unshared_fields = self.format.unshared_fields()
@@ -383,26 +383,27 @@ class BorealisRestructure(object):
 
                 new_data_dict = dict()
                 num_records = len(self.record_names)
+                first_time = True
                 for record_name in self.record_names:
-                    record = dd.io.load('/{}'.format(record_name))
+                    record = dd.io.load(self.infile_name, '/{}'.format(record_name))
 
                     # some fields are linear in site style and need to be reshaped.
-                    # TODO: Figure out if the record is too shallow, i.e. param should be {'1': record}
-                    #   so reshape_site_arrays() functions properly
-                    data_dict = self.format.reshape_site_arrays(record)
+                    # Pass in record nested in a dictionary, as reshape_site_arrays is for dealing with
+                    # key, val pairs of timestamp, record. Unpack the dictionary returned
+                    data_dict = self.format.reshape_site_arrays({'tmp': record})['tmp']
 
                     # write shared fields to dictionary
-                    # TODO: Only do this once
-                    first_key = list(data_dict.keys())[0]
-                    for field in self.format.shared_fields():
-                        new_data_dict[field] = data_dict[first_key][field]
+                    if first_time:
+                        for field in self.format.shared_fields():
+                            new_data_dict[field] = data_dict[field]
+                        first_time = False
 
                     # write array specific fields using the given functions.
                     # TODO: Figure out a way to do this iteratively (some fields may have entry for
                     #   each record (e.g. num_beams in bfiq files)
                     for field in self.format.array_specific_fields():
                         new_data_dict[field] = self.format.array_specific_fields_generate(
-                        )[field](data_dict)
+                            )[field]({'tmp': data_dict})
 
                     # write the unshared fields, initializing empty arrays to start.
                     temp_array_dict = dict()
