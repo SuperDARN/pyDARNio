@@ -49,11 +49,11 @@ import deepdish as dd
 import logging
 import numpy as np
 from datetime import datetime
-from typing import Union, OrderedDict
+from typing import Union
+from collections import OrderedDict
 
-from pydarnio import (borealis_exceptions, BorealisRead)
-from pydarnio.borealis import borealis_formats
-from pydarnio.borealis.borealis_utilities import BorealisUtilities
+from pydarnio import borealis_exceptions, borealis_formats
+from .borealis_utilities import BorealisUtilities
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 
@@ -205,7 +205,9 @@ class BorealisRestructure(object):
         """
         with h5py.File(borealis_hdf5_file, 'r') as f:
             key_view = f.keys()
-            record_names = [str(key) for key in key_view]
+            scalars = f.attrs   # Attributes for the HDF5 file, including scalar fields
+            record_names = [key for key in key_view]
+            record_names.extend([val for val in scalars])
 
         return record_names
 
@@ -263,11 +265,24 @@ class BorealisRestructure(object):
         self._format = borealis_formats.borealis_version_dict[
                 self.software_version][self.borealis_filetype]
 
-        if self.format.is_restructurable():
+        if self.format.is_restructureable():
             attribute_types = self.format.site_single_element_types()
-            dataset_types = self.format.site_dtypes()
+            dataset_types = self.format.array_dtypes()
             try:
-                # TODO: One by one, create a record from the arrays and save to file
+                shared_fields_dict = dict()
+                # shared fields are common across records, so this is only done once
+                for field in self.format.shared_fields():
+                    field_data = dd.io.load(self.infile_name, '/{}'.format(field))
+                    shared_fields_dict[field] = field_data
+
+                unshared_single_elements = dict()
+                # These are fields which have one element per record, so the arrays are small enough
+                # to be loaded completely into memory with no problem
+                for field in self.format.unshared_fields():
+                    if field in self.format.single_element_types():
+                        unshared_single_elements[field] = dd.io.load(
+                            self.infile_name, '/{}'.format(field))
+
                 sqn_timestamps_array = dd.io.load(self.infile_name, '/sqn_timestamps')
                 for record_num, seq_timestamp in enumerate(sqn_timestamps_array):
                     # format dictionary key in the same way it is done
@@ -277,49 +292,51 @@ class BorealisRestructure(object):
                     key = str(int((seq_datetime - epoch).total_seconds() * 1000))
 
                     # Make this fresh every time, to reduce memory footprint
-                    timestamp_dict = OrderedDict()
-                    timestamp_dict[key] = dict()
-                    # populate shared fields in each record,
-                    for field in self.format.shared_fields():
-                        field_data = dd.io.load(self.infile_name, '/{}'.format(field))
-                        timestamp_dict[key][field] = field_data
+                    record_dict = dict()
+
+                    # Copy over the shared fields
+                    for k, v in shared_fields_dict.items():
+                        record_dict[k] = v
 
                     # populate site specific fields using given functions
                     # that take both the arrays data and the record number
-                    # TODO: Can this be done with partial loading?
-                    for field in self.format.site_specific_fields():
-                        timestamp_dict[key][field] = self.format.site_specific_fields_generate(
-                        )[field](data_dict, record_num)
+                    with h5py.File(self.infile_name, 'r') as f:
+                        for field in self.format.site_specific_fields():
+                            record_dict[field] = self.format.site_specific_fields_generate(
+                            )[field](f, record_num)
 
-                    # TODO: Can this be done with partial loading?
                     for field in self.format.unshared_fields():
                         if field in self.format.single_element_types():
                             datatype = self.format.single_element_types()[field]
                             # field is not an array, single element per record.
                             # unshared_field_dims_site should give empty list.
-                            timestamp_dict[key][field] = datatype(data_dict[field]
-                                                                  [record_num])
+                            record_dict[field] = datatype(unshared_single_elements[field][record_num])
                         else:  # field in array_dtypes
                             datatype = self.format.array_dtypes()[field]
                             # need to get the dims correct, not always equal to the max
-                            site_dims = [dimension_function(data_dict, record_num)
-                                         for dimension_function in
-                                         self.format.unshared_fields_dims_site()[field]]
-                            dims = []
-                            for dim in site_dims:
-                                if isinstance(dim, list):
-                                    for i in dim:
-                                        dims.append(i)
-                                else:
-                                    dims.append(dim)
+                            with h5py.File(self.infile_name, 'r') as f:
+                                site_dims = [dimension_function(f, record_num)
+                                             for dimension_function in
+                                             self.format.unshared_fields_dims_site()[field]]
+                                dims = []
+                                for dim in site_dims:
+                                    if isinstance(dim, list):
+                                        for i in dim:
+                                            dims.append(i)
+                                    else:
+                                        dims.append(dim)
 
-                            site_dims = dims
-                            index_slice = [slice(0, i) for i in site_dims]
-                            index_slice.insert(0, record_num)
-                            index_slice = tuple(index_slice)
-                            timestamp_dict[key][field] = data_dict[field][index_slice]
+                                site_dims = dims
+                                index_slice = [slice(0, i) for i in site_dims]
+                                index_slice.insert(0, record_num)
+                                index_slice = tuple(index_slice)
+                                record_dict[field] = f[field][index_slice]
+                    # Wrap in another dict to use the format method
+                    record_dict = OrderedDict({key: record_dict})
+                    record_dict = self.format.flatten_site_arrays(record_dict)
 
-                timestamp_dict = self.format.flatten_site_arrays(timestamp_dict)
+                    # Write the single record to file
+                    self._write_borealis_record(record_dict, key, attribute_types, dataset_types)
             except Exception as err:
                 raise borealis_exceptions.BorealisRestructureError(
                     'Records for {}: Error restructuring {} from array to site '
@@ -455,7 +472,7 @@ class BorealisRestructure(object):
                     new_data_dict.update(temp_array_dict)
 
                 BorealisUtilities.check_arrays(
-                    self.outfile_name, arrays,
+                    self.infile_name, new_data_dict,
                     attribute_types, dataset_types,
                     unshared_fields)
             except Exception as err:
@@ -504,7 +521,7 @@ class BorealisRestructure(object):
         BorealisUtilities
         """
         Path(self.outfile_name).touch()
-        BorealisUtilities.check_records(self.outfile_name, record,
+        BorealisUtilities.check_records(self.infile_name, record,
                                         attribute_types, dataset_types)
 
         # use external h5copy utility to move new record into 2hr file.
@@ -515,10 +532,10 @@ class BorealisRestructure(object):
         tmp_filename = self.outfile_name + '.tmp'
         Path(tmp_filename).touch()
 
-        dd.io.save(tmp_filename, {str(record_name): record},
-                   compression=self.compression)
-        cp_cmd = 'h5copy -i {newfile} -o {full_file} -s {dtstr} -d {dtstr}'
+        dd.io.save(tmp_filename, record[record_name], compression=self.compression)
+        f = dd.io.load(tmp_filename, '/')
+        cp_cmd = 'h5copy -i {newfile} -o {full_file} -s / -d {dtstr}'
         cmd = cp_cmd.format(newfile=tmp_filename, full_file=self.outfile_name,
-                            dtstr='/'+str(record_name))
+                            dtstr=record_name)
         sp.call(cmd.split())
         os.remove(tmp_filename)
