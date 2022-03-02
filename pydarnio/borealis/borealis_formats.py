@@ -403,6 +403,15 @@ class BorealisRawacfv0_4(BaseFormat):
             }
 
     @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        return {
+            'num_beams': lambda record: len(record['beam_nums'])
+        }
+
+    @classmethod
     def site_specific_fields_generate(cls):
         """
         See BaseFormat class for description and use of this method.
@@ -755,6 +764,15 @@ class BorealisBfiqv0_4(BaseFormat):
             }
 
     @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        return {
+            'num_beams': lambda record: len(record['beam_nums'])
+        }
+
+    @classmethod
     def site_specific_fields_generate(cls):
         """
         See BaseFormat class for description and use of this method.
@@ -1090,6 +1108,15 @@ class BorealisAntennasIqv0_4(BaseFormat):
             }
 
     @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        return {
+            'num_beams': lambda record: len(record['beam_nums'])
+        }
+
+    @classmethod
     def site_specific_fields_generate(cls):
         """
         See BaseFormat class for description and use of this method.
@@ -1407,6 +1434,18 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
             })
         return array_specific
 
+    @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        array_specific = super(BorealisRawacfv0_5,
+                               cls).array_specific_fields_iterative_generator()
+        array_specific.update({
+            'num_blanked_samples': lambda record: len(record['blanked_samples'])
+            })
+        return array_specific
+
 
 class BorealisBfiqv0_5(BorealisBfiqv0_4):
     """
@@ -1541,6 +1580,18 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
                 [len(record['blanked_samples']) for key, record in
                  records.items()], dtype=np.uint32)
             })
+        return array_specific
+
+    @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        array_specific = super(BorealisBfiqv0_5,
+                               cls).array_specific_fields_iterative_generator()
+        array_specific.update({
+            'num_blanked_samples': lambda record: len(record['blanked_samples'])
+        })
         return array_specific
 
 
@@ -1689,6 +1740,18 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
                 [len(record['blanked_samples']) for key, record in
                  records.items()], dtype=np.uint32)
             })
+        return array_specific
+
+    @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        array_specific = super(BorealisAntennasIqv0_5,
+                               cls).array_specific_fields_iterative_generator()
+        array_specific.update({
+            'num_blanked_samples': lambda record: len(record['blanked_samples'])
+        })
         return array_specific
 
 
