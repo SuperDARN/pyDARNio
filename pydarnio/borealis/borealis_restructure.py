@@ -12,13 +12,6 @@ BorealisRestructure: Restructures Borealis SuperDARN files types to/from
 Exceptions
 ----------
 TODO: Curate this list
-BorealisFileTypeError
-BorealisFieldMissingError
-BorealisExtraFieldError
-BorealisDataFormatTypeError
-BorealisConversionTypesError
-BorealisConvert2IqdatError
-BorealisConvert2RawacfError
 
 See Also
 --------
@@ -373,14 +366,7 @@ class BorealisRestructure(object):
             self.software_version][self.borealis_filetype]
 
         if self.format.is_restructureable():
-            attribute_types = self.format.array_single_element_types()
-            dataset_types = self.format.array_array_dtypes()
-            unshared_fields = self.format.unshared_fields()
             try:
-                # TODO: Use the number of records and the first record to create the correct
-                #   array shapes (may need to extend some for zero-padding later)
-                # TODO: Iterate over the records and add them into the arrays
-
                 new_data_dict = dict()
                 num_records = len(self.record_names)
                 first_time = True
@@ -412,15 +398,12 @@ class BorealisRestructure(object):
                                 else:
                                     new_data_dict[field][:] = np.NaN
 
-
                     # Add data for this record to all fields that are array-specific and record-dependent
                     for field in self.format.array_specific_fields_iterative_generator().keys():
                         new_data_dict[field][rec_idx] = self.format.array_specific_fields_iterative_generator(
                             )[field](record)
 
                     # write the unshared fields, initializing empty arrays to start.
-                    temp_array_dict = dict()
-
                     if first_time:
                         # get array dims of the unshared fields arrays
                         field_dimensions = {}
@@ -429,7 +412,8 @@ class BorealisRestructure(object):
 
                         # all fields to become arrays
                         for field, dims in field_dimensions.items():
-                            array_dims = [num_records] + dims
+                            array_dims = [num_records]
+                            array_dims.extend([i for i in dims])
                             array_dims = tuple(array_dims)
 
                             if field in self.format.single_element_types():
@@ -449,17 +433,17 @@ class BorealisRestructure(object):
                                 empty_array[:] = -1
                             else:
                                 empty_array[:] = np.NaN
-                            temp_array_dict[field] = empty_array
+                            new_data_dict[field] = empty_array
 
                     # Check if this record is larger in any dimension of unshared_fields.
                     # If so, we need to pad the arrays.
                     else:
                         for field in self.format.unshared_fields():
-                            record_shape = [1]  # 1 record in this record
-                            record_shape += data_dict[field].shape
+                            record_shape = data_dict[field].shape
                             # pads are (0, n) for each dimension, where n is how many more elements
                             # the current record has in this dimension over the max seen so far.
-                            pads = [(0, max(0, a-b)) for (a, b) in zip(record_shape, field_dimensions[field])]
+                            pads = [(0, 0)]     # First dimension is num_records, which shouldn't change
+                            pads.extend([(0, max(0, a-b)) for (a, b) in zip(record_shape, field_dimensions[field])])
                             field_dimensions[field] = \
                                 [max(a, b) for (a, b) in zip(record_shape, field_dimensions[field])]
 
@@ -473,12 +457,12 @@ class BorealisRestructure(object):
                             else:
                                 constant = np.NaN
 
-                            # Pad each array so that it will fit the current record
-                            np.pad(temp_array_dict[field], pads, 'constant', constant_values=constant)
+                            new_data_dict[field] = np.pad(
+                                new_data_dict[field], pads, 'constant', constant_values=constant)
 
                     # Fill the unshared and array-only fields
                     for field in self.format.unshared_fields():  # all unshared fields
-                        empty_array = temp_array_dict[field]
+                        empty_array = new_data_dict[field]
                         if type(data_dict[field]) == np.ndarray:
                             # only fill the correct length, appended NaNs occur for
                             # dims with a determined max value
@@ -493,9 +477,11 @@ class BorealisRestructure(object):
                         else:  # not an array, num_records is the only dimension
                             empty_array[rec_idx] = data_dict[field]
 
-                    new_data_dict.update(temp_array_dict)
                     first_time = False
 
+                attribute_types = self.format.array_single_element_types()
+                dataset_types = self.format.array_array_dtypes()
+                unshared_fields = self.format.unshared_fields()
                 BorealisUtilities.check_arrays(
                     self.infile_name, new_data_dict,
                     attribute_types, dataset_types,
