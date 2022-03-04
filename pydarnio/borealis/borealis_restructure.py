@@ -11,7 +11,11 @@ BorealisRestructure: Restructures Borealis SuperDARN files types to/from
 
 Exceptions
 ----------
-TODO: Curate this list
+BorealisFileTypeError
+BorealisStructureError
+ConvertFileOverWriteError
+BorealisVersionError
+BorealisRestructureError
 
 See Also
 --------
@@ -24,14 +28,8 @@ BorealisArrayWrite
 
 Notes
 -----
-
 For more information on Borealis data files and their structures,
 see: https://borealis.readthedocs.io/en/master/
-
-Future Work
------------
-
-
 """
 import os
 import subprocess as sp
@@ -137,7 +135,6 @@ class BorealisRestructure(object):
         self._borealis_version = None
         self._format = None
 
-        # TODO: Call to some restructure method here.
         self.restructure()
 
     def __repr__(self):
@@ -176,7 +173,7 @@ class BorealisRestructure(object):
     @staticmethod
     def get_record_names(borealis_hdf5_file: str):
         """
-        Gets the top-level names of the records stored in the Borealis
+        Gets the top-level names of the groups and attributes stored in the
         HDF5 file specified.
 
         Parameters
@@ -188,13 +185,6 @@ class BorealisRestructure(object):
         -------
         record_names
             List of the top-level keys of the HDF5 file.
-
-        Raises
-        ------
-
-        See Also
-        --------
-
         """
         hdf5_default_attrs = ['CLASS', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION', 'TITLE', 'VERSION']
         with h5py.File(borealis_hdf5_file, 'r') as f:
@@ -239,7 +229,18 @@ class BorealisRestructure(object):
             self.site_to_array_restructure()
 
     def array_to_site_restructure(self):
+        """
+        Performs restructuring on an array-structured Borealis HDF5 file,
+        converting it to site-structured. This method only loads in the HDF5
+        groups and datasets that it needs as it needs them, and generates
+        one site-structured record at a time.
 
+        Raises
+        -------
+        BorealisStructureError
+        BorealisVersionError
+        BorealisRestructureError
+        """
         # Find the version number
         try:
             version = dd.io.load(self.infile_name,
@@ -344,7 +345,18 @@ class BorealisRestructure(object):
                 ''.format(self.infile_name, self.format.__name__))
 
     def site_to_array_restructure(self):
+        """
+        Performs restructuring on a site-structured Borealis HDF5 file,
+        converting it to array-structured. This method only loads in one record
+        at a time, adding its data to the arrays before moving onto the
+        next record.
 
+        Raises
+        -------
+        BorealisStructureError
+        BorealisVersionError
+        BorealisRestructureError
+        """
         # Find the version number
         try:
             version = dd.io.load(self.infile_name,
