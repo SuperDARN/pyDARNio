@@ -229,11 +229,11 @@ class BorealisRestructure(object):
             return
 
         if self.outfile_structure == 'site':
-            self.array_to_site_restructure()
+            self._array_to_site_restructure()
         else:
-            self.site_to_array_restructure()
+            self._site_to_array_restructure()
 
-    def array_to_site_restructure(self):
+    def _array_to_site_restructure(self):
         """
         Performs restructuring on an array-structured Borealis HDF5 file,
         converting it to site-structured. This method only loads in the HDF5
@@ -360,7 +360,7 @@ class BorealisRestructure(object):
                 'restructureable from array to site style'
                 ''.format(self.infile_name, self.format.__name__))
 
-    def site_to_array_restructure(self):
+    def _site_to_array_restructure(self):
         """
         Performs restructuring on a site-structured Borealis HDF5 file,
         converting it to array-structured. This method only loads in one record
@@ -575,12 +575,9 @@ class BorealisRestructure(object):
 
         Raises
         ------
-        BorealisFieldMissingError - when a field is missing from the Borealis
-                                file/stream type
-        BorealisExtraFieldError - when an extra field is present in the
-                                Borealis file/stream type
-        BorealisDataFormatTypeError - when a field has the incorrect
-                                field type for the Borealis file/stream type
+        BorealisFieldMissingError
+        BorealisExtraFieldError
+        BorealisDataFormatTypeError
 
         See Also
         --------
