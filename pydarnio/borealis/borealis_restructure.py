@@ -496,5 +496,5 @@ class BorealisRestructure(object):
         cp_cmd = 'h5copy -i {newfile} -o {full_file} -s / -d {dtstr}'
         cmd = cp_cmd.format(newfile=tmp_filename, full_file=self.outfile_name,
                             dtstr=record_name)
-        sp.call(cmd.split())
+        sp.run(cmd.split())
         os.remove(tmp_filename)
