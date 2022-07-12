@@ -41,7 +41,8 @@ import numpy as np
 
 from collections import OrderedDict
 from datetime import datetime
-from typing import Callable
+from typing import Callable, List
+import h5py
 
 from pydarnio import borealis_exceptions
 
@@ -540,6 +541,71 @@ class BaseFormat():
         """
         new_records = copy.deepcopy(records)
         return new_records
+
+    @staticmethod
+    def site_get_max_dims(filename: str, unshared_parameters: List[str]):
+        """
+        Checks the records in a site file for all unshared parameter fields to
+        find the maximum dimensions. Used for initializing arrays in site to
+        array conversion to avoid padding arrays midway through conversion.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        max_num_sequences: int
+            integer, max number of sequences of all records in the site file
+        max_num_beams: int
+            integer, max number of beams of all records in the site file
+        Raises
+        ------
+
+        """
+        fields_max_dims = {key: () for key in unshared_parameters}
+        max_num_sequences = 0
+        max_num_beams = 0
+
+        # Open site file to read with h5py, iterate over all records in the
+        # file, and iterate through all fields required to find max dims
+        # needed for conversion to array file.
+        with h5py.File(filename, 'r') as site_file:
+            for rec_idx, record_name in enumerate(site_file):
+                for field, dims in fields_max_dims.items():
+                    try:
+                        # TypeError on booleans (ie: scan_start_marker)
+                        # KeyError if field is dataset instead of attribute
+                        field_value = site_file[record_name].attrs[field]
+                    except (KeyError, TypeError) as e:
+                        try:
+                            # Raises KeyError if field DNE as dataset
+                            field_shape = site_file[record_name][field].shape
+                        except KeyError:
+                            continue
+                        # Initialize shape to first record's field dimensions
+                        if rec_idx == 0:
+                            fields_max_dims[field] = field_shape
+                            if field == 'sqn_timestamps' and \
+                               field_shape[0] > max_num_sequences:
+                                max_num_sequences = field_shape[0]
+                            if field == 'beam_nums' and \
+                                    field_shape[0] > max_num_beams:
+                                max_num_beams = field_shape[0]
+                        else:
+                            # Update dims to keep largest for all records
+                            new_shape = map(lambda dima, dimb: max(dima, dimb),
+                                            fields_max_dims[field],
+                                            field_shape)
+                            fields_max_dims[field] = tuple(new_shape)
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     # CLASS METHODS COMMON ACROSS FORMATS
     # i.e. class methods that build off the other class methods so generally

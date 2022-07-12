@@ -44,9 +44,34 @@ from typing import Union
 from collections import OrderedDict
 
 from pydarnio import borealis_exceptions, borealis_formats
-from .borealis_utilities import BorealisUtilities
+from borealis_utilities import BorealisUtilities 
+
+import sys
+import psutil
+from memory_profiler import profile
 
 pyDARNio_log = logging.getLogger('pyDARNio')
+
+
+def get_size(obj, seen=None):
+    """Recursively finds size of objects"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_size(v, seen) for v in obj.values()])
+        size += sum([get_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += get_size(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_size(i, seen) for i in obj])
+    return size
 
 
 class BorealisRestructure(object):
@@ -80,7 +105,6 @@ class BorealisRestructure(object):
         The desired Borealis structure of outfile_name. Supported
         structures are 'site' and 'array'.
     """
-
     def __init__(self, infile_name: str, outfile_name: str,
                  borealis_filetype: str, outfile_structure: str,
                  hdf5_compression: Union[str, None] = None):
@@ -127,6 +151,8 @@ class BorealisRestructure(object):
         if self.infile_name == self.outfile_name:
             raise borealis_exceptions.ConvertFileOverWriteError(
                     self.infile_name)
+        memsize = psutil.Process().memory_full_info().uss / 1024 / 1024
+        print(f'memsize {memsize}')
 
         self.record_names = BorealisUtilities.get_record_names(infile_name)
         self.borealis_structure = BorealisUtilities.\
@@ -135,6 +161,8 @@ class BorealisRestructure(object):
             self.infile_name, self.record_names, self.borealis_structure)
         self._format = borealis_formats.borealis_version_dict[
             self.software_version][self.borealis_filetype]
+        memsize = psutil.Process().memory_full_info().uss / 1024 / 1024
+        print(f'memsize {memsize}')
 
         self.restructure()
 
@@ -171,6 +199,7 @@ class BorealisRestructure(object):
         """
         return self._format
 
+    @profile
     def restructure(self):
         """
         Top-level method for restructuring Borealis HDF5 files. Calls
@@ -192,7 +221,7 @@ class BorealisRestructure(object):
                 'Records for {}: File format {} not recognized as '
                 'restructureable from array to site style'
                 ''.format(self.infile_name, self.format.__name__))
-
+    @profile
     def _array_to_site_restructure(self):
         """
         Performs restructuring on an array-structured Borealis HDF5 file,
@@ -289,7 +318,7 @@ class BorealisRestructure(object):
                 'style: {}'
                 ''.format(self.infile_name, self.format.__name__, err)) \
                     from err
-
+    @profile
     def _site_to_array_restructure(self):
         """
         Performs restructuring on a site-structured Borealis HDF5 file,
@@ -307,10 +336,16 @@ class BorealisRestructure(object):
             new_data_dict = dict()
             num_records = len(self.record_names)
             first_time = True
+            # get array dims of the unshared fields arrays
+            max_field_dims, max_num_seqs, max_num_beams = BorealisUtilities.site_get_max_dims(
+                self.infile_name,
+                self.format.unshared_fields())
+
             for rec_idx, record_name in enumerate(self.record_names):
                 record = dd.io.load(self.infile_name,
                                     '/{}'.format(record_name))
-
+                if rec_idx < 2:
+                    continue
                 # some fields are linear in site style and need to be
                 # reshaped.
                 # Pass in record nested in a dictionary, as
@@ -353,13 +388,16 @@ class BorealisRestructure(object):
 
                 # write the unshared fields, initializing empty arrays first
                 if first_time:
-                    # get array dims of the unshared fields arrays
-                    field_dimensions = {}
-                    for field in self.format.unshared_fields():
-                        field_dimensions[field] = data_dict[field].shape
+                    # Need to get the reshaped arrays dims
+                    for field, val in data_dict.items():
+                        if field in max_field_dims.keys():
+                            if len(val.shape) != len(max_field_dims[field]):
+                                max_field_dims[field] = val.shape
+                                # Unfortunately this won't work, as the num sequences value is in here... so need another way to get around this. THis will only work if the first record has the max num sequences.
+                                # OR WILL IT?!?! NO, it won't. Need to reshape the data dict to max dimensions afterwards.
 
                     # all fields to become arrays
-                    for field, dims in field_dimensions.items():
+                    for field, dims in max_field_dims.items():
                         array_dims = [num_records]
                         array_dims.extend([i for i in dims])
                         array_dims = tuple(array_dims)
@@ -385,38 +423,7 @@ class BorealisRestructure(object):
                             empty_array[:] = np.NaN
                         new_data_dict[field] = empty_array
 
-                # Check if this record is larger in any dimension of
-                # unshared_fields. If so, pad the arrays.
-                else:
-                    for field in self.format.unshared_fields():
-                        record_shape = data_dict[field].shape
-                        # pads are (0, n) for each dimension, where n is how
-                        # many more elements the current record has in this
-                        # dimension over the max seen so far.
-                        # First dimension is num_records, which shouldn't
-                        # change.
-                        pads = [(0, 0)]
-                        pads.extend([(0, max(0, a-b)) for (a, b) in zip(
-                            record_shape, field_dimensions[field])])
-                        field_dimensions[field] = [max(a, b) for (a, b) in zip(
-                            record_shape, field_dimensions[field])]
-
-                        # Determine the value to pad the arrays with
-                        if field in self.format.single_element_types():
-                            datatype = self.format.single_element_types(
-                                )[field]
-                        else:  # field in array_dtypes
-                            datatype = self.format.array_dtypes()[field]
-                        if datatype is np.int64 or datatype is np.uint32:
-                            constant = -1
-                        else:
-                            constant = np.NaN
-
-                        new_data_dict[field] = np.pad(
-                            new_data_dict[field], pads, 'constant',
-                            constant_values=constant)
-
-                # Fill the unshared and array-only fields
+                # Fill the unshared and array-only fields for this record
                 for field in self.format.unshared_fields():
                     empty_array = new_data_dict[field]
                     if type(data_dict[field]) == np.ndarray:
@@ -433,8 +440,6 @@ class BorealisRestructure(object):
                     else:  # not an array, num_records is the only dimension
                         empty_array[rec_idx] = data_dict[field]
 
-                first_time = False
-
             attribute_types = self.format.array_single_element_types()
             dataset_types = self.format.array_array_dtypes()
             unshared_fields = self.format.unshared_fields()
@@ -442,7 +447,8 @@ class BorealisRestructure(object):
                 attribute_types, dataset_types, unshared_fields)
             dd.io.save(self.outfile_name, new_data_dict,
                        compression=self.compression)
-        except Exception as err:
+        #except Exception as err:
+        except TypeError as err:
             raise borealis_exceptions.BorealisRestructureError(
                 'Records for {}: Error restructuring {} from site to array '
                 'style: {}'.format(self.infile_name, self.format.__name__, err)
@@ -498,3 +504,21 @@ class BorealisRestructure(object):
                             dtstr=record_name)
         sp.run(cmd.split())
         os.remove(tmp_filename)
+
+
+if __name__ == "__main__":
+    if True:
+        infile = '/home/kevin/restructure_test/20220306.2200.00.sas.0.antennas_iq.hdf5.site'
+        outfile = '/home/kevin/restructure_test/20220306.2200.00.sas.0.antennas_iq.hdf5'
+        ftype = 'antennas_iq'
+
+    else:
+        infile = '/home/kevin/restructure_test/20220307.2200.00.sas.0.rawacf.hdf5.site'
+        outfile = '/home/kevin/restructure_test/20220307.2200.00.sas.0.rawacf.hdf5'
+        ftype = 'rawacf'
+
+    outstructure = 'array'
+    memsize = psutil.Process().memory_full_info().uss / 1024 / 1024
+    print(f"mem main: {memsize}")
+    print(f"infile: {infile}, outfile: {outfile}, ftype: {ftype}, outstruct: {outstructure}")
+    BorealisRestructure(infile, outfile, ftype, outstructure)

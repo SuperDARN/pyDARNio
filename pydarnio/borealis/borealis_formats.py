@@ -47,6 +47,7 @@ See Also
 
 import copy
 import numpy as np
+from typing import List
 
 from collections import OrderedDict
 
@@ -196,6 +197,36 @@ class BorealisRawacfv0_4(BaseFormat):
                 new_records[key][field] = new_records[key][field].flatten()
 
         return new_records
+
+    @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        Raises
+        ------
+
+        """
+        fields_max_dims = super(BorealisRawacfv0_4,
+                                cls).site_get_max_dims(filename,
+                                                       unshared_parameters)
+        # Now change the main_acfs, int_acfs and xcfs dicts to maximum required dims
+        # TODO
+
+        return fields_max_dims
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -570,6 +601,36 @@ class BorealisBfiqv0_4(BaseFormat):
         return new_records
 
     @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        Raises
+        ------
+
+        """
+        fields_max_dims = super(BorealisBfiqv0_4,
+                                cls).site_get_max_dims(filename,
+                                                       unshared_parameters)
+        # Now change the data dict to maximum required dims
+        # TODO
+
+        return fields_max_dims
+
+    @classmethod
     def is_restructureable(cls) -> bool:
         """
         See BaseFormat class for description and use of this method.
@@ -866,7 +927,7 @@ class BorealisAntennasIqv0_4(BaseFormat):
         return num_samps
 
     @staticmethod
-    def reshape_site_arrays(records: OrderedDict) -> OrderedDict:
+    def reshape_site_arrays(records: OrderedDict, max_num_seqs, max_num_beams) -> OrderedDict:
         """
         See BaseFormat class for description and use of this method.
 
@@ -899,6 +960,8 @@ class BorealisAntennasIqv0_4(BaseFormat):
 
         return new_records
 
+
+
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
         """
@@ -930,6 +993,37 @@ class BorealisAntennasIqv0_4(BaseFormat):
                 new_records[key][field] = new_records[key][field].flatten()
 
         return new_records
+
+    @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        Raises
+        ------
+
+        """
+        fields_max_dims = super(BorealisAntennasIqv0_4,
+                                cls).site_get_max_dims(filename,
+                                                       unshared_parameters)
+        # Now change the data dict to maximum required dims
+        # max_num_seqs_index = np.where(records[key]['data_descriptors'] == 'num_sequences')
+        # record_dimensions[max_num_seqs_index] = max_fields_dims['sqn_timestamps']
+
+        return fields_max_dims
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -1215,6 +1309,36 @@ class BorealisRawrfv0_4(BaseFormat):
                 new_records[key][field] = new_records[key][field].flatten()
 
         return new_records
+
+    @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        Raises
+        ------
+
+        """
+        fields_max_dims = super(BorealisRawrfv0_4,
+                                cls).site_get_max_dims(filename,
+                                                       unshared_parameters)
+        # Now adjust the data dict dims to maximum required size
+        fields_max_dims
+
+        return fields_max_dims
 
     @classmethod
     def is_restructureable(cls) -> bool:
