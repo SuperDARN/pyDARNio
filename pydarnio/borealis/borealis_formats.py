@@ -46,6 +46,7 @@ See Also
 """
 
 import copy
+import h5py
 import numpy as np
 from typing import List
 
@@ -220,13 +221,25 @@ class BorealisRawacfv0_4(BaseFormat):
         ------
 
         """
-        fields_max_dims = super(BorealisRawacfv0_4,
-                                cls).site_get_max_dims(filename,
-                                                       unshared_parameters)
-        # Now change the main_acfs, int_acfs and xcfs dicts to maximum required dims
-        # TODO
+        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisRawacfv0_4,
+                                                                  cls).site_get_max_dims(filename,
+                                                                                         unshared_parameters)
 
-        return fields_max_dims
+        # Now change the main_acfs, int_acfs and xcfs dicts to maximum required dims
+
+        # Get the num_ranges and num_lags fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            _, num_ranges, num_lags = site_file[record_name]['correlation_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_correlation_dims = (max_num_beams, num_ranges, num_lags)
+        fields_max_dims['main_acfs'] = reshaped_correlation_dims
+        fields_max_dims['intf_acfs'] = reshaped_correlation_dims
+        fields_max_dims['xcfs'] = reshaped_correlation_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -622,13 +635,21 @@ class BorealisBfiqv0_4(BaseFormat):
         ------
 
         """
-        fields_max_dims = super(BorealisBfiqv0_4,
-                                cls).site_get_max_dims(filename,
-                                                       unshared_parameters)
-        # Now change the data dict to maximum required dims
-        # TODO
+        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisBfiqv0_4,
+                                                                  cls).site_get_max_dims(filename,
+                                                                                         unshared_parameters)
 
-        return fields_max_dims
+        # Get the num_ant_arrays and num_samps fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            num_ant_arrays, _, _, num_samps = site_file[record_name]['data_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_data_dims = (num_ant_arrays, max_num_sequences, max_num_beams, num_samps)
+        fields_max_dims['data'] = reshaped_data_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -927,7 +948,7 @@ class BorealisAntennasIqv0_4(BaseFormat):
         return num_samps
 
     @staticmethod
-    def reshape_site_arrays(records: OrderedDict, max_num_seqs, max_num_beams) -> OrderedDict:
+    def reshape_site_arrays(records: OrderedDict) -> OrderedDict:#, max_num_seqs, max_num_beams) -> OrderedDict:
         """
         See BaseFormat class for description and use of this method.
 
@@ -1016,14 +1037,21 @@ class BorealisAntennasIqv0_4(BaseFormat):
         ------
 
         """
-        fields_max_dims = super(BorealisAntennasIqv0_4,
-                                cls).site_get_max_dims(filename,
-                                                       unshared_parameters)
-        # Now change the data dict to maximum required dims
-        # max_num_seqs_index = np.where(records[key]['data_descriptors'] == 'num_sequences')
-        # record_dimensions[max_num_seqs_index] = max_fields_dims['sqn_timestamps']
+        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisAntennasIqv0_4,
+                                                                  cls).site_get_max_dims(filename,
+                                                                                         unshared_parameters)
 
-        return fields_max_dims
+        # Get the num_antennas and num_samps fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            num_antennas, _, num_samps = site_file[record_name]['data_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_data_dims = (num_antennas, max_num_sequences, num_samps)
+        fields_max_dims['data'] = reshaped_data_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -1332,13 +1360,21 @@ class BorealisRawrfv0_4(BaseFormat):
         ------
 
         """
-        fields_max_dims = super(BorealisRawrfv0_4,
-                                cls).site_get_max_dims(filename,
-                                                       unshared_parameters)
-        # Now adjust the data dict dims to maximum required size
-        fields_max_dims
+        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisRawrfv0_4,
+                                                                  cls).site_get_max_dims(filename,
+                                                                                         unshared_parameters)
 
-        return fields_max_dims
+        # Get the num_antennas and num_samps fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            num_antennas, _, num_samps = site_file[record_name]['data_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_data_dims = (num_antennas, max_num_sequences, num_samps)
+        fields_max_dims['data'] = reshaped_data_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     @classmethod
     def is_restructureable(cls) -> bool:

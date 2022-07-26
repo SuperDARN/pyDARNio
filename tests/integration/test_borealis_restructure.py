@@ -17,10 +17,9 @@ import logging
 import numpy as np
 import os
 import unittest
+import pydarnio
 
 from collections import OrderedDict
-
-import pydarnio import BorealisRestructure
 
 pydarnio_logger = logging.getLogger('pydarnio')
 

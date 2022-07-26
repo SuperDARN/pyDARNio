@@ -44,7 +44,7 @@ from typing import Union
 from collections import OrderedDict
 
 from pydarnio import borealis_exceptions, borealis_formats
-from borealis_utilities import BorealisUtilities 
+from .borealis_utilities import BorealisUtilities
 
 import sys
 import psutil
@@ -221,6 +221,7 @@ class BorealisRestructure(object):
                 'Records for {}: File format {} not recognized as '
                 'restructureable from array to site style'
                 ''.format(self.infile_name, self.format.__name__))
+
     @profile
     def _array_to_site_restructure(self):
         """
@@ -337,15 +338,16 @@ class BorealisRestructure(object):
             num_records = len(self.record_names)
             first_time = True
             # get array dims of the unshared fields arrays
-            max_field_dims, max_num_seqs, max_num_beams = BorealisUtilities.site_get_max_dims(
+            max_field_dims, max_num_sequences, max_num_beams = self._format.site_get_max_dims(
                 self.infile_name,
                 self.format.unshared_fields())
 
             for rec_idx, record_name in enumerate(self.record_names):
+
                 record = dd.io.load(self.infile_name,
                                     '/{}'.format(record_name))
-                if rec_idx < 2:
-                    continue
+                # if rec_idx < 2:
+                #     continue
                 # some fields are linear in site style and need to be
                 # reshaped.
                 # Pass in record nested in a dictionary, as
@@ -388,14 +390,6 @@ class BorealisRestructure(object):
 
                 # write the unshared fields, initializing empty arrays first
                 if first_time:
-                    # Need to get the reshaped arrays dims
-                    for field, val in data_dict.items():
-                        if field in max_field_dims.keys():
-                            if len(val.shape) != len(max_field_dims[field]):
-                                max_field_dims[field] = val.shape
-                                # Unfortunately this won't work, as the num sequences value is in here... so need another way to get around this. THis will only work if the first record has the max num sequences.
-                                # OR WILL IT?!?! NO, it won't. Need to reshape the data dict to max dimensions afterwards.
-
                     # all fields to become arrays
                     for field, dims in max_field_dims.items():
                         array_dims = [num_records]
@@ -422,6 +416,7 @@ class BorealisRestructure(object):
                         else:
                             empty_array[:] = np.NaN
                         new_data_dict[field] = empty_array
+                    first_time = False
 
                 # Fill the unshared and array-only fields for this record
                 for field in self.format.unshared_fields():

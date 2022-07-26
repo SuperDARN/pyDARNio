@@ -584,6 +584,8 @@ class BaseFormat():
                         # TypeError on booleans (ie: scan_start_marker)
                         # KeyError if field is dataset instead of attribute
                         field_value = site_file[record_name].attrs[field]
+                        if field == 'num_sequences':
+                            max_num_sequences = max(max_num_sequences, field_value)
                     except (KeyError, TypeError) as e:
                         try:
                             # Raises KeyError if field DNE as dataset
@@ -593,12 +595,8 @@ class BaseFormat():
                         # Initialize shape to first record's field dimensions
                         if rec_idx == 0:
                             fields_max_dims[field] = field_shape
-                            if field == 'sqn_timestamps' and \
-                               field_shape[0] > max_num_sequences:
-                                max_num_sequences = field_shape[0]
-                            if field == 'beam_nums' and \
-                                    field_shape[0] > max_num_beams:
-                                max_num_beams = field_shape[0]
+                            if field == 'beam_nums':
+                                max_num_beams = max(field_shape[0], max_num_beams)
                         else:
                             # Update dims to keep largest for all records
                             new_shape = map(lambda dima, dimb: max(dima, dimb),
