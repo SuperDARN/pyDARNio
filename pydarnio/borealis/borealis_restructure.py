@@ -47,8 +47,6 @@ from pydarnio import borealis_exceptions, borealis_formats
 from .borealis_utilities import BorealisUtilities
 
 import sys
-import psutil
-from memory_profiler import profile
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 
@@ -151,8 +149,6 @@ class BorealisRestructure(object):
         if self.infile_name == self.outfile_name:
             raise borealis_exceptions.ConvertFileOverWriteError(
                     self.infile_name)
-        memsize = psutil.Process().memory_full_info().uss / 1024 / 1024
-        print(f'memsize {memsize}')
 
         self.record_names = BorealisUtilities.get_record_names(infile_name)
         self.borealis_structure = BorealisUtilities.\
@@ -161,8 +157,6 @@ class BorealisRestructure(object):
             self.infile_name, self.record_names, self.borealis_structure)
         self._format = borealis_formats.borealis_version_dict[
             self.software_version][self.borealis_filetype]
-        memsize = psutil.Process().memory_full_info().uss / 1024 / 1024
-        print(f'memsize {memsize}')
 
         self.restructure()
 
@@ -199,7 +193,6 @@ class BorealisRestructure(object):
         """
         return self._format
 
-    @profile
     def restructure(self):
         """
         Top-level method for restructuring Borealis HDF5 files. Calls
@@ -222,7 +215,6 @@ class BorealisRestructure(object):
                 'restructureable from array to site style'
                 ''.format(self.infile_name, self.format.__name__))
 
-    @profile
     def _array_to_site_restructure(self):
         """
         Performs restructuring on an array-structured Borealis HDF5 file,
@@ -319,7 +311,7 @@ class BorealisRestructure(object):
                 'style: {}'
                 ''.format(self.infile_name, self.format.__name__, err)) \
                     from err
-    @profile
+
     def _site_to_array_restructure(self):
         """
         Performs restructuring on a site-structured Borealis HDF5 file,
@@ -513,7 +505,5 @@ if __name__ == "__main__":
         ftype = 'rawacf'
 
     outstructure = 'array'
-    memsize = psutil.Process().memory_full_info().uss / 1024 / 1024
-    print(f"mem main: {memsize}")
     print(f"infile: {infile}, outfile: {outfile}, ftype: {ftype}, outstruct: {outstructure}")
     BorealisRestructure(infile, outfile, ftype, outstructure)
