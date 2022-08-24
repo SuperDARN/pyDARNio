@@ -20,17 +20,17 @@ pyDARNio is released! This is a patch release to address the following issues:
 
 ## Documentation
 
-pyDARNio's documentation can found [here](https://pyDARNio.readthedocs.io/en/master)
+pyDARNio's documentation can found [here](https://pydarnio.readthedocs.io/en/latest/)
 
 ## Getting Started
 
 
 `pip install pydarnio`
 
-Or read the [installation guide](https://pyDARNio.readthedocs.io/en/master/user/install/).
+Or read the [installation guide](https://pydarnio.readthedocs.io/en/latest/user/install/).
 
-If wish to get access to SuperDARN data please read the [SuperDARN data access documentation](https://pyDARNio.readthedocs.io/en/master/user/superdarn_data/).
-Please make sure to also read the documentation on [**citing superDARN and pydarn**](https://pyDARNio.readthedocs.io/en/master/user/citing/). 
+If wish to get access to SuperDARN data please read the [SuperDARN data access documentation](https://pydarnio.readthedocs.io/en/latest/user/superdarn_data/).
+Please make sure to also read the documentation on [**citing SuperDARN and pydarn**](https://pydarnio.readthedocs.io/en/latest/user/citing/). 
 
 As a quick tutorial on using pyDARNio to read a non-compressed file: 
 ```python
@@ -58,7 +58,7 @@ reader = pydarnio.SDarnRead(fitacf_stream, True)
 records = reader.read_fitacf()
 ```
 
-For more information and tutorials on pyDARNio please see the [tutorial section](https://pyDARNio.readthedocs.io/en/master/)
+For more information and tutorials on pyDARNio please see the [tutorial section](https://pydarnio.readthedocs.io/en/latest/)
 
 ## Getting involved
 
