@@ -948,7 +948,7 @@ class BorealisAntennasIqv0_4(BaseFormat):
         return num_samps
 
     @staticmethod
-    def reshape_site_arrays(records: OrderedDict) -> OrderedDict:#, max_num_seqs, max_num_beams) -> OrderedDict:
+    def reshape_site_arrays(records: OrderedDict) -> OrderedDict:
         """
         See BaseFormat class for description and use of this method.
 

@@ -315,8 +315,7 @@ class BorealisRestructure(object):
 
                 record = dd.io.load(self.infile_name,
                                     '/{}'.format(record_name))
-                # if rec_idx < 2:
-                #     continue
+
                 # some fields are linear in site style and need to be
                 # reshaped.
                 # Pass in record nested in a dictionary, as
