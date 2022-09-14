@@ -46,8 +46,6 @@ from collections import OrderedDict
 from pydarnio import borealis_exceptions, borealis_formats
 from .borealis_utilities import BorealisUtilities
 
-import sys
-
 pyDARNio_log = logging.getLogger('pyDARNio')
 
 
@@ -410,7 +408,8 @@ class BorealisRestructure(object):
             dataset_types = self.format.array_array_dtypes()
             unshared_fields = self.format.unshared_fields()
             BorealisUtilities.check_arrays(self.infile_name, new_data_dict,
-                attribute_types, dataset_types, unshared_fields)
+                                           attribute_types, dataset_types,
+                                           unshared_fields)
             dd.io.save(self.outfile_name, new_data_dict,
                        compression=self.compression)
 
@@ -470,19 +469,3 @@ class BorealisRestructure(object):
                             dtstr=record_name)
         sp.run(cmd.split())
         os.remove(tmp_filename)
-
-
-if __name__ == "__main__":
-    if True:
-        infile = '/home/kevin/restructure_test/20220306.2200.00.sas.0.antennas_iq.hdf5.site'
-        outfile = '/home/kevin/restructure_test/20220306.2200.00.sas.0.antennas_iq.hdf5'
-        ftype = 'antennas_iq'
-
-    else:
-        infile = '/home/kevin/restructure_test/20220307.2200.00.sas.0.rawacf.hdf5.site'
-        outfile = '/home/kevin/restructure_test/20220307.2200.00.sas.0.rawacf.hdf5'
-        ftype = 'rawacf'
-
-    outstructure = 'array'
-    print(f"infile: {infile}, outfile: {outfile}, ftype: {ftype}, outstruct: {outstructure}")
-    BorealisRestructure(infile, outfile, ftype, outstructure)
