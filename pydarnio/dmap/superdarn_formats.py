@@ -165,7 +165,21 @@ class Fitacf():
         'sd_s': 'f',
         'sd_phi': 'f'}
 
-    elevation_fields = {
+    xcf_fields = {
+        'phi0': 'f',
+        'phi0_e': 'f',
+        'elv': 'f',
+        'x_sd_phi': 'f'
+    }
+
+
+    xcf_fields_fitacf3 = {
+        'elv_fitted': 'f',
+        'elv_error': 'f'
+    }
+    
+    
+    xcf_fields_fitacf2 = {
         'x_qflg': 'c',
         'x_gflg': 'c',
         'x_p_l': 'f',
@@ -178,15 +192,12 @@ class Fitacf():
         'x_w_l_e': 'f',
         'x_w_s': 'f',
         'x_w_s_e': 'f',
-        'phi0': 'f',
-        'phi0_e': 'f',
-        'elv': 'f',
         'elv_low': 'f',
         'elv_high': 'f',
         'x_sd_l': 'f',
         'x_sd_s': 'f',
-        'x_sd_phi': 'f'
-    }
+    }    
+
 
 
 class Grid():

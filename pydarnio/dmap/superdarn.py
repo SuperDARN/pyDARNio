@@ -436,13 +436,16 @@ class SDarnRead(DmapRead):
         pyDARNio_log.info("Reading Fitacf file: {}".format(self.dmap_file))
 
         # We need to separate the fields into subsets because fitacf fitting
-        # methods 2.5 and 3.0 do not include a subset of fields if the data
-        # quality is not "good". See missing_field_check method in
-        # SDarnUtilities for more information.
+        # method v2.5 does not include a subset of fields if the data
+        # quality is not "good". Additionally, the names of the XCF fields
+        # are different for fitacf v2.5 and v3.0. See missing_field_check method 
+        # in SDarnUtilities for more information.
         file_struct_list = [superdarn_formats.Fitacf.types,
                             superdarn_formats.Fitacf.extra_fields,
                             superdarn_formats.Fitacf.fitted_fields,
-                            superdarn_formats.Fitacf.elevation_fields]
+                            superdarn_formats.Fitacf.xcf_fields,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf3,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf2]
         self._read_darn_records(file_struct_list)
         self.records = dmap2dict(self._dmap_records)
         return self.records
@@ -663,7 +666,10 @@ class SDarnWrite(DmapWrite):
         file_struct_list = [superdarn_formats.Fitacf.types,
                             superdarn_formats.Fitacf.extra_fields,
                             superdarn_formats.Fitacf.fitted_fields,
-                            superdarn_formats.Fitacf.elevation_fields]
+                            superdarn_formats.Fitacf.xcf_fields,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf3,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf2
+                           ]
         self.superDARN_file_structure_to_bytes(file_struct_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
