@@ -143,7 +143,8 @@ class Fitacf():
     extra_fields = {
             'ifmode': 'h',
             'mplgexs': 'h',
-            }
+            'tdiff': 'f',
+            'algorithm': 's'}
     # Fields added if the data is good and can be
     # fitted
     fitted_fields = {
