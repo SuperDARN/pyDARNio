@@ -774,7 +774,8 @@ class SDarnWrite(DmapWrite):
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
-    def superDARN_file_structure_to_bytes(self, file_struct_list: List[dict]):
+    def superDARN_file_structure_to_bytes(self, file_struct_list: List[dict],
+                                          optional_list: List[dict]):
         """
         Checks the DMAP records are the correct structure of the file type and
         then uses the DmapWrite writing method to covert the record to bytes.
@@ -783,6 +784,9 @@ class SDarnWrite(DmapWrite):
         ----------
         file_struct_list : List[dict]
         A list of possible fields for the given SuperDARN file type
+        optional_list : List[dict]
+        List of dictionaries for possible file structure fields that are
+        optional and thus do not need to be checked if missing
 
         Raises
         ------
@@ -815,7 +819,7 @@ class SDarnWrite(DmapWrite):
             SDarnUtilities.extra_field_check(file_struct_list, record,
                                              self.rec_num)
             SDarnUtilities.missing_field_check(file_struct_list, record,
-                                               self.rec_num)
+                                               self.rec_num, optional_list)
             SDarnUtilities.incorrect_types_check(file_struct_list, record,
                                                  self.rec_num)
             # start converting
