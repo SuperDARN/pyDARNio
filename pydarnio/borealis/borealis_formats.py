@@ -1824,7 +1824,10 @@ class BorealisRawacf(BorealisRawacfv0_5):
             "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
         })
         return single_element_types
 
@@ -1929,7 +1932,10 @@ class BorealisBfiq(BorealisBfiqv0_5):
             "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
         })
         return single_element_types
 
@@ -1970,7 +1976,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
             'gps_to_system_time_diff': [],
             'pulse_phase_offset': [lambda arrays, record_num:
                             0 if (arrays['pulse_phase_offset'].shape[1] == 0)
-                            else 
+                            else
                             list((arrays['num_sequences'][record_num],) +
                             arrays['pulse_phase_offset'][record_num].shape[1:])],
             })
@@ -2040,7 +2046,10 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
         })
         return single_element_types
 
@@ -2140,7 +2149,10 @@ class BorealisRawrf(BorealisRawrfv0_5):
             "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
         })
         return single_element_types
 
