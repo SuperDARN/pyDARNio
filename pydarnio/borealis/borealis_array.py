@@ -117,6 +117,7 @@ class BorealisArrayRead():
         try:
             version = dd.io.load(self.filename,
                                  group='/borealis_git_hash').split('-')[0]
+            version = '.'.join(version.split('.')[:2])      # vX.Y, ignore patch revision
         except ValueError as err:
             raise borealis_exceptions.BorealisStructureError(
                 ' {} Could not find the borealis_git_hash required to '
@@ -361,6 +362,7 @@ class BorealisArrayWrite():
         # 'vX.X'
         try:
             version = self._arrays['borealis_git_hash'].split('-')[0]
+            version = '.'.join(version.split('.')[:2])      # vX.Y, ignore patch revision
         except KeyError as err:
             raise borealis_exceptions.BorealisStructureError(
                 ' {} Could not find the borealis_git_hash required to '

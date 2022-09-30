@@ -128,6 +128,7 @@ class BorealisSiteRead():
             version = dd.io.load(self.filename,
                                  group='/'+self._record_names[0]
                                  )['borealis_git_hash'].split('-')[0]
+            version = '.'.join(version.split('.')[:2])      # vX.Y, ignore patch revision
         except (IndexError, ValueError) as err:
             # if this is an array style file, it will raise
             # IndexError on the array.
@@ -376,6 +377,7 @@ class BorealisSiteWrite():
         try:
             version = self._records[self.record_names[0]][
                 'borealis_git_hash'].split('-')[0]
+            version = '.'.join(version.split('.')[:2])      # get only vX.Y, ignore patch revision
         except (IndexError, ValueError) as err:
             # if this is an array style file, it will raise
             # IndexError on the array.
