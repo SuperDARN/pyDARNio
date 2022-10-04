@@ -43,3 +43,4 @@ from .borealis import borealis_formats
 from .borealis.borealis import BorealisRead
 from .borealis.borealis import BorealisWrite
 from .borealis.borealis_convert import BorealisConvert
+from .borealis.borealis_restructure import BorealisRestructure
