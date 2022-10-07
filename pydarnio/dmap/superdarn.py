@@ -322,7 +322,7 @@ class SDarnRead(DmapRead):
 
     # helper function that could be used parallelization
     def _read_darn_record(self, format_fields: List[dict],
-                          optional_list: list = []):
+                          optional_list: Union[List, None] = None):
         """
         Read SuperDARN DMAP records from the DMAP byte array. Several SuperDARN
         field checks are done to insure the integrity of the file.
@@ -357,6 +357,8 @@ class SDarnRead(DmapRead):
                         for incorrect data types for SuperDARN file fields
         """
         record = self.read_record()
+        if optional_list is None:
+            optional_list = []
         SDarnUtilities.missing_field_check(format_fields, record, self.rec_num,
                                            optional_list)
         SDarnUtilities.extra_field_check(format_fields, record, self.rec_num)
@@ -365,7 +367,7 @@ class SDarnRead(DmapRead):
         self._dmap_records.append(record)
 
     def _read_darn_records(self, format_fields: List[dict],
-                           optional_list: list = []):
+                           optional_list: Union[List, None] = None):
         """
         loops over the bytes in the in the SuperDARN byte array and
         calls the helper method read the SuperDARN records from the file/stream
@@ -384,6 +386,8 @@ class SDarnRead(DmapRead):
         --------
         _read_darn_record
         """
+        if optional_list is None:
+            optional_list = []
         self.rec_num = 0  # record number, for exception info
         while self.cursor < self.dmap_end_bytes:
             self._read_darn_record(format_fields, optional_list)
@@ -607,7 +611,8 @@ class SDarnWrite(DmapWrite):
         pyDARNio_log.info("Writing Iqdat file: {}".format(self.filename))
 
         file_struct_list = [superdarn_formats.Iqdat.types]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+        optional_list = [superdarn_formats.Iqdat.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
@@ -643,7 +648,8 @@ class SDarnWrite(DmapWrite):
                             superdarn_formats.Rawacf.cross_correlation_field,
                             superdarn_formats.Rawacf.digitizing_field,
                             superdarn_formats.Rawacf.fittex_field]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+        optional_list = [superdarn_formats.Rawacf.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
@@ -726,7 +732,8 @@ class SDarnWrite(DmapWrite):
         file_struct_list = [superdarn_formats.Grid.types,
                             superdarn_formats.Grid.fitted_fields,
                             superdarn_formats.Grid.extra_fields]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+        optional_list = [superdarn_formats.Grid.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
@@ -770,7 +777,8 @@ class SDarnWrite(DmapWrite):
                             superdarn_formats.Map.fit_fields,
                             superdarn_formats.Map.model_fields,
                             superdarn_formats.Map.hmb_fields]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+        optional_list = [superdarn_formats.Map.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
