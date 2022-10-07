@@ -6,7 +6,7 @@ author(s) Marina Schmidt-->
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) 
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/superdarn/pyDARNio)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3727270.svg)](https://doi.org/10.5281/zenodo.3727270)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4009470.svg)](https://doi.org/10.5281/zenodo.4009470)
 
 
 
@@ -22,6 +22,10 @@ You can check your python version with
 
 `$ python --version` or 
 `$ python3 --version`
+
+!!! Important 
+    It is recommended to install pyDARNio via `pip`; however, please cite via the [DOI for the release](https://doi.org/10.5281/zenodo.4009470) 
+
 
 ## Dependencies
 
@@ -47,6 +51,9 @@ Instructions can be found here [virtual environment](https://packaging.python.or
 2. `$ python3 -m virtualenv <environment name>`  
 * `$ source <environment name>/bin/activate`
 * `$ pip install pydarnio`
+
+!!! Note
+    If you have already installed `pydarnio` you can use `pip3 install --upgrade pydarnio`
 
 !!! Note
     If you have multiple versions of python 3 on your machine, you can access a specific version by: `python<version number>`. 

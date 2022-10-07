@@ -9,7 +9,7 @@ about: Notify that a new feature is being planned
 
 **module**:  *potential_filename.py* 
 
-**package**: *which directory should it go in*
+**package**: *which directory it should go in*
 
 ## Scope
 
@@ -21,7 +21,7 @@ about: Notify that a new feature is being planned
 
 ## Description
 
-*Please provide a description of the new feature and if will improve or solve a problem.*
+*Please provide a description of the new feature and if it will improve or solve a problem.*
 
 ### pyDARNio Checklist 
 
@@ -33,15 +33,15 @@ about: Notify that a new feature is being planned
 
 ### Development help
 
-*pyDARNio does not have a dedicated development team on hand to full feature development. 
-However, if you are able to provide some time and help, the community will try to aid you the best way they can in making your feature possible.*
+*pyDARNio does not have a dedicated development team on hand for full feature development. 
+However, if you are able to provide some time and help, the community will try to aid you in the best way they can to make your feature possible.*
 
 *If you need help please indicate what expertise you are looking for:*
 - [ ] developer help with design and integration of code
 - [ ] scientific help with ensuring what you develop is scientifically correct/accurate
 - [ ] project management to help organize what steps need to be taken to make this possible 
 
-*Please also provide any other information you may need help with not including testing/reviewers of code*
+*Please also provide any other information you may need help with, not including testing/reviewers of code*
 
 ## User Interface 
 
