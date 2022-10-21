@@ -80,6 +80,7 @@ class Rawacf():
     cross_correlation_field = {
             'xcfd': 'f'
             }
+    optional_fields = {}     # future-proofing
 
 
 class Fitacf():
@@ -254,6 +255,7 @@ class Grid():
         'vector.wdt.median': 'f',
         'vector.wdt.sd': 'f'
     }
+    optional_fields = {}    # future-proofing
 
 
 class Map():
@@ -366,6 +368,7 @@ class Map():
         'vector.wdt.median': 'f',
         'vector.wdt.sd': 'f',
     }
+    optional_fields = {}    # future-proofing
 
 
 class Iqdat():
@@ -434,3 +437,4 @@ class Iqdat():
         'tsze': 'i',
         'data': 'h',
         }
+    optional_fields = {}    # future-proofing
