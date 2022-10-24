@@ -34,7 +34,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # Setup information
 setup(
     name="pydarnio",
-    version="1.1.1",
+    version="1.2.0",
     long_description=long_description,
     long_description_content_type='text/markdown',
     description="Python library for reading and writing SuperDARN data",
