@@ -1126,7 +1126,7 @@ class BaseFormat():
                     # dims with a determined max value
                     data_buffer = data_dict[k][field]
                     buffer_shape = data_buffer.shape
-                    index_slice = [slice(0, i) for i in buffer_shape]
+                    index_slice = [slice(0, i) for i in buffer_shape if i != 0]
                     # insert record index at start of array's slice list
                     index_slice.insert(0, rec_idx)
                     index_slice = tuple(index_slice)
@@ -1362,7 +1362,7 @@ class BaseFormat():
         first_key = list(records.keys())[0]
         max_ppo_shape = records[first_key]["pulse_phase_offset"].shape
         if max_ppo_shape[0] == 0:
-            return -1
+            return 0
 
         for k in records:
             shape = records[k]["pulse_phase_offset"].shape
