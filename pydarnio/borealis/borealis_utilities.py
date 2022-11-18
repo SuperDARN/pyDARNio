@@ -584,5 +584,6 @@ class BorealisUtilities():
                 ''.format(filename))
 
         version = borealis_git_hash.split('-')[0]
+        version = '.'.join(version.split('.')[:2])  # vX.Y, ignore patch revision
 
         return version
