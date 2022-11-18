@@ -329,8 +329,8 @@ class BorealisConvert(BorealisRead):
             if self._is_convertible_to_iqdat():
                 self._convert_bfiq_to_iqdat()
         elif self.sdarn_filetype == 'rawacf':
-            if self._is_convertible_to_rawacf():
-                self._convert_rawacf_to_rawacf()
+            # if self._is_convertible_to_rawacf():
+            self._convert_rawacf_to_rawacf()
         else:  # nothing else is currently supported
             raise borealis_exceptions.BorealisConversionTypesError(
                 self.sdarn_filename, self.borealis_filetype,

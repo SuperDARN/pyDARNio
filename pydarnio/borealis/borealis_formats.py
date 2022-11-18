@@ -2198,10 +2198,11 @@ class BorealisBfiq(BorealisBfiqv0_5):
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             'pulse_phase_offset': [lambda arrays, record_num:
-                            0 if (arrays['pulse_phase_offset'].shape[1] == 0)
-                            else
-                            list((arrays['num_sequences'][record_num],) +
-                            arrays['pulse_phase_offset'][record_num].shape[1:])],
+                                   -1 if arrays['pulse_phase_offset'].size < arrays['num_sequences'][record_num]
+                                   else
+                                   list((arrays['num_sequences'][record_num],)
+                                        + arrays['pulse_phase_offset'][
+                                              record_num].shape[1:])],
             })
         return unshared_fields_dims
 
@@ -2312,7 +2313,11 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             'pulse_phase_offset': [lambda arrays, record_num:
-                                   arrays['pulse_phase_offset'][record_num]],
+                                   -1 if arrays['pulse_phase_offset'].size < arrays['num_sequences'][record_num]
+                                   else
+                                   list((arrays['num_sequences'][record_num],)
+                                        + arrays['pulse_phase_offset'][
+                                              record_num].shape[1:])],
             })
         return unshared_fields_dims
 

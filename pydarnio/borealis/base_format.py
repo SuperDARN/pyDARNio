@@ -174,6 +174,14 @@ class BaseFormat():
     array_array_dtypes: dict
         fields in the array files that are made of numpy arrays, with their
         given data type.
+    string_fields: list
+        List of all fields that contain string data.
+    single_string_fields: list
+        List of single element fields which are string types.
+    array_string_fields: list
+        List of array fields which are string types.
+    bool_types: list
+        List of single element fields that have boolean data types.
     _site_to_array(data_dict): dict
         Convert an OrderedDict of site data to array data using the information
         provided for the specific data format.
@@ -590,6 +598,18 @@ class BaseFormat():
                         try:
                             # Raises KeyError if field DNE as dataset
                             field_shape = site_file[record_name][field].shape
+                            if field == 'pulse_phase_offset':
+                                # Borealis files are written with deepdish, and this field is sometimes written
+                                # as an empty array. If read in by h5py, h5py reads the dimensions as the data
+                                # so here we check to catch that case.
+                                actual_size = site_file[record_name][field].size
+                                num_sequences = site_file[record_name]['data_dimensions'][1]
+                                num_pulses = site_file[record_name]['pulses'].size
+                                if actual_size != num_sequences * num_pulses:
+                                    if actual_size == 1:    # This is the special case
+                                        field_shape = (0,)
+                                    else:
+                                        raise ValueError(f'Unexpected shape of field {field}: {field_shape}')
                         except KeyError:
                             continue
                         # Initialize shape to first record's field dimensions
@@ -934,6 +954,63 @@ class BaseFormat():
         return array_array_dtypes
 
     @classmethod
+    def string_fields(cls):
+        """
+        Retrieve the fields of the format that hold strings
+        in the records.
+
+        Returns
+        -------
+        string_fields
+            All the string fields in records of the
+            format, as a list.
+        """
+        return cls.single_string_fields() + cls.array_string_fields()
+
+    @classmethod
+    def single_string_fields(cls):
+        """
+        Retrieve the fields of the format that hold single element strings
+        in the records.
+
+        Returns
+        -------
+        string_fields
+            All the single element string fields in records of the
+            format, as a list.
+        """
+        return [k for k, v in cls.single_element_types().items() if v == np.str_]
+
+    @classmethod
+    def array_string_fields(cls):
+        """
+        Retrieve the fields of the format that hold arrays of strings
+        in the records.
+
+        Returns
+        -------
+        string_fields
+            All the fields with arrays of strings in records of the
+            format, as a list.
+        """
+        return [k for k, v in cls.array_dtypes().items() if v == np.str_]
+
+    @classmethod
+    def bool_types(cls):
+        """
+        Retrieve the fields of the format that hold boolean data
+        in the records.
+
+        Returns
+        -------
+        bool_dtypes
+            All the boolean fields in records of the
+            format, as a list.
+        """
+
+        return [k for k, v in cls.single_element_types().items() if v == np.bool_]
+
+    @classmethod
     def _site_to_array(cls, data_dict: OrderedDict) -> dict:
         """
         Base function for converting site Borealis data to
@@ -1259,7 +1336,6 @@ class BaseFormat():
 
         return find_max_field_len
 
-    
     @staticmethod
     def find_max_pulse_phase_offset(records: OrderedDict) -> int:
         """
@@ -1286,7 +1362,7 @@ class BaseFormat():
         first_key = list(records.keys())[0]
         max_ppo_shape = records[first_key]["pulse_phase_offset"].shape
         if max_ppo_shape[0] == 0:
-            return 0
+            return -1
 
         for k in records:
             shape = records[k]["pulse_phase_offset"].shape

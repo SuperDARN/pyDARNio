@@ -257,6 +257,7 @@ class BorealisRestructure(object):
                     else:  # field in array_dtypes
                         # need to get the dims correct,
                         # not always equal to the max
+                        field_flag = False
                         with h5py.File(self.infile_name, 'r') as f:
                             site_dims = [dimension_function(f, record_num)
                                          for dimension_function in
@@ -269,12 +270,18 @@ class BorealisRestructure(object):
                                         dims.append(i)
                                 else:
                                     dims.append(dim)
+                            if -1 in dims:
+                                field_flag = True
 
                             site_dims = dims
-                            index_slice = [slice(0, i) for i in site_dims]
+                            index_slice = [slice(0, i) for i in site_dims if i != -1]
                             index_slice.insert(0, record_num)
                             index_slice = tuple(index_slice)
-                            record_dict[field] = f[field][index_slice]
+                            # If there was an incorrect dimension (-1 in dims), then use deepdish to extract the field
+                            if field_flag:
+                                record_dict[field] = dd.io.load(self.infile_name, f'/{field}')[index_slice]
+                            else:
+                                record_dict[field] = f[field][index_slice]
                 # Wrap in another dict to use the format method
                 record_dict = OrderedDict({key: record_dict})
                 record_dict = self.format.flatten_site_arrays(record_dict)
@@ -307,101 +314,120 @@ class BorealisRestructure(object):
             num_records = len(self.record_names)
             first_time = True
             # get array dims of the unshared fields arrays
-            max_field_dims, max_num_sequences, max_num_beams = self._format.site_get_max_dims(
-                self.infile_name,
-                self.format.unshared_fields())
+            max_field_dims, max_num_sequences, max_num_beams = self.format.site_get_max_dims(
+                self.infile_name, self.format.unshared_fields())
 
-            for rec_idx, record_name in enumerate(self.record_names):
+            # Functions that get called on each record, storing them here for readability
+            array_specific_fields_funcs = self.format.array_specific_fields_iterative_generator()
 
-                record = dd.io.load(self.infile_name,
-                                    '/{}'.format(record_name))
+            with h5py.File(self.infile_name, 'r') as f:
+                for rec_idx, record_name in enumerate(self.record_names):
 
-                # some fields are linear in site style and need to be
-                # reshaped.
-                # Pass in record nested in a dictionary, as
-                # reshape_site_arrays is for dealing with key, val pairs of
-                # timestamp, record. Unpack the dictionary returned
-                data_dict = self.format.reshape_site_arrays(
-                    {'tmp': record})['tmp']
+                    record = f[record_name]     # returns a view, doesn't do full loading into memory
+                    rec_keys = list(record.keys())
+                    rec_dict = {k: record[k][()] for k in rec_keys}
 
-                # write shared fields to dictionary
-                if first_time:
-                    for field in self.format.shared_fields():
-                        new_data_dict[field] = data_dict[field]
+                    # Some things are stored as attributes, must be loaded in separately
+                    rec_attrs = [k for k in record.attrs.keys() if k not in
+                                 ['CLASS', 'TITLE', 'VERSION'] + self.format.bool_types()]
+                    rec_dict.update({k: record.attrs[k] for k in rec_attrs})
+                    # Bitwise fields also need to be handled separately
+                    for field in self.format.bool_types():
+                        rec_dict[field] = dd.io.load(self.infile_name, f'/{record_name}/{field}')
 
-                    for field in self.format.array_specific_fields():
-                        # Field is a constant value, i.e. doesn't depend on
-                        # the data within the file, only the file type
-                        if field not in self.format.\
-                                array_specific_fields_iterative_generator(
-                                    ).keys():
-                            new_data_dict[field] = self.format.\
-                                array_specific_fields_generate(
-                                    )[field]({'tmp': data_dict})
-                        else:
-                            # Initialize array now with correct data type.
-                            dtype = self.format.single_element_types()[field]
-                            new_data_dict[field] = np.empty(num_records,
-                                                            dtype=dtype)
-                            if dtype is np.int64 or dtype is np.uint32:
-                                new_data_dict[field][:] = -1
+                    # some fields are linear in site style and need to be reshaped.
+                    # Pass in record nested in a dictionary, as
+                    # reshape_site_arrays is for dealing with key, val pairs of
+                    # timestamp, record. Unpack the dictionary returned
+                    data_dict = self.format.reshape_site_arrays({'tmp': rec_dict})['tmp']
+
+                    # write shared fields to dictionary
+                    if first_time:
+                        for field in self.format.shared_fields():
+                            value = data_dict[field]
+                            if field not in self.format.string_fields():  # Regular old data
+                                new_data_dict[field] = value
+                            elif field in self.format.single_string_fields():
+                                if isinstance(value, bytes):  # This is how single strings are interpreted by h5py
+                                    new_data_dict[field] = self.format.single_element_types()[field](value)
+                                elif isinstance(value, h5py.Empty):  # Field is empty
+                                    if value.dtype.char == 'S':
+                                        new_data_dict[field] = self.format.single_element_types()[field]('')
+                                    else:
+                                        raise TypeError(f'Unknown datatype for empty field {field}: {value.dtype}')
+                                else:
+                                    raise TypeError(f'Field {field} has unrecognized data: {value}')
+                            elif field in self.format.array_string_fields():
+                                # h5py reads numpy string arrays as contiguous unsigned ints, so we need deepdish here
+                                new_data_dict[field] = dd.io.load(self.infile_name, f'/{record_name}/{field}')
                             else:
-                                new_data_dict[field][:] = np.NaN
+                                raise TypeError(f'Field {field} unrecognized')
 
-                # Add data for this record to all fields that are
-                # array-specific and record-dependent
-                for field in self.format.\
-                        array_specific_fields_iterative_generator().keys():
-                    new_data_dict[field][rec_idx] = self.format.\
-                        array_specific_fields_iterative_generator(
-                            )[field](record)
+                        for field in self.format.array_specific_fields():
+                            # Field is a constant value, i.e. doesn't depend on
+                            # the data within the file, only the file type
+                            if field not in array_specific_fields_funcs.keys():
+                                new_data_dict[field] = self.format.array_specific_fields_generate()[field](
+                                    {'tmp': data_dict})
+                            else:
+                                # Initialize array now with correct data type.
+                                dtype = self.format.single_element_types()[field]
+                                new_data_dict[field] = np.empty(num_records, dtype=dtype)
+                                if dtype is np.int64 or dtype is np.uint32:
+                                    new_data_dict[field][:] = -1
+                                else:
+                                    new_data_dict[field][:] = np.NaN
 
-                # write the unshared fields, initializing empty arrays first
-                if first_time:
-                    # all fields to become arrays
-                    for field, dims in max_field_dims.items():
-                        array_dims = [num_records]
-                        array_dims.extend([i for i in dims])
-                        array_dims = tuple(array_dims)
+                    # Add data for this record to all fields that are
+                    # array-specific and record-dependent
+                    for field in array_specific_fields_funcs.keys():
+                        new_data_dict[field][rec_idx] = array_specific_fields_funcs[field](rec_dict)
 
-                        if field in self.format.single_element_types():
-                            datatype = self.format.single_element_types(
-                                )[field]
-                        else:  # field in array_dtypes
-                            datatype = self.format.array_dtypes()[field]
-                        if datatype == np.unicode_:
-                            # unicode type needs to be explicitly set to
-                            # have multiple chars (256)
-                            datatype = '|U256'
-                        empty_array = np.empty(array_dims, dtype=datatype)
-                        # Some indices may not be filled due to dimensions
-                        # that are maximum values (num_sequences, etc. can
-                        # change between records), so they are initialized
-                        # with a known value first. Initialize floating-
-                        # point values to NaN, and integer values to -1.
-                        if datatype is np.int64 or datatype is np.uint32:
-                            empty_array[:] = -1
-                        else:
-                            empty_array[:] = np.NaN
-                        new_data_dict[field] = empty_array
-                    first_time = False
+                    # write the unshared fields, initializing empty arrays first
+                    if first_time:
+                        # all fields to become arrays
+                        for field, dims in max_field_dims.items():
+                            array_dims = [num_records]
+                            array_dims.extend([i for i in dims])
+                            array_dims = tuple(array_dims)
 
-                # Fill the unshared and array-only fields for this record
-                for field in self.format.unshared_fields():
-                    empty_array = new_data_dict[field]
-                    if type(data_dict[field]) == np.ndarray:
-                        # only fill the correct length, appended NaNs occur
-                        # for dims with a determined max value
-                        data_buffer = data_dict[field]
-                        buffer_shape = data_buffer.shape
-                        index_slice = [slice(0, i) for i in buffer_shape]
-                        # insert record index at start of array's slice list
-                        index_slice.insert(0, rec_idx)
-                        index_slice = tuple(index_slice)
-                        # place data buffer in the correct place
-                        empty_array[index_slice] = data_buffer
-                    else:  # not an array, num_records is the only dimension
-                        empty_array[rec_idx] = data_dict[field]
+                            if field in self.format.single_element_types():
+                                datatype = self.format.single_element_types()[field]
+                            else:  # field in array_dtypes
+                                datatype = self.format.array_dtypes()[field]
+                            if datatype == np.unicode_:
+                                # unicode type needs to be explicitly set to
+                                # have multiple chars (256)
+                                datatype = '|U256'
+                            empty_array = np.empty(array_dims, dtype=datatype)
+                            # Some indices may not be filled due to dimensions
+                            # that are maximum values (num_sequences, etc. can
+                            # change between records), so they are initialized
+                            # with a known value first. Initialize floating-
+                            # point values to NaN, and integer values to -1.
+                            if datatype is np.int64 or datatype is np.uint32:
+                                empty_array[:] = -1
+                            else:
+                                empty_array[:] = np.NaN
+                            new_data_dict[field] = empty_array
+                        first_time = False
+
+                    # Fill the unshared and array-only fields for this record
+                    for field in self.format.unshared_fields():
+                        empty_array = new_data_dict[field]
+                        if type(data_dict[field]) == np.ndarray:
+                            # only fill the correct length, appended NaNs occur
+                            # for dims with a determined max value
+                            data_buffer = data_dict[field]
+                            buffer_shape = data_buffer.shape
+                            index_slice = [slice(0, i) for i in buffer_shape]
+                            # insert record index at start of array's slice list
+                            index_slice.insert(0, rec_idx)
+                            index_slice = tuple(index_slice)
+                            # place data buffer in the correct place
+                            empty_array[index_slice] = data_buffer
+                        else:  # not an array, num_records is the only dimension
+                            empty_array[rec_idx] = data_dict[field]
 
             attribute_types = self.format.array_single_element_types()
             dataset_types = self.format.array_array_dtypes()
