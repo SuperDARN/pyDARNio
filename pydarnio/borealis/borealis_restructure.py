@@ -349,7 +349,8 @@ class BorealisRestructure(object):
                                 new_data_dict[field] = value
                             elif field in self.format.single_string_fields():
                                 if isinstance(value, bytes):  # This is how single strings are interpreted by h5py
-                                    new_data_dict[field] = self.format.single_element_types()[field](value)
+                                    new_data_dict[field] = self.format.single_element_types()[field](
+                                        value.decode('utf-8'))
                                 elif isinstance(value, h5py.Empty):  # Field is empty
                                     if value.dtype.char == 'S':
                                         new_data_dict[field] = self.format.single_element_types()[field]('')
