@@ -774,6 +774,7 @@ class SDarnWrite(DmapWrite):
         # method in SDarnUtilities for more information.
         file_struct_list = [superdarn_formats.Map.types,
                             superdarn_formats.Map.extra_fields,
+                            superdarn_formats.Map.partial_fields,
                             superdarn_formats.Map.fit_fields,
                             superdarn_formats.Map.model_fields,
                             superdarn_formats.Map.hmb_fields]
