@@ -131,7 +131,8 @@ class SDarnUtilities():
 
     @staticmethod
     def missing_field_check(file_struct_list: List[dict],
-                            record: dict, rec_num: int):
+                            record: dict, rec_num: int,
+                            optional_list: list = []):
         """
         Checks if any fields are missing from the record compared to the file
         structure.
@@ -144,6 +145,9 @@ class SDarnUtilities():
             Dictionary representing the dmap record
         rec_num : int
             Record number for better error message information
+        optional_list : List[dict]
+            List of dictionaries for possible file structure fields that are
+            optional and thus do not need to be checked if missing
 
         Raises
         -------
@@ -161,17 +165,19 @@ class SDarnUtilities():
         Some fields are not included if the data is not good quality,
         this occurs in the fitting FITACF files types due to the fitting
         procedure in fitacf 2.5 and 3.0.
+        CJM: Updated to allow for an optional subset of fields
         """
-
         for file_struct in file_struct_list:
-            diff_fields = \
-                SDarnUtilities.dict_key_diff(file_struct,
-                                             record)
-            # If 0 nothing missing, if len(file_struct) then
-            # that subset is missing only meaning that command option was
-            # not used, not necessarily meaning that it is a record.
-            if len(diff_fields) not in (0, len(file_struct)):
-                missing_fields = missing_fields.union(diff_fields)
+            # Optional fields don't count towards missing count
+            if file_struct not in optional_list:
+                diff_fields = \
+                    SDarnUtilities.dict_key_diff(file_struct,
+                                                 record)
+                # If 0 nothing missing, if len(file_struct) then
+                # that subset is missing only meaning that command option was
+                # not used, not necessarily meaning that it is a record.
+                if len(diff_fields) not in (0, len(file_struct)):
+                    missing_fields = missing_fields.union(diff_fields)
 
         if len(missing_fields) > 0:
             raise superdarn_exceptions.\
@@ -315,7 +321,8 @@ class SDarnRead(DmapRead):
         DmapRead.__init__(self, filename, stream)
 
     # helper function that could be used parallelization
-    def _read_darn_record(self, format_fields: List[dict]):
+    def _read_darn_record(self, format_fields: List[dict],
+                          optional_list: Union[List, None] = None):
         """
         Read SuperDARN DMAP records from the DMAP byte array. Several SuperDARN
         field checks are done to insure the integrity of the file.
@@ -325,6 +332,9 @@ class SDarnRead(DmapRead):
         format_fields : List[dict]
             Is a list of dictionaries for the fields that are possible in a
             SuperDARN file type
+        optional_list : List[dict]
+            List of dictionaries for possible file structure fields that are
+            optional and thus do not need to be checked if missing
 
         Raises
         -------
@@ -347,13 +357,17 @@ class SDarnRead(DmapRead):
                         for incorrect data types for SuperDARN file fields
         """
         record = self.read_record()
-        SDarnUtilities.missing_field_check(format_fields, record, self.rec_num)
+        if optional_list is None:
+            optional_list = []
+        SDarnUtilities.missing_field_check(format_fields, record, self.rec_num,
+                                           optional_list)
         SDarnUtilities.extra_field_check(format_fields, record, self.rec_num)
         SDarnUtilities.incorrect_types_check(format_fields, record,
                                              self.rec_num)
         self._dmap_records.append(record)
 
-    def _read_darn_records(self, format_fields: List[dict]):
+    def _read_darn_records(self, format_fields: List[dict],
+                           optional_list: Union[List, None] = None):
         """
         loops over the bytes in the in the SuperDARN byte array and
         calls the helper method read the SuperDARN records from the file/stream
@@ -364,14 +378,19 @@ class SDarnRead(DmapRead):
             Is a list of dictionaries for the fields that are possible in a
             SuperDARN file type. See missing_field_check method in
             SDarnUtilities for more information on this parameter
+        optional_list : List[dict]
+            List of dictionaries for possible file structure fields that are
+            optional and thus do not need to be checked if missing
 
         See Also
         --------
         _read_darn_record
         """
+        if optional_list is None:
+            optional_list = []
         self.rec_num = 0  # record number, for exception info
         while self.cursor < self.dmap_end_bytes:
-            self._read_darn_record(format_fields)
+            self._read_darn_record(format_fields, optional_list)
             self.rec_num += 1
 
     @property
@@ -436,14 +455,18 @@ class SDarnRead(DmapRead):
         pyDARNio_log.info("Reading Fitacf file: {}".format(self.dmap_file))
 
         # We need to separate the fields into subsets because fitacf fitting
-        # methods 2.5 and 3.0 do not include a subset of fields if the data
-        # quality is not "good". See missing_field_check method in
-        # SDarnUtilities for more information.
+        # method v2.5 does not include a subset of fields if the data
+        # quality is not "good". Additionally, the names of the XCF fields
+        # are different for fitacf v2.5 and v3.0. See missing_field_check method 
+        # in SDarnUtilities for more information.
         file_struct_list = [superdarn_formats.Fitacf.types,
-                            superdarn_formats.Fitacf.extra_fields,
+                            superdarn_formats.Fitacf.optional_fields,
                             superdarn_formats.Fitacf.fitted_fields,
-                            superdarn_formats.Fitacf.elevation_fields]
-        self._read_darn_records(file_struct_list)
+                            superdarn_formats.Fitacf.xcf_fields,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf3,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf2]
+        optional_list = [superdarn_formats.Fitacf.optional_fields]
+        self._read_darn_records(file_struct_list, optional_list)
         self.records = dmap2dict(self._dmap_records)
         return self.records
 
@@ -588,7 +611,8 @@ class SDarnWrite(DmapWrite):
         pyDARNio_log.info("Writing Iqdat file: {}".format(self.filename))
 
         file_struct_list = [superdarn_formats.Iqdat.types]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+        optional_list = [superdarn_formats.Iqdat.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
@@ -624,7 +648,8 @@ class SDarnWrite(DmapWrite):
                             superdarn_formats.Rawacf.cross_correlation_field,
                             superdarn_formats.Rawacf.digitizing_field,
                             superdarn_formats.Rawacf.fittex_field]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+        optional_list = [superdarn_formats.Rawacf.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
@@ -661,10 +686,14 @@ class SDarnWrite(DmapWrite):
         # quality is not "good". See missing_field_check method in
         # SDarnUtilities for more information.
         file_struct_list = [superdarn_formats.Fitacf.types,
-                            superdarn_formats.Fitacf.extra_fields,
+                            superdarn_formats.Fitacf.optional_fields,
                             superdarn_formats.Fitacf.fitted_fields,
-                            superdarn_formats.Fitacf.elevation_fields]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+                            superdarn_formats.Fitacf.xcf_fields,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf3,
+                            superdarn_formats.Fitacf.xcf_fields_fitacf2
+                           ]
+        optional_list = [superdarn_formats.Fitacf.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
@@ -703,7 +732,8 @@ class SDarnWrite(DmapWrite):
         file_struct_list = [superdarn_formats.Grid.types,
                             superdarn_formats.Grid.fitted_fields,
                             superdarn_formats.Grid.extra_fields]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+        optional_list = [superdarn_formats.Grid.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
@@ -744,14 +774,17 @@ class SDarnWrite(DmapWrite):
         # method in SDarnUtilities for more information.
         file_struct_list = [superdarn_formats.Map.types,
                             superdarn_formats.Map.extra_fields,
+                            superdarn_formats.Map.partial_fields,
                             superdarn_formats.Map.fit_fields,
                             superdarn_formats.Map.model_fields,
                             superdarn_formats.Map.hmb_fields]
-        self.superDARN_file_structure_to_bytes(file_struct_list)
+        optional_list = [superdarn_formats.Map.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
 
-    def superDARN_file_structure_to_bytes(self, file_struct_list: List[dict]):
+    def superDARN_file_structure_to_bytes(self, file_struct_list: List[dict],
+                                          optional_list: List[dict]):
         """
         Checks the DMAP records are the correct structure of the file type and
         then uses the DmapWrite writing method to covert the record to bytes.
@@ -760,6 +793,9 @@ class SDarnWrite(DmapWrite):
         ----------
         file_struct_list : List[dict]
         A list of possible fields for the given SuperDARN file type
+        optional_list : List[dict]
+        List of dictionaries for possible file structure fields that are
+        optional and thus do not need to be checked if missing
 
         Raises
         ------
@@ -792,7 +828,7 @@ class SDarnWrite(DmapWrite):
             SDarnUtilities.extra_field_check(file_struct_list, record,
                                              self.rec_num)
             SDarnUtilities.missing_field_check(file_struct_list, record,
-                                               self.rec_num)
+                                               self.rec_num, optional_list)
             SDarnUtilities.incorrect_types_check(file_struct_list, record,
                                                  self.rec_num)
             # start converting

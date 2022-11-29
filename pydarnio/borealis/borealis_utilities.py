@@ -28,6 +28,8 @@ class
 
 """
 import logging
+import deepdish as dd
+import h5py
 import numpy as np
 import sys
 
@@ -484,3 +486,104 @@ class BorealisUtilities():
             cls.record_incorrect_types_check(origin_string, attribute_types,
                                              dataset_types, record,
                                              record_name)
+
+    @staticmethod
+    def get_record_names(filename: str):
+        """
+        Gets the top-level names of the groups and attributes stored in the
+        HDF5 file specified.
+
+        Parameters
+        ----------
+        filename
+            Borealis file to read. Either array- or site-structured.
+
+        Returns
+        -------
+        record_names
+            List of the top-level keys of the HDF5 file.
+        """
+        hdf5_default_attrs = \
+            ['CLASS', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION',
+             'TITLE', 'VERSION']
+        with h5py.File(filename, 'r') as f:
+            key_view = f.keys()
+            scalars = f.attrs  # Attributes for the HDF5 file, including scalar
+            # fields
+            record_names = [key for key in key_view]
+            record_names.extend(
+                [val for val in scalars if val not in hdf5_default_attrs])
+
+        return record_names
+
+    @staticmethod
+    def get_borealis_structure(record_names):
+        """
+        Determines the type of Borealis HDF5 file structure based on
+        the names of the top-level records in the HDF5 file.
+
+        Parameters
+        ----------
+        record_names
+            List of names of the top-level groups and attributes of the file.
+
+        Returns
+        -------
+        structure
+            The Borealis HDF5 file structure of the input file. Either
+            'site' or 'array'.
+        """
+        if 'borealis_git_hash' in record_names:
+            structure = 'array'
+        else:
+            structure = 'site'
+        return structure
+
+    @staticmethod
+    def get_borealis_version(filename: str, record_names, structure: str):
+        """
+        Gets the Borealis version of the file from the borealis_git_hash.
+
+        Parameters
+        ----------
+        filename
+            Path to Borealis data file.
+        record_names
+            List of names of the top-level groups and attributes of the file.
+        structure
+            Structure of the file. Supported structures are 'site' and 'array'.
+
+        Returns
+        -------
+        version
+            The Borealis version of the file. Formatted as 'v0.5'
+        """
+        if structure == 'array':
+            try:
+                borealis_git_hash = dd.io.load(filename,
+                                               group='/borealis_git_hash')
+            except ValueError as err:
+                raise borealis_exceptions.BorealisStructureError(
+                    ' {} Could not find the borealis_git_hash required to '
+                    'determine file version. Data file may be corrupted. {}'
+                    ''.format(filename, err)) from err
+        elif structure == 'site':
+            try:
+                borealis_git_hash = \
+                    dd.io.load(filename, group='/{}/borealis_git_hash'
+                                               ''.format(record_names[0]))
+            except ValueError as err:
+                raise borealis_exceptions.BorealisStructureError(
+                    ' {} Could not find the borealis_git_hash required to '
+                    'determine file version. Data file may be corrupted. {}'
+                    ''.format(filename, err)) from err
+        else:
+            raise borealis_exceptions.BorealisStructureError(
+                ' {} Could not find the borealis_git_hash required to '
+                'determine file version. Data file may be corrupted.'
+                ''.format(filename))
+
+        version = borealis_git_hash.split('-')[0]
+        version = '.'.join(version.split('.')[:2])  # vX.Y, ignore patch revision
+
+        return version

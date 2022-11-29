@@ -80,6 +80,7 @@ class Rawacf():
     cross_correlation_field = {
             'xcfd': 'f'
             }
+    optional_fields = {}     # future-proofing
 
 
 class Fitacf():
@@ -140,10 +141,11 @@ class Fitacf():
         'ptab': 'h',
         'ltab': 'h',
         'pwr0': 'f'}
-    extra_fields = {
+    optional_fields = {
             'ifmode': 'h',
             'mplgexs': 'h',
-            }
+            'tdiff': 'f',
+            'algorithm': 's'}
     # Fields added if the data is good and can be
     # fitted
     fitted_fields = {
@@ -165,7 +167,21 @@ class Fitacf():
         'sd_s': 'f',
         'sd_phi': 'f'}
 
-    elevation_fields = {
+    xcf_fields = {
+        'phi0': 'f',
+        'phi0_e': 'f',
+        'elv': 'f',
+        'x_sd_phi': 'f'
+    }
+
+
+    xcf_fields_fitacf3 = {
+        'elv_fitted': 'f',
+        'elv_error': 'f'
+    }
+    
+    
+    xcf_fields_fitacf2 = {
         'x_qflg': 'c',
         'x_gflg': 'c',
         'x_p_l': 'f',
@@ -178,15 +194,12 @@ class Fitacf():
         'x_w_l_e': 'f',
         'x_w_s': 'f',
         'x_w_s_e': 'f',
-        'phi0': 'f',
-        'phi0_e': 'f',
-        'elv': 'f',
         'elv_low': 'f',
         'elv_high': 'f',
         'x_sd_l': 'f',
         'x_sd_s': 'f',
-        'x_sd_phi': 'f'
-    }
+    }    
+
 
 
 class Grid():
@@ -242,6 +255,7 @@ class Grid():
         'vector.wdt.median': 'f',
         'vector.wdt.sd': 'f'
     }
+    optional_fields = {}    # future-proofing
 
 
 class Map():
@@ -354,6 +368,7 @@ class Map():
         'vector.wdt.median': 'f',
         'vector.wdt.sd': 'f',
     }
+    optional_fields = {}    # future-proofing
 
 
 class Iqdat():
@@ -422,3 +437,4 @@ class Iqdat():
         'tsze': 'i',
         'data': 'h',
         }
+    optional_fields = {}    # future-proofing

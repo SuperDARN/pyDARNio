@@ -9,14 +9,12 @@ Python data IO library for the Super Dual Auroral Radar Network (SuperDARN).
 
 ## Changelog
 
-## Version 1.1.1 - Release!
+## Version 1.2.0 - Release!
 
-pyDARNio is released! This is a patch release to address the following issues:
-- Bug fix with initializing empty arrays when converting HDF5 files from site- to array-structured
-- Bug fixes with converting files from HDF5 to DMAP
-  - correctly check blanked_samples
-  - support multiple beams per record
-  - replacement of far-range lag0 data in rawacf conversion
+pyDARNio has a new release! This is a minor release which includes:
+- Handling of extra fields in fitacf files coming in the next RST release, including the name of the ACF fitting algorithm used (`algorithm`), the value of TDIFF used to calculate the elevation angles (`tdiff`), and more descriptive field names for the elevation angle fields in FitACF 3.0 (`elv_error` & `elv_fitted`)
+- More flexibility around optional fields for all file types
+- Updates and speed improvements for Borealis file io
 
 ## Documentation
 

@@ -363,12 +363,12 @@ class BorealisConvert(BorealisRead):
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
 
-                # Check to see if tagged version. If not, use 255.255
-                git_hash = record['borealis_git_hash'].split('-')[0]
-                major_version, minor_version = git_hash.split('.')
-                if major_version[0] == 'v':
-                    borealis_major_revision = major_version[1:]
-                    borealis_minor_revision = minor_version
+                # Borealis git tag version numbers. If not a tagged version,
+                # then use 255.255
+                if record['borealis_git_hash'][0] == 'v':  # tagged version, non-tagged versions have hexadecimal
+                    version = record['borealis_git_hash'].split('-')[0].split('.')
+                    borealis_major_revision = version[0][1:]  # strip off the 'v'
+                    borealis_minor_revision = version[1]
                 else:
                     borealis_major_revision = 255
                     borealis_minor_revision = 255
@@ -439,12 +439,12 @@ class BorealisConvert(BorealisRead):
                 sample_spacing = int(record['tau_spacing'] /
                                      record['tx_pulse_len'])
 
-                # Check to see if tagged version. If not, use 255.255
-                git_hash = record['borealis_git_hash'].split('-')[0]
-                major_version, minor_version = git_hash.split('.')
-                if major_version[0] == 'v':
-                    borealis_major_revision = major_version[1:]
-                    borealis_minor_revision = minor_version
+                # Borealis git tag version numbers. If not a tagged version,
+                # then use 255.255
+                if record['borealis_git_hash'][0] == 'v':  # tagged version, non-tagged versions have hexadecimal
+                    version = record['borealis_git_hash'].split('-')[0].split('.')
+                    borealis_major_revision = version[0][1:]  # strip off the 'v'
+                    borealis_minor_revision = version[1]
                 else:
                     borealis_major_revision = 255
                     borealis_minor_revision = 255
@@ -569,11 +569,10 @@ class BorealisConvert(BorealisRead):
 
         # Borealis git tag version numbers. If not a tagged version,
         # then use 255.255
-        if record_dict['borealis_git_hash'][0] == 'v' and \
-                record_dict['borealis_git_hash'][2] == '.':
-
-            borealis_major_revision = record_dict['borealis_git_hash'][1]
-            borealis_minor_revision = record_dict['borealis_git_hash'][3]
+        if record_dict['borealis_git_hash'][0] == 'v':  # tagged version, non-tagged versions have hexadecimal
+            version = record_dict['borealis_git_hash'].split('-')[0].split('.')
+            borealis_major_revision = version[0][1:]   # strip off the 'v'
+            borealis_minor_revision = version[1]
         else:
             borealis_major_revision = 255
             borealis_minor_revision = 255
@@ -841,10 +840,10 @@ class BorealisConvert(BorealisRead):
 
         # Borealis git tag version numbers. If not a tagged version,
         # then use 255.255
-        if record_dict['borealis_git_hash'][0] == 'v' and \
-                record_dict['borealis_git_hash'][2] == '.':
-            borealis_major_revision = record_dict['borealis_git_hash'][1]
-            borealis_minor_revision = record_dict['borealis_git_hash'][3]
+        if record_dict['borealis_git_hash'][0] == 'v':  # tagged version, non-tagged versions are hexadecimal
+            version = record_dict['borealis_git_hash'].split('-')[0].split('.')
+            borealis_major_revision = version[0][1:]    # strip off the 'v'
+            borealis_minor_revision = version[1]
         else:
             borealis_major_revision = 255
             borealis_minor_revision = 255

@@ -1,11 +1,22 @@
 {
     "creators":[
         {
-            "name": "SuperDARN Data Standards Working Group"
+            "name": "SuperDARN Data Visualization Working Group"
         },
         {
             "affiliation": "University of Saskatchewan",
-            "name": "Rohel, R.A."
+            "name": "Rohel, R.A.",
+            "orcid": "0000-0003-2208-1553"
+        },
+        {
+            "affiliation": "The University Centre in Svalbard",
+            "name": "Bland, E.C.",
+            "orcid": "0000-0002-0252-0400"
+        },
+        {
+            "affiliation": "University of Saskatchewan",
+            "name": "Martin, C.J.",
+            "orcid": "0000-0002-8278-9783"
         },
         {
             "affiliation": "John Hopkins University",
@@ -36,13 +47,13 @@
         },
         {
             "affiliation": "University of Saskatchewan",
-            "name": "Martin, C.J.",
-            "orcid": "0000-0002-8278-9783"
-        },
-        {
-            "affiliation": "University of Saskatchewan",
             "name": "Schmidt, M.T.",
             "orcid": "0000-0002-3265-977X"
-        }
+        },
+        {
+            "affiliation": "Virginia Tech",
+            "name": "Shi, X.",
+            "orcid": "0000-0001-8425-8241"
+        },
     ]
 }

@@ -46,7 +46,9 @@ See Also
 """
 
 import copy
+import h5py
 import numpy as np
+from typing import List
 
 from collections import OrderedDict
 
@@ -196,6 +198,48 @@ class BorealisRawacfv0_4(BaseFormat):
                 new_records[key][field] = new_records[key][field].flatten()
 
         return new_records
+
+    @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        Raises
+        ------
+
+        """
+        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisRawacfv0_4,
+                                                                  cls).site_get_max_dims(filename,
+                                                                                         unshared_parameters)
+
+        # Now change the main_acfs, int_acfs and xcfs dicts to maximum required dims
+
+        # Get the num_ranges and num_lags fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            _, num_ranges, num_lags = site_file[record_name]['correlation_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_correlation_dims = (max_num_beams, num_ranges, num_lags)
+        fields_max_dims['main_acfs'] = reshaped_correlation_dims
+        fields_max_dims['intf_acfs'] = reshaped_correlation_dims
+        fields_max_dims['xcfs'] = reshaped_correlation_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -403,6 +447,15 @@ class BorealisRawacfv0_4(BaseFormat):
             }
 
     @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        return {
+            'num_beams': lambda record: len(record['beam_nums'])
+        }
+
+    @classmethod
     def site_specific_fields_generate(cls):
         """
         See BaseFormat class for description and use of this method.
@@ -559,6 +612,44 @@ class BorealisBfiqv0_4(BaseFormat):
                 new_records[key][field] = new_records[key][field].flatten()
 
         return new_records
+
+    @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        Raises
+        ------
+
+        """
+        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisBfiqv0_4,
+                                                                  cls).site_get_max_dims(filename,
+                                                                                         unshared_parameters)
+
+        # Get the num_ant_arrays and num_samps fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            num_ant_arrays, _, _, num_samps = site_file[record_name]['data_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_data_dims = (num_ant_arrays, max_num_sequences, max_num_beams, num_samps)
+        fields_max_dims['data'] = reshaped_data_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -755,6 +846,15 @@ class BorealisBfiqv0_4(BaseFormat):
             }
 
     @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        return {
+            'num_beams': lambda record: len(record['beam_nums'])
+        }
+
+    @classmethod
     def site_specific_fields_generate(cls):
         """
         See BaseFormat class for description and use of this method.
@@ -881,6 +981,8 @@ class BorealisAntennasIqv0_4(BaseFormat):
 
         return new_records
 
+
+
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
         """
@@ -912,6 +1014,44 @@ class BorealisAntennasIqv0_4(BaseFormat):
                 new_records[key][field] = new_records[key][field].flatten()
 
         return new_records
+
+    @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        Raises
+        ------
+
+        """
+        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisAntennasIqv0_4,
+                                                                  cls).site_get_max_dims(filename,
+                                                                                         unshared_parameters)
+
+        # Get the num_antennas and num_samps fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            num_antennas, _, num_samps = site_file[record_name]['data_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_data_dims = (num_antennas, max_num_sequences, num_samps)
+        fields_max_dims['data'] = reshaped_data_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -1090,6 +1230,15 @@ class BorealisAntennasIqv0_4(BaseFormat):
             }
 
     @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        return {
+            'num_beams': lambda record: len(record['beam_nums'])
+        }
+
+    @classmethod
     def site_specific_fields_generate(cls):
         """
         See BaseFormat class for description and use of this method.
@@ -1188,6 +1337,44 @@ class BorealisRawrfv0_4(BaseFormat):
                 new_records[key][field] = new_records[key][field].flatten()
 
         return new_records
+
+    @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        Raises
+        ------
+
+        """
+        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisRawrfv0_4,
+                                                                  cls).site_get_max_dims(filename,
+                                                                                         unshared_parameters)
+
+        # Get the num_antennas and num_samps fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            num_antennas, _, num_samps = site_file[record_name]['data_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_data_dims = (num_antennas, max_num_sequences, num_samps)
+        fields_max_dims['data'] = reshaped_data_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
     @classmethod
     def is_restructureable(cls) -> bool:
@@ -1407,6 +1594,18 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
             })
         return array_specific
 
+    @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        array_specific = super(BorealisRawacfv0_5,
+                               cls).array_specific_fields_iterative_generator()
+        array_specific.update({
+            'num_blanked_samples': lambda record: len(record['blanked_samples'])
+            })
+        return array_specific
+
 
 class BorealisBfiqv0_5(BorealisBfiqv0_4):
     """
@@ -1541,6 +1740,18 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
                 [len(record['blanked_samples']) for key, record in
                  records.items()], dtype=np.uint32)
             })
+        return array_specific
+
+    @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        array_specific = super(BorealisBfiqv0_5,
+                               cls).array_specific_fields_iterative_generator()
+        array_specific.update({
+            'num_blanked_samples': lambda record: len(record['blanked_samples'])
+        })
         return array_specific
 
 
@@ -1691,6 +1902,18 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
             })
         return array_specific
 
+    @classmethod
+    def array_specific_fields_iterative_generator(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        array_specific = super(BorealisAntennasIqv0_5,
+                               cls).array_specific_fields_iterative_generator()
+        array_specific.update({
+            'num_blanked_samples': lambda record: len(record['blanked_samples'])
+        })
+        return array_specific
+
 
 class BorealisRawrfv0_5(BorealisRawrfv0_4):
     """
@@ -1824,7 +2047,10 @@ class BorealisRawacf(BorealisRawacfv0_5):
             "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
         })
         return single_element_types
 
@@ -1929,7 +2155,10 @@ class BorealisBfiq(BorealisBfiqv0_5):
             "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
         })
         return single_element_types
 
@@ -1969,10 +2198,11 @@ class BorealisBfiq(BorealisBfiqv0_5):
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             'pulse_phase_offset': [lambda arrays, record_num:
-                            0 if (arrays['pulse_phase_offset'].shape[1] == 0)
-                            else 
-                            list((arrays['num_sequences'][record_num],) +
-                            arrays['pulse_phase_offset'][record_num].shape[1:])],
+                                   -1 if arrays['pulse_phase_offset'].size < arrays['num_sequences'][record_num]
+                                   else
+                                   list((arrays['num_sequences'][record_num],)
+                                        + arrays['pulse_phase_offset'][
+                                              record_num].shape[1:])],
             })
         return unshared_fields_dims
 
@@ -2040,7 +2270,10 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
         })
         return single_element_types
 
@@ -2080,7 +2313,11 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             'gps_locked': [],
             'gps_to_system_time_diff': [],
             'pulse_phase_offset': [lambda arrays, record_num:
-                                   arrays['pulse_phase_offset'][record_num]],
+                                   -1 if arrays['pulse_phase_offset'].size < arrays['num_sequences'][record_num]
+                                   else
+                                   list((arrays['num_sequences'][record_num],)
+                                        + arrays['pulse_phase_offset'][
+                                              record_num].shape[1:])],
             })
         return unshared_fields_dims
 
@@ -2140,7 +2377,10 @@ class BorealisRawrf(BorealisRawrfv0_5):
             "gps_locked": np.bool_,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
         })
         return single_element_types
 
