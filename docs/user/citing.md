@@ -47,9 +47,10 @@ url={}
 
 ## DOI's 
 
-- pyDARN v1.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3727270.svg)](https://doi.org/10.5281/zenodo.3727270)
-- pyDARN v1.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4792463.svg)](https://doi.org/10.5281/zenodo.4792463)
-
+- pyDARNio v1.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4009471.svg)](https://doi.org/10.5281/zenodo.4009471)
+- pyDARNio v1.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4792463.svg)](https://doi.org/10.5281/zenodo.4792463)
+- pyDARNio v1.1.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5914211.svg)](https://doi.org/10.5281/zenodo.5914211)
+- pyDARNio v1.2 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7380553.svg)](https://doi.org/10.5281/zenodo.7380553)
 
 ## Acknowledgements
 
