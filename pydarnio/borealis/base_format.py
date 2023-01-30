@@ -979,7 +979,7 @@ class BaseFormat():
             All the single element string fields in records of the
             format, as a list.
         """
-        return [k for k, v in cls.single_element_types().items() if v == np.str_]
+        return [k for k, v in cls.single_element_types().items() if issubclass(v, str)]
 
     @classmethod
     def array_string_fields(cls):
@@ -993,7 +993,7 @@ class BaseFormat():
             All the fields with arrays of strings in records of the
             format, as a list.
         """
-        return [k for k, v in cls.array_dtypes().items() if v == np.str_]
+        return [k for k, v in cls.array_dtypes().items() if issubclass(v, str)]
 
     @classmethod
     def bool_types(cls):
