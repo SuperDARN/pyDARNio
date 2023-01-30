@@ -9,9 +9,12 @@ Python data IO library for the Super Dual Auroral Radar Network (SuperDARN).
 
 ## Changelog
 
-## Version 1.2.0 - Release!
+## Version 1.2.1 - Patch Release!
 
-pyDARNio has a new release! This is a minor release which includes:
+This patch release includes a fix for the depreciation of a Numpy method.
+Below is more information for the most recent minor release.
+
+The most recent minor release included:
 - Handling of extra fields in fitacf files coming in the next RST release, including the name of the ACF fitting algorithm used (`algorithm`), the value of TDIFF used to calculate the elevation angles (`tdiff`), and more descriptive field names for the elevation angle fields in FitACF 3.0 (`elv_error` & `elv_fitted`)
 - More flexibility around optional fields for all file types
 - Updates and speed improvements for Borealis file io
@@ -68,4 +71,4 @@ Here are some ways to get started:
   - **Answer questions**: if you want to try your hand at answering some pyDARNio questions, or adding to the discussion, look at pyDARNio's [issues](https://github.com/SuperDARN/pyDARNio/issues) and filter by labels.
   - **Become a developer**: if you want to practice those coding skills and add to the library, look at pyDARNio [issues](https://github.com/SuperDARN/pyDARNio/issues) and filter by milestone's to see what needs to get done right away. 
 
-Please contact the leading developer, Marina Schmidt (marina.t.schmidt@gmail.com), if you would like to become a member of the team!
+Please contact the Data Visualization Working Group, if you would like to become a member of the team!
