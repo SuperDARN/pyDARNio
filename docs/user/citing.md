@@ -51,6 +51,7 @@ url={}
 - pyDARNio v1.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4792463.svg)](https://doi.org/10.5281/zenodo.4792463)
 - pyDARNio v1.1.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5914211.svg)](https://doi.org/10.5281/zenodo.5914211)
 - pyDARNio v1.2 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7380553.svg)](https://doi.org/10.5281/zenodo.7380553)
+- pyDARNio v1.2.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7615720.svg)](https://doi.org/10.5281/zenodo.7615720)
 
 ## Acknowledgements
 
