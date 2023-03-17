@@ -1229,6 +1229,59 @@ class BaseFormat():
 
         return timestamp_dict
 
+    @classmethod
+    def _read_borealis_records(cls, filename: str) -> OrderedDict:
+        """
+        Base function for reading in a Borealis site file.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the file to load records from
+
+        Returns
+        -------
+        OrderedDict
+            a dict of timestamped records loaded from an hdf5 Borealis site file
+
+        Raises
+        ------
+        OSError: file does not exist
+
+        Notes
+        -----
+        The results will differ based on the format class, as many of the
+        class methods used inside this method should be specific
+        to the format and updated in the child class.
+        """
+        records = OrderedDict()
+        with h5py.File(filename, 'r') as f:
+            record_keys = sorted(list(f.keys()))
+            for rec_key in record_keys:
+                rec_dict = {}
+                group = f[rec_key]
+
+                # Get the datasets (vector fields)
+                datasets = list(group.keys())
+                for dset_name in datasets:
+                    dset = group[dset_name][:]
+                    # TODO: Handle data_descriptors, correlation_descriptors fields (they are gross)
+                    rec_dict[dset_name] = dset
+
+                # Get the attributes (scalar fields)
+                attribute_dict = {k: v for k, v in group.attrs.items()}
+                attribute_dict.pop('CLASS')       # Inherent to HDF5 file
+                attribute_dict.pop('TITLE')       # Inherent to HDF5 file
+                attribute_dict.pop('VERSION')     # Inherent to HDF5 file
+                for k, v in attribute_dict.items():
+                    if isinstance(v, bytes):
+                        attribute_dict[k] = v.tobytes().decode('utf-8')
+                rec_dict.update(attribute_dict)
+
+                records[rec_key] = rec_dict
+
+        return records
+
     # STATIC METHODS COMMON ACROSS FORMATS
     # i.e. common methods that can be used by multiple formats in restructuring
     # (generally these will be used in the unshared fields dims for arrays)
