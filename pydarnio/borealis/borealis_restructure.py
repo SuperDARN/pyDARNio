@@ -36,7 +36,6 @@ import subprocess as sp
 import warnings
 from pathlib import Path
 import h5py
-import deepdish as dd
 import logging
 import numpy as np
 from datetime import datetime
@@ -210,20 +209,23 @@ class BorealisRestructure(object):
         try:
             shared_fields_dict = dict()
             # shared fields are common across records, so this is done once
-            for field in self.format.shared_fields():
-                field_data = dd.io.load(self.infile_name, '/{}'.format(field))
-                shared_fields_dict[field] = field_data
+            with hdf5.File(self.infile_name, 'r') as f:
+                for field in self.format.shared_fields():
+                    shared_fields_dict[field] = f[field]
 
             unshared_single_elements = dict()
             # These are fields which have one element per record, so the
             # arrays are small enough to be loaded completely into memory
-            for field in self.format.unshared_fields():
-                if field in self.format.single_element_types():
-                    unshared_single_elements[field] = dd.io.load(
-                        self.infile_name, '/{}'.format(field))
+            with hdf5.File(self.infile_name, 'r') as f:
+                for field in self.format.unshared_fields():
+                    if field in self.format.single_element_types():
+                    unshared_single_elements[field] = f[field]
 
-            sqn_timestamps_array = dd.io.load(self.infile_name,
-                                              '/sqn_timestamps')
+            with h5py.File(self.infile_name, 'r') as f:
+                records = sorted(list(f.keys()))
+                first_rec = f[records[0]]
+                sqn_timestamps_array = first_rec.attrs['sqn_timestamps']
+                                            .decode('utf-8')
             for record_num, seq_timestamp in enumerate(sqn_timestamps_array):
                 # format dictionary key in the same way it is done
                 # in datawrite on site
@@ -279,7 +281,8 @@ class BorealisRestructure(object):
                             index_slice = tuple(index_slice)
                             # If there was an incorrect dimension (-1 in dims), then use deepdish to extract the field
                             if field_flag:
-                                record_dict[field] = dd.io.load(self.infile_name, f'/{field}')[index_slice]
+                                with h5py.File(self.infile_name) as f:
+                                    record_dict[field] = f[field][index_slice]
                             else:
                                 record_dict[field] = f[field][index_slice]
                 # Wrap in another dict to use the format method
@@ -333,7 +336,7 @@ class BorealisRestructure(object):
                     rec_dict.update({k: record.attrs[k] for k in rec_attrs})
                     # Bitwise fields also need to be handled separately
                     for field in self.format.bool_types():
-                        rec_dict[field] = dd.io.load(self.infile_name, f'/{record_name}/{field}')
+                        rec_dict[field] = f[record_name][field]
 
                     # some fields are linear in site style and need to be reshaped.
                     # Pass in record nested in a dictionary, as
@@ -360,7 +363,7 @@ class BorealisRestructure(object):
                                     raise TypeError(f'Field {field} has unrecognized data: {value}')
                             elif field in self.format.array_string_fields():
                                 # h5py reads numpy string arrays as contiguous unsigned ints, so we need deepdish here
-                                new_data_dict[field] = dd.io.load(self.infile_name, f'/{record_name}/{field}')
+                                new_data_dict[field] = f[record_name][field]
                             else:
                                 raise TypeError(f'Field {field} unrecognized')
 
@@ -436,8 +439,8 @@ class BorealisRestructure(object):
             BorealisUtilities.check_arrays(self.infile_name, new_data_dict,
                                            attribute_types, dataset_types,
                                            unshared_fields)
-            dd.io.save(self.outfile_name, new_data_dict,
-                       compression=self.compression)
+            while h5py.File(self.outfile_name, 'w') as f:
+                f.create_dataset(new_data_dict, compression=self.compression)
 
         except TypeError as err:
             raise borealis_exceptions.BorealisRestructureError(
@@ -487,9 +490,9 @@ class BorealisRestructure(object):
         tmp_filename = self.outfile_name + '.tmp'
         Path(tmp_filename).touch()
 
-        dd.io.save(tmp_filename, record[record_name],
-                   compression=self.compression)
-        f = dd.io.load(tmp_filename, '/')
+        while h5py.File(tmp_filename, 'w') as f:
+            f.create_dataset(record[record_name], compression=self.compression)
+        
         cp_cmd = 'h5copy -i {newfile} -o {full_file} -s / -d {dtstr}'
         cmd = cp_cmd.format(newfile=tmp_filename, full_file=self.outfile_name,
                             dtstr=record_name)

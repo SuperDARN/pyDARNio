@@ -35,7 +35,6 @@ Future Work
 Add compression to bzip2
 
 """
-import deepdish as dd
 import h5py
 import logging
 import os
@@ -523,8 +522,9 @@ class BorealisSiteWrite():
         tmp_filename = self.filename + '.tmp'
         Path(tmp_filename).touch()
         for group_name, group_dict in self.records.items():
-            dd.io.save(tmp_filename, {str(group_name): group_dict},
-                       compression=self.compression)
+            with h5py.File(tmp_filename, 'w') as f:
+                f.create_dataset(str(group_name), data=group_dict,
+                                 compression=self.compression)
             cp_cmd = 'h5copy -i {newfile} -o {full_file} -s {dtstr} -d {dtstr}'
             cmd = cp_cmd.format(newfile=tmp_filename, full_file=self.filename,
                                 dtstr='/'+str(group_name))

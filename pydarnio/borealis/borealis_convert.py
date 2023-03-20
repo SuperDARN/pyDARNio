@@ -42,7 +42,6 @@ Update noise values in SDarn fields when these can be calculated.
 """
 import logging
 import numpy as np
-import deepdish as dd
 
 from datetime import datetime
 from typing import Union

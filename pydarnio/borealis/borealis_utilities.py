@@ -28,7 +28,6 @@ class
 
 """
 import logging
-import deepdish as dd
 import h5py
 import numpy as np
 import sys
@@ -560,8 +559,10 @@ class BorealisUtilities():
         """
         if structure == 'array':
             try:
-                borealis_git_hash = dd.io.load(filename,
-                                               group='/borealis_git_hash')
+                with h5py.File(self.filename, 'r') as f:
+                    records = sorted(list(f.keys()))
+                    borealis_git_hash = records.attrs['borealis_git_hash']
+                                            .decode('utf-8')
             except ValueError as err:
                 raise borealis_exceptions.BorealisStructureError(
                     ' {} Could not find the borealis_git_hash required to '
@@ -569,9 +570,11 @@ class BorealisUtilities():
                     ''.format(filename, err)) from err
         elif structure == 'site':
             try:
-                borealis_git_hash = \
-                    dd.io.load(filename, group='/{}/borealis_git_hash'
-                                               ''.format(record_names[0]))
+                with h5py.File(self.filename, 'r') as f:
+                    records = sorted(list(f.keys()))
+                    first_rec = f[records[0]]
+                    borealis_git_hash = first_rec.attrs['borealis_git_hash']
+                                            .decode('utf-8')
             except ValueError as err:
                 raise borealis_exceptions.BorealisStructureError(
                     ' {} Could not find the borealis_git_hash required to '

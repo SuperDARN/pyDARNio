@@ -37,7 +37,7 @@ BorealisSiteWrite
 For more information on Borealis data files and how they convert to SDarn
 files, see: https://borealis.readthedocs.io/en/latest/
 """
-import deepdish as dd
+import h5py
 import logging
 
 from typing import List
@@ -115,9 +115,11 @@ class BorealisArrayRead():
         # get the version of the file - split by the dash, first part should be
         # 'vX.X'
         try:
-            version = dd.io.load(self.filename,
-                                 group='/borealis_git_hash').split('-')[0]
-            version = '.'.join(version.split('.')[:2])      # vX.Y, ignore patch revision
+            with h5py.File(self.filename, 'r') as f:
+                records = sorted(list(f.keys()))
+                first_rec = f[records[0]]
+                full_version = first_rec.attrs['borealis_git_hash'].decode('utf-8').split('-')[0]
+                version = '.'.join(full_version.split('.')[:2])      # vX.Y, ignore patch revision
         except ValueError as err:
             raise borealis_exceptions.BorealisStructureError(
                 ' {} Could not find the borealis_git_hash required to '
@@ -279,11 +281,14 @@ class BorealisArrayRead():
         --------
         BorealisUtilities
         """
-        arrays = dd.io.load(self.filename)
-        BorealisUtilities.check_arrays(self.filename, arrays,
-                                       attribute_types, dataset_types,
-                                       unshared_fields)
-        self._arrays = arrays
+        attr_types = self.format.site_single_element_types()
+        dataset_types = self.format.site_array_dtypes()
+        records = self.format._read_borealis_records
+        while h5py.File(self.filename, 'r') as arrays:
+            BorealisUtilities.check_arrays(self.filename, arrays,
+                                           attribute_types, dataset_types,
+                                           unshared_fields)
+            self._arrays = arrays
 
 
 class BorealisArrayWrite():
@@ -520,4 +525,5 @@ class BorealisArrayWrite():
         BorealisUtilities.check_arrays(self.filename, self.arrays,
                                        attribute_types, dataset_types,
                                        unshared_fields)
-        dd.io.save(self.filename, self.arrays, compression=self.compression)
+        with h5py.File(self.filename, 'w') as f:
+                f.create_dataset(self.arrays, compression=self.compression)
