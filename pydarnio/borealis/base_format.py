@@ -1264,9 +1264,13 @@ class BaseFormat():
                 # Get the datasets (vector fields)
                 datasets = list(group.keys())
                 for dset_name in datasets:
-                    dset = group[dset_name][:]
-                    # TODO: Handle data_descriptors, correlation_descriptors fields (they are gross)
-                    rec_dict[dset_name] = dset
+                    dset = group[dset_name]
+                    if 'strtype' in dset.attrs:     # string type, requires some handling
+                        itemsize = dset.attrs['itemsize']
+                        data = dset[:].view(dtype=(np.unicode_, itemsize))
+                    else:
+                        data = dset[:]      # non-string, can simply load
+                    rec_dict[dset_name] = data
 
                 # Get the attributes (scalar fields)
                 attribute_dict = {k: v for k, v in group.attrs.items()}
