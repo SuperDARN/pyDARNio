@@ -129,7 +129,7 @@ class BorealisSiteRead():
                 records = sorted(list(f.keys()))
                 first_rec = f[records[0]]
                 full_version = first_rec.attrs['borealis_git_hash'].decode('utf-8').split('-')[0]
-                version = '.'.join(version.split('.')[:2])      # vX.Y, ignore patch revision
+                version = '.'.join(full_version.split('.')[:2])      # vX.Y, ignore patch revision
         except (IndexError, ValueError) as err:
             # if this is an array style file, it will raise
             # IndexError on the array.
