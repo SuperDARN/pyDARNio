@@ -2044,7 +2044,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
             "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
-            "gps_locked": np.bool_,
+            "gps_locked": np.uint8,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
             "gps_to_system_time_diff": np.float64,
@@ -2152,7 +2152,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
             "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
-            "gps_locked": np.bool_,
+            "gps_locked": np.uint8,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
             "gps_to_system_time_diff": np.float64,
@@ -2267,7 +2267,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
             "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
-            "gps_locked": np.bool_,
+            "gps_locked": np.uint8,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
             "gps_to_system_time_diff": np.float64,
@@ -2374,7 +2374,7 @@ class BorealisRawrf(BorealisRawrfv0_5):
             "lp_status_word": np.uint32,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
-            "gps_locked": np.bool_,
+            "gps_locked": np.uint8,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
             "gps_to_system_time_diff": np.float64,

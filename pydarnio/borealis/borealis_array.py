@@ -40,6 +40,7 @@ files, see: https://borealis.readthedocs.io/en/latest/
 import deepdish as dd
 import h5py
 import logging
+import numpy as np
 
 from typing import List
 
@@ -525,4 +526,13 @@ class BorealisArrayWrite():
                                        attribute_types, dataset_types,
                                        unshared_fields)
         with h5py.File(self.filename, 'w') as f:
-                f.create_dataset(self.arrays, compression=self.compression)
+            for k, v in self.arrays.items():
+                if k in attribute_types:
+                    f.attrs[k] = v
+                elif v.dtype.type == np.str_:
+                    itemsize = v.dtype.itemsize // 4    # every character is 4 bytes
+                    dset = f.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=self.compression)
+                    dset.attrs['strtype'] = b'unicode'
+                    dset.attrs['itemsize'] = itemsize
+                else:
+                    f.create_dataset(k, data=v, compression=self.compression)

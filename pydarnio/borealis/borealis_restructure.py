@@ -362,8 +362,9 @@ class BorealisRestructure(object):
                                 else:
                                     raise TypeError(f'Field {field} has unrecognized data: {value}')
                             elif field in self.format.array_string_fields():
-                                # h5py reads numpy string arrays as contiguous unsigned ints, so we need deepdish here
-                                new_data_dict[field] = f[record_name][field]
+                                dset = f[record_name][field]
+                                itemsize = dset.attrs['itemsize']
+                                new_data_dict[field] = dset[:].view(dtype=(np.unicode_, itemsize))
                             else:
                                 raise TypeError(f'Field {field} unrecognized')
 
@@ -377,7 +378,7 @@ class BorealisRestructure(object):
                                 # Initialize array now with correct data type.
                                 dtype = self.format.single_element_types()[field]
                                 new_data_dict[field] = np.empty(num_records, dtype=dtype)
-                                if dtype is np.int64 or dtype is np.uint32:
+                                if dtype is np.int64 or dtype is np.uint32 or dtype is np.uint8:
                                     new_data_dict[field][:] = -1
                                 else:
                                     new_data_dict[field][:] = np.NaN
@@ -399,7 +400,7 @@ class BorealisRestructure(object):
                                 datatype = self.format.single_element_types()[field]
                             else:  # field in array_dtypes
                                 datatype = self.format.array_dtypes()[field]
-                            if datatype == np.unicode_:
+                            if datatype == str:
                                 # unicode type needs to be explicitly set to
                                 # have multiple chars (256)
                                 datatype = '|U256'
@@ -409,7 +410,7 @@ class BorealisRestructure(object):
                             # change between records), so they are initialized
                             # with a known value first. Initialize floating-
                             # point values to NaN, and integer values to -1.
-                            if datatype is np.int64 or datatype is np.uint32:
+                            if datatype is np.int64 or datatype is np.uint32 or datatype is np.uint8:
                                 empty_array[:] = -1
                             else:
                                 empty_array[:] = np.NaN
@@ -440,7 +441,16 @@ class BorealisRestructure(object):
                                            attribute_types, dataset_types,
                                            unshared_fields)
             with h5py.File(self.outfile_name, 'w') as f:
-                f.create_dataset(new_data_dict, compression=self.compression)
+                for k, v in new_data_dict.items():
+                    if k in attribute_types:
+                        f.attrs[k] = v
+                    elif v.dtype.type == np.str_:
+                        itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
+                        dset = f.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=self.compression)
+                        dset.attrs['strtype'] = b'unicode'
+                        dset.attrs['itemsize'] = itemsize
+                    else:
+                        f.create_dataset(k, data=v, compression=self.compression)
 
         except TypeError as err:
             raise borealis_exceptions.BorealisRestructureError(

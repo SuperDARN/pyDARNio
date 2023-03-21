@@ -563,22 +563,20 @@ class BorealisUtilities():
         if structure == 'array':
             try:
                 with h5py.File(self.filename, 'r') as f:
-                    records = sorted(list(f.keys()))
-                    borealis_git_hash = records.attrs['borealis_git_hash']\
-                                            .decode('utf-8')
-            except ValueError as err:
+                    borealis_git_hash = f.attrs['borealis_git_hash'].decode('utf-8')
+            except KeyError as err:
                 raise borealis_exceptions.BorealisStructureError(
                     ' {} Could not find the borealis_git_hash required to '
                     'determine file version. Data file may be corrupted. {}'
                     ''.format(filename, err)) from err
         elif structure == 'site':
             try:
-                with h5py.File(self.filename, 'r') as f:
+                with h5py.File(filename, 'r') as f:
                     records = sorted(list(f.keys()))
                     first_rec = f[records[0]]
                     borealis_git_hash = first_rec.attrs['borealis_git_hash']\
                                             .decode('utf-8')
-            except ValueError as err:
+            except KeyError as err:
                 raise borealis_exceptions.BorealisStructureError(
                     ' {} Could not find the borealis_git_hash required to '
                     'determine file version. Data file may be corrupted. {}'
