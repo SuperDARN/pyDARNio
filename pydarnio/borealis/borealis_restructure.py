@@ -34,7 +34,6 @@ see: https://borealis.readthedocs.io/en/master/
 import os
 import subprocess as sp
 import warnings
-from pathlib import Path
 import h5py
 import logging
 import numpy as np
@@ -207,60 +206,64 @@ class BorealisRestructure(object):
         attribute_types = self.format.site_single_element_types()
         dataset_types = self.format.array_dtypes()
         try:
-            shared_fields_dict = dict()
-            # shared fields are common across records, so this is done once
-            with hdf5.File(self.infile_name, 'r') as f:
-                for field in self.format.shared_fields():
-                    shared_fields_dict[field] = f[field]
+            with h5py.File(self.infile_name, 'r') as f:
 
-            unshared_single_elements = dict()
-            # These are fields which have one element per record, so the
-            # arrays are small enough to be loaded completely into memory
-            with hdf5.File(self.infile_name, 'r') as f:
+                # shared fields are common across records, so this is done once
+                shared_fields_dict = dict()
+                for field in self.format.shared_fields():
+                    if field in attribute_types:
+                        data = f.attrs[field]
+                        if isinstance(data, bytes):
+                            data = str(data)
+                    elif field in self.format.array_string_fields():
+                        dset = f[field]
+                        itemsize = dset.attrs['itemsize']
+                        data = dset[:].view(dtype=(np.unicode_, itemsize))
+                    else:
+                        data = f[field][:]
+                    shared_fields_dict[field] = data
+
+                # These are fields which have one element per record, so the
+                # arrays are small enough to be loaded completely into memory
+                unshared_single_elements = dict()
                 for field in self.format.unshared_fields():
                     if field in self.format.single_element_types():
-                        unshared_single_elements[field] = f[field]
+                        unshared_single_elements[field] = f[field][:]
 
-            with h5py.File(self.infile_name, 'r') as f:
-                records = sorted(list(f.keys()))
-                first_rec = f[records[0]]
-                sqn_timestamps_array = first_rec.attrs['sqn_timestamps']\
-                                            .decode('utf-8')
-            for record_num, seq_timestamp in enumerate(sqn_timestamps_array):
-                # format dictionary key in the same way it is done
-                # in datawrite on site
-                seq_datetime = datetime.utcfromtimestamp(seq_timestamp[0])
-                epoch = datetime.utcfromtimestamp(0)
-                key = str(int((seq_datetime - epoch).total_seconds() * 1000))
+                sqn_timestamps_array = f['sqn_timestamps'][:]
 
-                # Make this fresh every time, to reduce memory footprint
-                record_dict = dict()
+                for record_num, seq_timestamp in enumerate(sqn_timestamps_array):
+                    # format dictionary key in the same way it is done
+                    # in datawrite on site
+                    seq_datetime = datetime.utcfromtimestamp(seq_timestamp[0])
+                    epoch = datetime.utcfromtimestamp(0)
+                    key = str(int((seq_datetime - epoch).total_seconds() * 1000))
 
-                # Copy over the shared fields
-                for k, v in shared_fields_dict.items():
-                    record_dict[k] = v
+                    # Make this fresh every time, to reduce memory footprint
+                    record_dict = dict()
 
-                # populate site specific fields using given functions
-                # that take both the arrays data and the record number
-                with h5py.File(self.infile_name, 'r') as f:
+                    # Copy over the shared fields
+                    for k, v in shared_fields_dict.items():
+                        record_dict[k] = v
+
+                    # populate site specific fields using given functions
+                    # that take both the arrays data and the record number
                     for field in self.format.site_specific_fields():
                         record_dict[field] = \
                             self.format.site_specific_fields_generate(
                                 )[field](f, record_num)
 
-                for field in self.format.unshared_fields():
-                    if field in self.format.single_element_types():
-                        datatype = self.format.single_element_types()[field]
-                        # field is not an array, single element per record.
-                        # unshared_field_dims_site should give empty list.
-                        record_dict[field] = \
-                            datatype(unshared_single_elements[field][
-                                         record_num])
-                    else:  # field in array_dtypes
-                        # need to get the dims correct,
-                        # not always equal to the max
-                        field_flag = False
-                        with h5py.File(self.infile_name, 'r') as f:
+                    for field in self.format.unshared_fields():
+                        if field in self.format.single_element_types():
+                            datatype = self.format.single_element_types()[field]
+                            # field is not an array, single element per record.
+                            # unshared_field_dims_site should give empty list.
+                            record_dict[field] = \
+                                datatype(unshared_single_elements[field][
+                                             record_num])
+                        else:  # field in array_dtypes
+                            # need to get the dims correct, not always equal to the max
+                            field_flag = False
                             site_dims = [dimension_function(f, record_num)
                                          for dimension_function in
                                          self.format.unshared_fields_dims_site(
@@ -281,17 +284,16 @@ class BorealisRestructure(object):
                             index_slice = tuple(index_slice)
                             # If there was an incorrect dimension (-1 in dims), then use deepdish to extract the field
                             if field_flag:
-                                with h5py.File(self.infile_name) as f:
-                                    record_dict[field] = f[field][index_slice]
+                                record_dict[field] = f[field][index_slice]
                             else:
                                 record_dict[field] = f[field][index_slice]
-                # Wrap in another dict to use the format method
-                record_dict = OrderedDict({key: record_dict})
-                record_dict = self.format.flatten_site_arrays(record_dict)
+                    # Wrap in another dict to use the format method
+                    record_dict = OrderedDict({key: record_dict})
+                    record_dict = self.format.flatten_site_arrays(record_dict)
 
-                # Write the single record to file
-                self._write_borealis_record(record_dict, key, attribute_types,
-                                            dataset_types)
+                    # Write the single record to file
+                    self._write_borealis_record(record_dict, key, attribute_types,
+                                                dataset_types)
         except Exception as err:
             raise borealis_exceptions.BorealisRestructureError(
                 'Records for {}: Error restructuring {} from array to site '
@@ -488,23 +490,19 @@ class BorealisRestructure(object):
         --------
         BorealisUtilities
         """
-        Path(self.outfile_name).touch()
         BorealisUtilities.check_records(self.infile_name, record,
                                         attribute_types, dataset_types)
 
-        # use external h5copy utility to move new record into 2hr file.
-
-        warnings.filterwarnings("ignore")
-        # Must use temporary file to append to a file; writing entire
-        # dictionary at once also doesn't work so this is required.
-        tmp_filename = self.outfile_name + '.tmp'
-        Path(tmp_filename).touch()
-
-        with h5py.File(tmp_filename, 'w') as f:
-            f.create_dataset(record[record_name], compression=self.compression)
-        
-        cp_cmd = 'h5copy -i {newfile} -o {full_file} -s / -d {dtstr}'
-        cmd = cp_cmd.format(newfile=tmp_filename, full_file=self.outfile_name,
-                            dtstr=record_name)
-        sp.run(cmd.split())
-        os.remove(tmp_filename)
+        with h5py.File(self.outfile_name, 'a') as f:
+            for group_name, rec in record.items():
+                group = f.create_group(group_name)
+                for k, v in rec.items():
+                    if k in attribute_types:
+                        group.attrs[k] = v
+                    elif v.dtype.type == np.str_:
+                        itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
+                        dset = group.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=self.compression)
+                        dset.attrs['strtype'] = b'unicode'
+                        dset.attrs['itemsize'] = itemsize
+                    else:
+                        group.create_dataset(k, data=v, compression=self.compression)

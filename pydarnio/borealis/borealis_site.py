@@ -40,9 +40,9 @@ import logging
 import os
 import subprocess as sp
 import warnings
+import numpy as np
 
 from collections import OrderedDict
-from pathlib2 import Path
 from typing import Union
 
 from pydarnio import borealis_exceptions, borealis_formats
@@ -125,11 +125,10 @@ class BorealisSiteRead():
 
         try:
             with h5py.File(self.filename, 'r') as f:
-                records = sorted(list(f.keys()))
-                first_rec = f[records[0]]
+                first_rec = f[self._record_names[0]]
                 full_version = first_rec.attrs['borealis_git_hash'].decode('utf-8').split('-')[0]
                 version = '.'.join(full_version.split('.')[:2])      # vX.Y, ignore patch revision
-        except (IndexError, ValueError) as err:
+        except (IndexError, KeyError) as err:
             # if this is an array style file, it will raise
             # IndexError on the array.
             raise borealis_exceptions.BorealisStructureError(
@@ -491,9 +490,9 @@ class BorealisSiteWrite():
 
         Parameters
         ----------
-        attributes_type_dict: dict
+        attributes_type: dict
             Dictionary with the required types for the attributes in the file.
-        datasets_type_dict: dict
+        datasets_type: dict
             Dictionary with the require dtypes for the numpy arrays in the
             file.
 
@@ -510,23 +509,19 @@ class BorealisSiteWrite():
         --------
         BorealisUtilities
         """
-        Path(self.filename).touch()
         BorealisUtilities.check_records(self.filename, self.records,
                                         attribute_types, dataset_types)
 
-        # use external h5copy utility to move new record into 2hr file.
-
-        warnings.filterwarnings("ignore")
-        # Must use temporary file to append to a file; writing entire
-        # dictionary at once also doesn't work so this is required.
-        tmp_filename = self.filename + '.tmp'
-        Path(tmp_filename).touch()
-        for group_name, group_dict in self.records.items():
-            with h5py.File(tmp_filename, 'w') as f:
-                f.create_dataset(str(group_name), data=group_dict,
-                                 compression=self.compression)
-            cp_cmd = 'h5copy -i {newfile} -o {full_file} -s {dtstr} -d {dtstr}'
-            cmd = cp_cmd.format(newfile=tmp_filename, full_file=self.filename,
-                                dtstr='/'+str(group_name))
-            sp.call(cmd.split())
-            os.remove(tmp_filename)
+        with h5py.File(self.filename, 'w') as f:
+            for group_name, group_dict in self.records.items():
+                group = f.create_group(str(group_name))
+                for k, v in group_dict.items():
+                    if k in attribute_types.keys():
+                        group.attrs[k] = v
+                    elif v.dtype.type == np.str_:
+                        itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
+                        dset = group.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=self.compression)
+                        dset.attrs['strtype'] = b'unicode'
+                        dset.attrs['itemsize'] = itemsize
+                    else:
+                        group.create_dataset(k, data=v, compression=self.compression)

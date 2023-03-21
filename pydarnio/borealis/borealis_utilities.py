@@ -562,7 +562,7 @@ class BorealisUtilities():
         """
         if structure == 'array':
             try:
-                with h5py.File(self.filename, 'r') as f:
+                with h5py.File(filename, 'r') as f:
                     borealis_git_hash = f.attrs['borealis_git_hash'].decode('utf-8')
             except KeyError as err:
                 raise borealis_exceptions.BorealisStructureError(

@@ -1286,6 +1286,59 @@ class BaseFormat():
 
         return records
 
+    @classmethod
+    def _read_borealis_arrays(cls, filename: str) -> OrderedDict:
+        """
+        Base function for reading in a Borealis array file.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the file to load arrays from
+
+        Returns
+        -------
+        OrderedDict
+            a dict of arrays loaded from an hdf5 Borealis array file
+
+        Raises
+        ------
+        OSError: file does not exist
+
+        Notes
+        -----
+        The results will differ based on the format class, as many of the
+        class methods used inside this method should be specific
+        to the format and updated in the child class.
+        """
+        arrays = OrderedDict()
+        with h5py.File(filename, 'r') as f:
+
+            # Get the datasets (vector fields)
+            array_names = sorted(list(f.keys()))
+            for array_name in array_names:
+                dset = f[array_name]
+                if 'strtype' in dset.attrs:  # string type, requires some handling
+                    itemsize = dset.attrs['itemsize']
+                    data = dset[:].view(dtype=(np.unicode_, itemsize))
+                else:
+                    data = dset[:]  # non-string, can simply load
+                arrays[array_name] = data
+
+            # Get the attributes (scalar fields)
+            attribute_dict = {k: v for k, v in f.attrs.items()}
+            attribute_dict.pop('CLASS')                     # Inherent to HDF5 file
+            attribute_dict.pop('TITLE')                     # Inherent to HDF5 file
+            attribute_dict.pop('VERSION')                   # Inherent to HDF5 file
+            attribute_dict.pop('DEEPDISH_IO_VERSION')       # Inherent to HDF5 file
+            attribute_dict.pop('PYTABLES_FORMAT_VERSION')   # Inherent to HDF5 file
+            for k, v in attribute_dict.items():
+                if isinstance(v, bytes):
+                    attribute_dict[k] = v.tobytes().decode('utf-8')
+            arrays.update(attribute_dict)
+
+        return arrays
+
     # STATIC METHODS COMMON ACROSS FORMATS
     # i.e. common methods that can be used by multiple formats in restructuring
     # (generally these will be used in the unshared fields dims for arrays)

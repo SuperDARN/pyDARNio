@@ -244,51 +244,13 @@ class BorealisArrayRead():
         dataset_types = self.format.array_array_dtypes()
         unshared_fields = self.format.unshared_fields()
 
-        self._read_borealis_arrays(attribute_types, dataset_types,
-                                   unshared_fields)
+        arrays = self.format._read_borealis_arrays(self.filename)
+        BorealisUtilities.check_arrays(self.filename, arrays,
+                                       attribute_types, dataset_types,
+                                       unshared_fields)
+        self._arrays = arrays
+
         return self._arrays
-
-    def _read_borealis_arrays(self, attribute_types: dict,
-                              dataset_types: dict,
-                              unshared_fields: List[str]):
-        """
-        Read the entire file while checking all data fields.
-
-        Parameters
-        ----------
-        attribute_types: dict
-            Dictionary with the required types for the attributes in the file.
-        dataset_types: dict
-            Dictionary with the require dtypes for the numpy arrays in the
-            file.
-        unshared_fields: List[str]
-            List of fields that are not shared between the records and
-            therefore should be an array with first dimension = number of
-            records
-
-        Raises
-        ------
-        BorealisFieldMissingError - when a field is missing from the Borealis
-                                file
-        BorealisExtraFieldError - when an extra field is present in the
-                                Borealis file
-        BorealisDataFormatTypeError - when a field has the incorrect
-                                field type for the Borealis file
-        BorealisNumberOfRecordsError - when the number of records cannot
-                                be discerned from the arrays
-
-        See Also
-        --------
-        BorealisUtilities
-        """
-        attr_types = self.format.site_single_element_types()
-        dataset_types = self.format.site_array_dtypes()
-        records = self.format._read_borealis_records
-        with h5py.File(self.filename, 'r') as arrays:
-            BorealisUtilities.check_arrays(self.filename, arrays,
-                                           attribute_types, dataset_types,
-                                           unshared_fields)
-            self._arrays = arrays
 
 
 class BorealisArrayWrite():
