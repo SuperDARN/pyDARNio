@@ -262,19 +262,19 @@ class BorealisRawacfv0_4(BaseFormat):
         return {
             # Identifies the version of Borealis that made this data. Necessary
             # for all versions.
-            "borealis_git_hash": np.unicode_,
+            "borealis_git_hash": str,
             # Number used to identify experiment.
             "experiment_id": np.int64,
             # Name of the experiment file.
-            "experiment_name": np.unicode_,
+            "experiment_name": str,
             # Comment about the whole experiment
-            "experiment_comment": np.unicode_,
+            "experiment_comment": str,
             # Additional text comment that describes the slice.
-            "slice_comment": np.unicode_,
+            "slice_comment": str,
             # Number of slices in the experiment at this integration time.
             "num_slices": np.int64,
             # Three letter radar identifier.
-            "station": np.unicode_,
+            "station": str,
             # Number of sampling periods in the integration time.
             "num_sequences": np.int64,
             # range gate separation (equivalent distance between samples), km.
@@ -286,7 +286,7 @@ class BorealisRawacfv0_4(BaseFormat):
             # Sampling rate of the samples being written to file in Hz.
             "rx_sample_rate": np.float64,
             # Designates if the record is the first in a scan.
-            "scan_start_marker": np.bool_,
+            "scan_start_marker": np.uint8,
             # Integration time in seconds.
             "int_time": np.float32,
             # Length of the pulse in microseconds.
@@ -302,7 +302,7 @@ class BorealisRawacfv0_4(BaseFormat):
             "freq": np.uint32,
             # str denoting C data type of the samples included in the data
             # array, such as 'complex float'.
-            "samples_data_type": np.unicode_,
+            "samples_data_type": str,
             # data normalization factor determined by the filter scaling in the
             # decimation scheme.
             "data_normalization_factor": np.float64,
@@ -672,25 +672,25 @@ class BorealisBfiqv0_4(BaseFormat):
         return {
             # Identifies the version of Borealis that made this data. Necessary
             # for all versions.
-            "borealis_git_hash": np.unicode_,
+            "borealis_git_hash": str,
             # Number used to identify experiment.
             "experiment_id": np.int64,
             # Name of the experiment file.
-            "experiment_name": np.unicode_,
+            "experiment_name": str,
             # Comment about the whole experiment
-            "experiment_comment": np.unicode_,
+            "experiment_comment": str,
             # Additional text comment that describes the slice.
-            "slice_comment": np.unicode_,
+            "slice_comment": str,
             # Number of slices in the experiment at this integration time.
             "num_slices": np.int64,
             # Three letter radar identifier.
-            "station": np.unicode_,
+            "station": str,
             # Number of sampling periods in the integration time.
             "num_sequences": np.int64,
             # Sampling rate of the samples being written to file in Hz.
             "rx_sample_rate": np.float64,
             # Designates if the record is the first in a scan.
-            "scan_start_marker": np.bool_,
+            "scan_start_marker": np.uint8,
             # Integration time in seconds.
             "int_time": np.float32,
             # Length of the pulse in microseconds.
@@ -706,7 +706,7 @@ class BorealisBfiqv0_4(BaseFormat):
             "freq": np.uint32,
             # str denoting C data type of the samples included in the data
             # array, such as 'complex float'.
-            "samples_data_type": np.unicode_,
+            "samples_data_type": str,
             # Number of samples in the sampling period.
             "num_samps": np.uint32,
             # range gate separation (equivalent distance between samples), km
@@ -1074,25 +1074,25 @@ class BorealisAntennasIqv0_4(BaseFormat):
         return {
             # Identifies the version of Borealis that made this data. Necessary
             # for all versions.
-            "borealis_git_hash": np.unicode_,
+            "borealis_git_hash": str,
             # Number used to identify experiment.
             "experiment_id": np.int64,
             # Name of the experiment file.
-            "experiment_name": np.unicode_,
+            "experiment_name": str,
             # Comment about the whole experiment
-            "experiment_comment": np.unicode_,
+            "experiment_comment": str,
             # Additional text comment that describes the slice.
-            "slice_comment": np.unicode_,
+            "slice_comment": str,
             # Number of slices in the experiment at this integration time.
             "num_slices": np.int64,
             # Three letter radar identifier.
-            "station": np.unicode_,
+            "station": str,
             # Number of sampling periods in the integration time.
             "num_sequences": np.int64,
             # Sampling rate of the samples being written to file in Hz.
             "rx_sample_rate": np.float64,
             # Designates if the record is the first in a scan.
-            "scan_start_marker": np.bool_,
+            "scan_start_marker": np.uint8,
             # Integration time in seconds.
             "int_time": np.float32,
             # Length of the pulse in microseconds.
@@ -1108,7 +1108,7 @@ class BorealisAntennasIqv0_4(BaseFormat):
             "freq": np.uint32,
             # str denoting C data type of the samples included in the data
             # array, such as 'complex float'.
-            "samples_data_type": np.unicode_,
+            "samples_data_type": str,
             # Number of samples in the sampling period.
             "num_samps": np.uint32,
             # data normalization factor determined by the filter scaling in the
@@ -1402,23 +1402,23 @@ class BorealisRawrfv0_4(BaseFormat):
         return {
             # Identifies the version of Borealis that made this data. Necessary
             # for all versions.
-            "borealis_git_hash": np.unicode_,
+            "borealis_git_hash": str,
             # Number used to identify experiment.
             "experiment_id": np.int64,
             # Name of the experiment file.
-            "experiment_name": np.unicode_,
+            "experiment_name": str,
             # Comment about the whole experiment
-            "experiment_comment": np.unicode_,
+            "experiment_comment": str,
             # Number of slices in the experiment at this integration time.
             "num_slices": np.int64,
             # Three letter radar identifier.
-            "station": np.unicode_,
+            "station": str,
             # Number of sampling periods in the integration time.
             "num_sequences": np.int64,
             # Sampling rate of the samples being written to file in Hz.
             "rx_sample_rate": np.float64,
             # Designates if the record is the first in a scan.
-            "scan_start_marker": np.bool_,
+            "scan_start_marker": np.uint8,
             # Integration time in seconds.
             "int_time": np.float32,
             # Number of main array antennas.
@@ -1427,7 +1427,7 @@ class BorealisRawrfv0_4(BaseFormat):
             "intf_antenna_count": np.uint32,
             # str denoting C data type of the samples included in the data
             # array, such as 'complex float'.
-            "samples_data_type": np.unicode_,
+            "samples_data_type": str,
             # The center frequency of this data in kHz
             "rx_center_freq": np.float64,
             # Number of samples in the sampling period.
@@ -1513,12 +1513,12 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
             # the slice id of the file and dataset.
             "slice_id": np.uint32,
             # the interfacing of this slice to other slices.
-            "slice_interfacing": np.unicode_,
+            "slice_interfacing": str,
             # A string describing the type of scheduling time at the time of
             # this dataset.
-            "scheduling_mode": np.unicode_,
+            "scheduling_mode": str,
             # A string describing the averaging method, ex. mean, median
-            "averaging_method": np.unicode_,
+            "averaging_method": str,
             # number of blanked samples in the sequence.
             "num_blanked_samples": np.uint32
             })
@@ -1663,10 +1663,10 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
             # the slice id of the file and dataset.
             "slice_id": np.uint32,
             # the interfacing of this slice to other slices.
-            "slice_interfacing": np.unicode_,
+            "slice_interfacing": str,
             # A string describing the type of scheduling time at the time of
             # this dataset.
-            "scheduling_mode": np.unicode_,
+            "scheduling_mode": str,
             # number of blanked samples in the sequence.
             "num_blanked_samples": np.uint32
             })
@@ -1806,10 +1806,10 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
             # the slice id of the file and dataset.
             "slice_id": np.uint32,
             # the interfacing of this slice to other slices.
-            "slice_interfacing": np.unicode_,
+            "slice_interfacing": str,
             # A string describing the type of scheduling time at the time of
             # this dataset.
-            "scheduling_mode": np.unicode_,
+            "scheduling_mode": str,
             # number of blanked samples in the sequence.
             "num_blanked_samples": np.uint32
             })
@@ -1955,7 +1955,7 @@ class BorealisRawrfv0_5(BorealisRawrfv0_4):
         single_element_types.update({
             # A string describing the type of scheduling time at the time of
             # this dataset.
-            "scheduling_mode": np.unicode_
+            "scheduling_mode": str
             })
         return single_element_types
 

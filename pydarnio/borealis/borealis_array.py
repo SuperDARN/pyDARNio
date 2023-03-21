@@ -119,7 +119,7 @@ class BorealisArrayRead():
             with h5py.File(self.filename, 'r') as f:
                 full_version = f.attrs['borealis_git_hash'].decode('utf-8').split('-')[0]
                 version = '.'.join(full_version.split('.')[:2])      # vX.Y, ignore patch revision
-        except ValueError as err:
+        except KeyError as err:
             raise borealis_exceptions.BorealisStructureError(
                 ' {} Could not find the borealis_git_hash required to '
                 'determine read version (file may be site style) {}'
