@@ -37,12 +37,12 @@ Notes
 """
 
 import copy
+import h5py
 import numpy as np
 
 from collections import OrderedDict
 from datetime import datetime
 from typing import Callable, List
-import h5py
 
 from pydarnio import borealis_exceptions
 

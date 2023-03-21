@@ -37,6 +37,7 @@ BorealisSiteWrite
 For more information on Borealis data files and how they convert to SDarn
 files, see: https://borealis.readthedocs.io/en/latest/
 """
+import deepdish as dd
 import h5py
 import logging
 
@@ -116,9 +117,7 @@ class BorealisArrayRead():
         # 'vX.X'
         try:
             with h5py.File(self.filename, 'r') as f:
-                records = sorted(list(f.keys()))
-                first_rec = f[records[0]]
-                full_version = first_rec.attrs['borealis_git_hash'].decode('utf-8').split('-')[0]
+                full_version = f.attrs['borealis_git_hash'].decode('utf-8').split('-')[0]
                 version = '.'.join(full_version.split('.')[:2])      # vX.Y, ignore patch revision
         except ValueError as err:
             raise borealis_exceptions.BorealisStructureError(
@@ -284,7 +283,7 @@ class BorealisArrayRead():
         attr_types = self.format.site_single_element_types()
         dataset_types = self.format.site_array_dtypes()
         records = self.format._read_borealis_records
-        while h5py.File(self.filename, 'r') as arrays:
+        with h5py.File(self.filename, 'r') as arrays:
             BorealisUtilities.check_arrays(self.filename, arrays,
                                            attribute_types, dataset_types,
                                            unshared_fields)

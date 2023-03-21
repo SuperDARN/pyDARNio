@@ -561,7 +561,7 @@ class BorealisUtilities():
             try:
                 with h5py.File(self.filename, 'r') as f:
                     records = sorted(list(f.keys()))
-                    borealis_git_hash = records.attrs['borealis_git_hash']
+                    borealis_git_hash = records.attrs['borealis_git_hash']\
                                             .decode('utf-8')
             except ValueError as err:
                 raise borealis_exceptions.BorealisStructureError(
@@ -573,7 +573,7 @@ class BorealisUtilities():
                 with h5py.File(self.filename, 'r') as f:
                     records = sorted(list(f.keys()))
                     first_rec = f[records[0]]
-                    borealis_git_hash = first_rec.attrs['borealis_git_hash']
+                    borealis_git_hash = first_rec.attrs['borealis_git_hash']\
                                             .decode('utf-8')
             except ValueError as err:
                 raise borealis_exceptions.BorealisStructureError(

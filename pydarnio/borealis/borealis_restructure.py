@@ -219,12 +219,12 @@ class BorealisRestructure(object):
             with hdf5.File(self.infile_name, 'r') as f:
                 for field in self.format.unshared_fields():
                     if field in self.format.single_element_types():
-                    unshared_single_elements[field] = f[field]
+                        unshared_single_elements[field] = f[field]
 
             with h5py.File(self.infile_name, 'r') as f:
                 records = sorted(list(f.keys()))
                 first_rec = f[records[0]]
-                sqn_timestamps_array = first_rec.attrs['sqn_timestamps']
+                sqn_timestamps_array = first_rec.attrs['sqn_timestamps']\
                                             .decode('utf-8')
             for record_num, seq_timestamp in enumerate(sqn_timestamps_array):
                 # format dictionary key in the same way it is done
@@ -439,7 +439,7 @@ class BorealisRestructure(object):
             BorealisUtilities.check_arrays(self.infile_name, new_data_dict,
                                            attribute_types, dataset_types,
                                            unshared_fields)
-            while h5py.File(self.outfile_name, 'w') as f:
+            with h5py.File(self.outfile_name, 'w') as f:
                 f.create_dataset(new_data_dict, compression=self.compression)
 
         except TypeError as err:
@@ -490,7 +490,7 @@ class BorealisRestructure(object):
         tmp_filename = self.outfile_name + '.tmp'
         Path(tmp_filename).touch()
 
-        while h5py.File(tmp_filename, 'w') as f:
+        with h5py.File(tmp_filename, 'w') as f:
             f.create_dataset(record[record_name], compression=self.compression)
         
         cp_cmd = 'h5copy -i {newfile} -o {full_file} -s / -d {dtstr}'
