@@ -1273,13 +1273,20 @@ class BaseFormat():
                     rec_dict[dset_name] = data
 
                 # Get the attributes (scalar fields)
-                attribute_dict = {k: v for k, v in group.attrs.items()}
-                attribute_dict.pop('CLASS')       # Inherent to HDF5 file
-                attribute_dict.pop('TITLE')       # Inherent to HDF5 file
-                attribute_dict.pop('VERSION')     # Inherent to HDF5 file
-                for k, v in attribute_dict.items():
-                    if isinstance(v, bytes):
+                attribute_dict = {}
+                for k, v in group.attrs.items():
+                    if k in ['CLASS', 'TITLE', 'VERSION']:
+                        continue
+                    elif isinstance(v, bytes):
                         attribute_dict[k] = v.tobytes().decode('utf-8')
+                    elif isinstance(v, h5py.Empty):
+                        dtype = v.dtype.type
+                        data = dtype()
+                        if isinstance(data, bytes):
+                            data = data.decode('utf-8')
+                        attribute_dict[k] = data
+                    else:
+                        attribute_dict[k] = v
                 rec_dict.update(attribute_dict)
 
                 records[rec_key] = rec_dict
@@ -1326,15 +1333,20 @@ class BaseFormat():
                 arrays[array_name] = data
 
             # Get the attributes (scalar fields)
-            attribute_dict = {k: v for k, v in f.attrs.items()}
-            attribute_dict.pop('CLASS')                     # Inherent to HDF5 file
-            attribute_dict.pop('TITLE')                     # Inherent to HDF5 file
-            attribute_dict.pop('VERSION')                   # Inherent to HDF5 file
-            attribute_dict.pop('DEEPDISH_IO_VERSION')       # Inherent to HDF5 file
-            attribute_dict.pop('PYTABLES_FORMAT_VERSION')   # Inherent to HDF5 file
-            for k, v in attribute_dict.items():
-                if isinstance(v, bytes):
+            attribute_dict = {}
+            for k, v in f.attrs.items():
+                if k in ['CLASS', 'TITLE', 'VERSION', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION']:
+                    continue
+                elif isinstance(v, bytes):
                     attribute_dict[k] = v.tobytes().decode('utf-8')
+                elif isinstance(v, h5py.Empty):
+                    dtype = v.dtype.type
+                    data = dtype()
+                    if isinstance(data, bytes):
+                        data = data.decode('utf-8')
+                    attribute_dict[k] = data
+                else:
+                    attribute_dict[k] = v
             arrays.update(attribute_dict)
 
         return arrays
