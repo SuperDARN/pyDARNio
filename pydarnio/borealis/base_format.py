@@ -1230,7 +1230,7 @@ class BaseFormat():
         return timestamp_dict
 
     @classmethod
-    def _read_borealis_records(cls, filename: str) -> OrderedDict:
+    def read_records(cls, filename: str) -> OrderedDict:
         """
         Base function for reading in a Borealis site file.
 
@@ -1287,7 +1287,7 @@ class BaseFormat():
         return records
 
     @classmethod
-    def _read_borealis_arrays(cls, filename: str) -> OrderedDict:
+    def read_arrays(cls, filename: str) -> OrderedDict:
         """
         Base function for reading in a Borealis array file.
 
@@ -1338,6 +1338,79 @@ class BaseFormat():
             arrays.update(attribute_dict)
 
         return arrays
+
+    @classmethod
+    def write_records(cls, filename: str, records: OrderedDict, attribute_types: dict,
+                      dataset_types: dict, compression: str):
+        """
+        Write the file in site style after checking records.
+
+        Several Borealis field checks are done to insure the integrity of the
+        file.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the file to write to.
+        records: OrderedDict
+            Dictionary containing site-formatted fields to write to file.
+        attribute_types: dict
+            Dictionary with the required types for the attributes in the file.
+        dataset_types: dict
+            Dictionary with the require dtypes for the numpy arrays in the
+            file.
+        compression: str
+            Type of compression to use for the HDF5 file.
+        """
+        with h5py.File(filename, 'a') as f:
+            for group_name, group_dict in records.items():
+                group = f.create_group(str(group_name))
+                for k, v in group_dict.items():
+                    if k in attribute_types.keys():
+                        group.attrs[k] = v
+                    elif v.dtype.type == np.str_:
+                        itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
+                        dset = group.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=compression)
+                        dset.attrs['strtype'] = b'unicode'
+                        dset.attrs['itemsize'] = itemsize
+                    else:
+                        group.create_dataset(k, data=v, compression=compression)
+
+    @classmethod
+    def write_arrays(cls, filename: str, arrays: OrderedDict, attribute_types: dict,
+                     dataset_types: dict, unshared_fields: List[str], compression: str):
+        """
+        Write arrays to file while checking all data fields.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the file to write to.
+        arrays: OrderedDict
+            Dictionary containing array-formatted fields to write to file.
+        attribute_types: dict
+            Dictionary with the required types for the attributes in the file.
+        dataset_types: dict
+            Dictionary with the require dtypes for the numpy arrays in the
+            file.
+        unshared_fields: List[str]
+            List of fields that are not shared between the records and
+            therefore should be an array with first dimension = number of
+            records
+        compression: str
+            Type of compression to use for the HDF5 file.
+        """
+        with h5py.File(filename, 'a') as f:
+            for k, v in arrays.items():
+                if k in attribute_types:
+                    f.attrs[k] = v
+                elif v.dtype.type == np.str_:
+                    itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
+                    dset = f.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=compression)
+                    dset.attrs['strtype'] = b'unicode'
+                    dset.attrs['itemsize'] = itemsize
+                else:
+                    f.create_dataset(k, data=v, compression=compression)
 
     # STATIC METHODS COMMON ACROSS FORMATS
     # i.e. common methods that can be used by multiple formats in restructuring

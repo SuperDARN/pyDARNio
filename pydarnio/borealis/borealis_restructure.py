@@ -282,18 +282,16 @@ class BorealisRestructure(object):
                             index_slice = [slice(0, i) for i in site_dims if i != -1]
                             index_slice.insert(0, record_num)
                             index_slice = tuple(index_slice)
-                            # If there was an incorrect dimension (-1 in dims), then use deepdish to extract the field
-                            if field_flag:
-                                record_dict[field] = f[field][index_slice]
-                            else:
-                                record_dict[field] = f[field][index_slice]
+                            record_dict[field] = f[field][index_slice]
+
                     # Wrap in another dict to use the format method
                     record_dict = OrderedDict({key: record_dict})
                     record_dict = self.format.flatten_site_arrays(record_dict)
+                    BorealisUtilities.check_records(self.infile_name, record_dict, attribute_types, dataset_types)
 
                     # Write the single record to file
-                    self._write_borealis_record(record_dict, key, attribute_types,
-                                                dataset_types)
+                    self.format.write_records(self.outfile_name, record_dict, attribute_types, dataset_types,
+                                              self.compression)
         except Exception as err:
             raise borealis_exceptions.BorealisRestructureError(
                 'Records for {}: Error restructuring {} from array to site '
@@ -439,70 +437,13 @@ class BorealisRestructure(object):
             attribute_types = self.format.array_single_element_types()
             dataset_types = self.format.array_array_dtypes()
             unshared_fields = self.format.unshared_fields()
-            BorealisUtilities.check_arrays(self.infile_name, new_data_dict,
-                                           attribute_types, dataset_types,
+            BorealisUtilities.check_arrays(self.infile_name, new_data_dict, attribute_types, dataset_types,
                                            unshared_fields)
-            with h5py.File(self.outfile_name, 'w') as f:
-                for k, v in new_data_dict.items():
-                    if k in attribute_types:
-                        f.attrs[k] = v
-                    elif v.dtype.type == np.str_:
-                        itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
-                        dset = f.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=self.compression)
-                        dset.attrs['strtype'] = b'unicode'
-                        dset.attrs['itemsize'] = itemsize
-                    else:
-                        f.create_dataset(k, data=v, compression=self.compression)
+            self.format.write_arrays(self.outfile_name, new_data_dict, attribute_types, dataset_types, unshared_fields,
+                                     self.compression)
 
         except TypeError as err:
             raise borealis_exceptions.BorealisRestructureError(
                 'Records for {}: Error restructuring {} from site to array '
                 'style: {}'.format(self.infile_name, self.format.__name__, err)
             ) from err
-
-    def _write_borealis_record(self, record: dict, record_name: str,
-                               attribute_types: dict, dataset_types: dict):
-        """
-        Add a record to the output file in site style after checking the record.
-
-        Several Borealis field checks are done to insure the integrity of the
-        record.
-
-        Parameters
-        ----------
-        record: dict
-            Dictionary containing the site-structured record.
-        record_name: str
-            Group name of the record for the HDF5 hierarchy.
-        attribute_types: dict
-            Dictionary with the required types for the attributes in the file.
-        dataset_types: dict
-            Dictionary with the required dtypes for the numpy arrays in the
-            file.
-
-        Raises
-        ------
-        BorealisFieldMissingError
-        BorealisExtraFieldError
-        BorealisDataFormatTypeError
-
-        See Also
-        --------
-        BorealisUtilities
-        """
-        BorealisUtilities.check_records(self.infile_name, record,
-                                        attribute_types, dataset_types)
-
-        with h5py.File(self.outfile_name, 'a') as f:
-            for group_name, rec in record.items():
-                group = f.create_group(group_name)
-                for k, v in rec.items():
-                    if k in attribute_types:
-                        group.attrs[k] = v
-                    elif v.dtype.type == np.str_:
-                        itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
-                        dset = group.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=self.compression)
-                        dset.attrs['strtype'] = b'unicode'
-                        dset.attrs['itemsize'] = itemsize
-                    else:
-                        group.create_dataset(k, data=v, compression=self.compression)

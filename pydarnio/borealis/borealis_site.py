@@ -267,7 +267,7 @@ class BorealisSiteRead():
         attribute_types = self.format.site_single_element_types()
         dataset_types = self.format.site_array_dtypes()
 
-        records = self.format._read_borealis_records(self.filename)
+        records = self.format.read_records(self.filename)
         BorealisUtilities.check_records(self.filename, records,
                                         attribute_types, dataset_types)
 
@@ -467,34 +467,8 @@ class BorealisSiteWrite():
 
         Returns
         -------
-        filename
+        filename: str
             The filename written to.
-        """
-        pyDARNio_log.info("Writing Borealis {} {} file: {}"
-                          "".format(self.software_version,
-                                    self.borealis_filetype, self.filename))
-
-        attribute_types = self.format.site_single_element_types()
-        dataset_types = self.format.site_array_dtypes()
-
-        self._write_borealis_records(attribute_types, dataset_types)
-        return self.filename
-
-    def _write_borealis_records(self, attribute_types: dict,
-                                dataset_types: dict):
-        """
-        Write the file in site style after checking records.
-
-        Several Borealis field checks are done to insure the integrity of the
-        file.
-
-        Parameters
-        ----------
-        attributes_type: dict
-            Dictionary with the required types for the attributes in the file.
-        datasets_type: dict
-            Dictionary with the require dtypes for the numpy arrays in the
-            file.
 
         Raises
         ------
@@ -504,24 +478,15 @@ class BorealisSiteWrite():
                                 Borealis file/stream type
         BorealisDataFormatTypeError - when a field has the incorrect
                                 field type for the Borealis file/stream type
-
-        See Also
-        --------
-        BorealisUtilities
         """
+        pyDARNio_log.info("Writing Borealis {} {} file: {}"
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
+
+        attribute_types = self.format.site_single_element_types()
+        dataset_types = self.format.site_array_dtypes()
         BorealisUtilities.check_records(self.filename, self.records,
                                         attribute_types, dataset_types)
-
-        with h5py.File(self.filename, 'w') as f:
-            for group_name, group_dict in self.records.items():
-                group = f.create_group(str(group_name))
-                for k, v in group_dict.items():
-                    if k in attribute_types.keys():
-                        group.attrs[k] = v
-                    elif v.dtype.type == np.str_:
-                        itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
-                        dset = group.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=self.compression)
-                        dset.attrs['strtype'] = b'unicode'
-                        dset.attrs['itemsize'] = itemsize
-                    else:
-                        group.create_dataset(k, data=v, compression=self.compression)
+        self.format.write_records(self.filename, self.records, attribute_types,
+                                  dataset_types, self.compression)
+        return self.filename

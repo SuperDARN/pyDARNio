@@ -244,7 +244,7 @@ class BorealisArrayRead():
         dataset_types = self.format.array_array_dtypes()
         unshared_fields = self.format.unshared_fields()
 
-        arrays = self.format._read_borealis_arrays(self.filename)
+        arrays = self.format.read_arrays(self.filename)
         BorealisUtilities.check_arrays(self.filename, arrays,
                                        attribute_types, dataset_types,
                                        unshared_fields)
@@ -432,7 +432,14 @@ class BorealisArrayWrite():
 
         Raises
         ------
-        BorealisFileTypeError
+        BorealisFieldMissingError - when a field is missing from the Borealis
+                                file
+        BorealisExtraFieldError - when an extra field is present in the
+                                Borealis file
+        BorealisDataFormatTypeError - when a field has the incorrect
+                                field type for the Borealis file
+        BorealisNumberOfRecordsError - when the number of records cannot
+                                be discerned from the arrays
 
         See Also
         --------
@@ -446,55 +453,8 @@ class BorealisArrayWrite():
         attribute_types = self.format.array_single_element_types()
         dataset_types = self.format.array_array_dtypes()
         unshared_fields = self.format.unshared_fields()
-
-        self._write_borealis_arrays(attribute_types, dataset_types,
-                                    unshared_fields)
+        BorealisUtilities.check_arrays(self.filename, self.arrays, attribute_types,
+                                       dataset_types, unshared_fields)
+        self.format.write_arrays(self.filename, self.arrays, attribute_types,
+                                 dataset_types, unshared_fields, self.compression)
         return self.filename
-
-    def _write_borealis_arrays(self, attribute_types: dict,
-                               dataset_types: dict,
-                               unshared_fields: List[str]):
-        """
-        Write the entire file while checking all data fields.
-
-        Parameters
-        ----------
-        attribute_types: dict
-            Dictionary with the required types for the attributes in the file.
-        dataset_types: dict
-            Dictionary with the require dtypes for the numpy arrays in the
-            file.
-        unshared_fields: List[str]
-            List of fields that are not shared between the records and
-            therefore should be an array with first dimension = number of
-            records
-
-        Raises
-        ------
-        BorealisFieldMissingError - when a field is missing from the Borealis
-                                file
-        BorealisExtraFieldError - when an extra field is present in the
-                                Borealis file
-        BorealisDataFormatTypeError - when a field has the incorrect
-                                field type for the Borealis file
-        BorealisNumberOfRecordsError - when the number of records cannot
-                                be discerned from the arrays
-
-        See Also
-        --------
-        BorealisUtilities
-        """
-        BorealisUtilities.check_arrays(self.filename, self.arrays,
-                                       attribute_types, dataset_types,
-                                       unshared_fields)
-        with h5py.File(self.filename, 'w') as f:
-            for k, v in self.arrays.items():
-                if k in attribute_types:
-                    f.attrs[k] = v
-                elif v.dtype.type == np.str_:
-                    itemsize = v.dtype.itemsize // 4    # every character is 4 bytes
-                    dset = f.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=self.compression)
-                    dset.attrs['strtype'] = b'unicode'
-                    dset.attrs['itemsize'] = itemsize
-                else:
-                    f.create_dataset(k, data=v, compression=self.compression)
