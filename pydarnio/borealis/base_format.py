@@ -1379,7 +1379,10 @@ class BaseFormat():
                 group = f.create_group(str(group_name))
                 for k, v in group_dict.items():
                     if k in attribute_types.keys():
-                        group.attrs[k] = v
+                        if isinstance(v, str):
+                            group.attrs[k] = np.bytes_(v)
+                        else:
+                            group.attrs[k] = v
                     elif v.dtype.type == np.str_:
                         itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
                         dset = group.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=compression)
@@ -1415,7 +1418,10 @@ class BaseFormat():
         with h5py.File(filename, 'a') as f:
             for k, v in arrays.items():
                 if k in attribute_types:
-                    f.attrs[k] = v
+                    if isinstance(v, str):
+                        f.attrs[k] = np.bytes_(v)
+                    else:
+                        f.attrs[k] = v
                 elif v.dtype.type == np.str_:
                     itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
                     dset = f.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=compression)

@@ -214,7 +214,7 @@ class BorealisRestructure(object):
                     if field in attribute_types:
                         data = f.attrs[field]
                         if isinstance(data, bytes):
-                            data = str(data)
+                            data = data.decode('utf-8')
                     elif field in self.format.array_string_fields():
                         dset = f[field]
                         itemsize = dset.attrs['itemsize']
