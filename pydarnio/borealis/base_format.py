@@ -1110,7 +1110,7 @@ class BaseFormat():
             # Some indices may not be filled due to dimensions that are maximum values (num_sequences, etc. can change
             # between records), so they are initialized with a known value first.
             # Initialize floating-point values to NaN, and integer values to -1.
-            if datatype is np.int64 or datatype is np.uint32 or datatype is np.uint8:
+            if datatype in [np.int64, np.uint32, np.uint8]:
                 empty_array[:] = -1
             else:
                 empty_array[:] = np.NaN
