@@ -537,9 +537,7 @@ class BorealisRawacfv0_4(BaseFormat):
         ------
 
         """
-        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisRawacfv0_4,
-                                                                  cls).site_get_max_dims(filename,
-                                                                                         unshared_parameters)
+        fields_max_dims, max_num_sequences, max_num_beams = super().site_get_max_dims(filename, unshared_parameters)
 
         # Now change the main_acfs, int_acfs and xcfs dicts to maximum required dims
 
@@ -872,9 +870,7 @@ class BorealisBfiqv0_4(BaseFormat):
         ------
 
         """
-        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisBfiqv0_4,
-                                                                  cls).site_get_max_dims(filename,
-                                                                                         unshared_parameters)
+        fields_max_dims, max_num_sequences, max_num_beams = super().site_get_max_dims(filename, unshared_parameters)
 
         # Get the num_ant_arrays and num_samps fields directly from one record of the file
         with h5py.File(filename, 'r') as site_file:
@@ -1188,9 +1184,7 @@ class BorealisAntennasIqv0_4(BaseFormat):
         ------
 
         """
-        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisAntennasIqv0_4,
-                                                                  cls).site_get_max_dims(filename,
-                                                                                         unshared_parameters)
+        fields_max_dims, max_num_sequences, max_num_beams = super().site_get_max_dims(filename, unshared_parameters)
 
         # Get the num_antennas and num_samps fields directly from one record of the file
         with h5py.File(filename, 'r') as site_file:
@@ -1440,9 +1434,7 @@ class BorealisRawrfv0_4(BaseFormat):
         ------
 
         """
-        fields_max_dims, max_num_sequences, max_num_beams = super(BorealisRawrfv0_4,
-                                                                  cls).site_get_max_dims(filename,
-                                                                                         unshared_parameters)
+        fields_max_dims, max_num_sequences, max_num_beams = super().site_get_max_dims(filename, unshared_parameters)
 
         # Get the num_antennas and num_samps fields directly from one record of the file
         with h5py.File(filename, 'r') as site_file:
@@ -1538,7 +1530,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         within the sequence. Therefore, this bug was fixed by changing
         blanked_samples to an unshared field in Borealis v0.5.
         """
-        shared = super(BorealisRawacfv0_5, cls).shared_fields() + \
+        shared = super().shared_fields() + \
             ['slice_id', 'scheduling_mode', 'averaging_method']
         shared.remove('blanked_samples')
         return shared
@@ -1556,8 +1548,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         new slices may be added and interfaced to this slice and therefore
         slice_interfacing may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisRawacfv0_5,
-                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims = super().unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.
                                 find_max_field_len_func('blanked_samples')],
@@ -1570,8 +1561,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisRawacfv0_5,
-                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims = super().unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
                                 arrays['num_blanked_samples'][record_num]],
@@ -1585,8 +1575,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisRawacfv0_5,
-                               cls).array_specific_fields_generate()
+        array_specific = super().array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
                 [len(record['blanked_samples']) for key, record in
@@ -1599,8 +1588,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisRawacfv0_5,
-                               cls).array_specific_fields_iterative_generator()
+        array_specific = super().array_specific_fields_iterative_generator()
         array_specific.update({
             'num_blanked_samples': lambda record: len(record['blanked_samples'])
             })
@@ -1650,7 +1638,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         was fixed by changing blanked_samples to an unshared field in Borealis
         v0.5.
         """
-        shared = super(BorealisBfiqv0_5, cls).shared_fields() + \
+        shared = super().shared_fields() + \
             ['slice_id', 'scheduling_mode']
         shared.remove('blanked_samples')
         return shared
@@ -1668,8 +1656,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         new slices may be added and interfaced to this slice and therefore
         slice_interfacing may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisBfiqv0_5,
-                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims = super().unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.
                                 find_max_field_len_func('blanked_samples')],
@@ -1682,8 +1669,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisBfiqv0_5,
-                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims = super().unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
                                 arrays['num_blanked_samples'][record_num]],
@@ -1697,8 +1683,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisBfiqv0_5,
-                               cls).array_specific_fields_generate()
+        array_specific = super().array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
                 [len(record['blanked_samples']) for key, record in
@@ -1711,8 +1696,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisBfiqv0_5,
-                               cls).array_specific_fields_iterative_generator()
+        array_specific = super().array_specific_fields_iterative_generator()
         array_specific.update({
             'num_blanked_samples': lambda record: len(record['blanked_samples'])
         })
@@ -1757,7 +1741,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         In Borealis v0.5, slice_id and scheduling_mode were added and these
         will be shared fields.
         """
-        shared = super(BorealisAntennasIqv0_5, cls).shared_fields() + \
+        shared = super().shared_fields() + \
             ['slice_id', 'scheduling_mode']
         return shared
 
@@ -1774,8 +1758,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         new slices may be added and interfaced to this slice and therefore
         the field may not be the same from record to record.
         """
-        unshared_fields_dims = super(BorealisAntennasIqv0_5,
-                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims = super().unshared_fields_dims_array()
         unshared_fields_dims.update({
             'blanked_samples': [cls.
                                 find_max_field_len_func('blanked_samples')],
@@ -1788,8 +1771,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisAntennasIqv0_5,
-                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims = super().unshared_fields_dims_site()
         unshared_fields_dims.update({
             'blanked_samples': [lambda arrays, record_num:
                                 arrays['num_blanked_samples'][record_num]],
@@ -1802,8 +1784,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisAntennasIqv0_5,
-                               cls).array_specific_fields_generate()
+        array_specific = super().array_specific_fields_generate()
         array_specific.update({
             'num_blanked_samples': lambda records: np.array(
                 [len(record['blanked_samples']) for key, record in
@@ -1816,8 +1797,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
         """
         See BaseFormat class for description and use of this method.
         """
-        array_specific = super(BorealisAntennasIqv0_5,
-                               cls).array_specific_fields_iterative_generator()
+        array_specific = super().array_specific_fields_iterative_generator()
         array_specific.update({
             'num_blanked_samples': lambda record: len(record['blanked_samples'])
         })
@@ -1885,8 +1865,7 @@ class BorealisRawacfv0_6(BorealisRawacfv0_5):
         All are unshared fields because their values may not be the same from
         record to record.
         """
-        unshared_fields_dims = super(BorealisRawacf,
-                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims = super().unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
             'lp_status_word': [],
@@ -1900,8 +1879,7 @@ class BorealisRawacfv0_6(BorealisRawacfv0_5):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisRawacf,
-                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims = super().unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
             'lp_status_word': [],
@@ -1953,8 +1931,7 @@ class BorealisBfiqv0_6(BorealisBfiqv0_5):
         All are unshared fields because their values may not be the same from
         record to record.
         """
-        unshared_fields_dims = super(BorealisBfiq,
-                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims = super().unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
             'lp_status_word': [],
@@ -1969,8 +1946,7 @@ class BorealisBfiqv0_6(BorealisBfiqv0_5):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisBfiq,
-                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims = super().unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
             'lp_status_word': [],
@@ -2028,8 +2004,7 @@ class BorealisAntennasIqv0_6(BorealisAntennasIqv0_5):
         All are unshared fields because their values may not be the same from
         record to record.
         """
-        unshared_fields_dims = super(BorealisAntennasIq,
-                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims = super().unshared_fields_dims_array()
         unshared_fields_dims.update({
             'agc_status_word': [],
             'lp_status_word': [],
@@ -2044,8 +2019,7 @@ class BorealisAntennasIqv0_6(BorealisAntennasIqv0_5):
         """
         See BaseFormat class for description and use of this method.
         """
-        unshared_fields_dims = super(BorealisAntennasIq,
-                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims = super().unshared_fields_dims_site()
         unshared_fields_dims.update({
             'agc_status_word': [],
             'lp_status_word': [],
