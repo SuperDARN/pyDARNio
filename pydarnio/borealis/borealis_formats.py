@@ -2112,44 +2112,7 @@ class BorealisRawacf(BorealisRawacfv0_6):
     lp_status_word. Array structured files contain the same fields,
     but with dims of [num_records].
     """
-    fields = BorealisFieldsv0_6
-
-    @classmethod
-    def unshared_fields_dims_array(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Notes
-        -----
-        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and lp_status_word were added to rawacf.
-        All are unshared fields because their values may not be the same from
-        record to record.
-        """
-        unshared_fields_dims = super(BorealisRawacf,
-                                     cls).unshared_fields_dims_array()
-        unshared_fields_dims.update({
-            'agc_status_word': [],
-            'lp_status_word': [],
-            'gps_locked': [],
-            'gps_to_system_time_diff': [],
-            })
-        return unshared_fields_dims
-
-    @classmethod
-    def unshared_fields_dims_site(cls):
-        """
-        See BaseFormat class for description and use of this method.
-        """
-        unshared_fields_dims = super(BorealisRawacf,
-                                     cls).unshared_fields_dims_site()
-        unshared_fields_dims.update({
-            'agc_status_word': [],
-            'lp_status_word': [],
-            'gps_locked': [],
-            'gps_to_system_time_diff': [],
-            })
-        return unshared_fields_dims
+    fields = BorealisFields
 
 
 class BorealisBfiq(BorealisBfiqv0_6):
@@ -2180,51 +2143,7 @@ class BorealisBfiq(BorealisBfiqv0_6):
 
     pulse_phase_offset was also added
     """
-    fields = BorealisFieldsv0_6
-
-    @classmethod
-    def unshared_fields_dims_array(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Notes
-        -----
-        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        lp_status_word and pulse_phase_offset were added to bfiq.
-        All are unshared fields because their values may not be the same from
-        record to record.
-        """
-        unshared_fields_dims = super(BorealisBfiq,
-                                     cls).unshared_fields_dims_array()
-        unshared_fields_dims.update({
-            'agc_status_word': [],
-            'lp_status_word': [],
-            'gps_locked': [],
-            'gps_to_system_time_diff': [],
-            'pulse_phase_offset': [cls.find_max_pulse_phase_offset]
-            })
-        return unshared_fields_dims
-
-    @classmethod
-    def unshared_fields_dims_site(cls):
-        """
-        See BaseFormat class for description and use of this method.
-        """
-        unshared_fields_dims = super(BorealisBfiq,
-                                     cls).unshared_fields_dims_site()
-        unshared_fields_dims.update({
-            'agc_status_word': [],
-            'lp_status_word': [],
-            'gps_locked': [],
-            'gps_to_system_time_diff': [],
-            'pulse_phase_offset': [lambda arrays, record_num:
-                                   -1 if arrays['pulse_phase_offset'].size < arrays['num_sequences'][record_num]
-                                   else
-                                   list((arrays['num_sequences'][record_num],)
-                                        + arrays['pulse_phase_offset'][
-                                              record_num].shape[1:])],
-            })
-        return unshared_fields_dims
+    fields = BorealisFields
 
 
 class BorealisAntennasIq(BorealisAntennasIqv0_6):
@@ -2255,51 +2174,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_6):
 
     pulse_phase_offset was also added to the site-structured files.
     """
-    fields = BorealisFieldsv0_6
-
-    @classmethod
-    def unshared_fields_dims_array(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Notes
-        -----
-        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        lp_status_word and pulse_phase_offset were added to the antennas_iq.
-        All are unshared fields because their values may not be the same from
-        record to record.
-        """
-        unshared_fields_dims = super(BorealisAntennasIq,
-                                     cls).unshared_fields_dims_array()
-        unshared_fields_dims.update({
-            'agc_status_word': [],
-            'lp_status_word': [],
-            'gps_locked': [],
-            'gps_to_system_time_diff': [],
-            'pulse_phase_offset': [cls.find_max_pulse_phase_offset]
-            })
-        return unshared_fields_dims
-
-    @classmethod
-    def unshared_fields_dims_site(cls):
-        """
-        See BaseFormat class for description and use of this method.
-        """
-        unshared_fields_dims = super(BorealisAntennasIq,
-                                     cls).unshared_fields_dims_site()
-        unshared_fields_dims.update({
-            'agc_status_word': [],
-            'lp_status_word': [],
-            'gps_locked': [],
-            'gps_to_system_time_diff': [],
-            'pulse_phase_offset': [lambda arrays, record_num:
-                                   -1 if arrays['pulse_phase_offset'].size < arrays['num_sequences'][record_num]
-                                   else
-                                   list((arrays['num_sequences'][record_num],)
-                                        + arrays['pulse_phase_offset'][
-                                              record_num].shape[1:])],
-            })
-        return unshared_fields_dims
+    fields = BorealisFields
 
 
 class BorealisRawrf(BorealisRawrfv0_6):
@@ -2322,7 +2197,7 @@ class BorealisRawrf(BorealisRawrfv0_6):
     gps_locked, gps_to_system_time_diff, agc_status_word, and
     lp_status_word.
     """
-    fields = BorealisFieldsv0_6
+    fields = BorealisFields
 
 # borealis versions
 borealis_version_dict = {
