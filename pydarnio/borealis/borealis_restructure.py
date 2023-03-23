@@ -34,9 +34,7 @@ see: https://borealis.readthedocs.io/en/master/
 import os
 import subprocess as sp
 import warnings
-from pathlib import Path
 import h5py
-import deepdish as dd
 import logging
 import numpy as np
 from datetime import datetime
@@ -208,57 +206,64 @@ class BorealisRestructure(object):
         attribute_types = self.format.site_single_element_types()
         dataset_types = self.format.array_dtypes()
         try:
-            shared_fields_dict = dict()
-            # shared fields are common across records, so this is done once
-            for field in self.format.shared_fields():
-                field_data = dd.io.load(self.infile_name, '/{}'.format(field))
-                shared_fields_dict[field] = field_data
+            with h5py.File(self.infile_name, 'r') as f:
 
-            unshared_single_elements = dict()
-            # These are fields which have one element per record, so the
-            # arrays are small enough to be loaded completely into memory
-            for field in self.format.unshared_fields():
-                if field in self.format.single_element_types():
-                    unshared_single_elements[field] = dd.io.load(
-                        self.infile_name, '/{}'.format(field))
+                # shared fields are common across records, so this is done once
+                shared_fields_dict = dict()
+                for field in self.format.shared_fields():
+                    if field in attribute_types:
+                        data = f.attrs[field]
+                        if isinstance(data, bytes):
+                            data = data.decode('utf-8')
+                    elif field in self.format.array_string_fields():
+                        dset = f[field]
+                        itemsize = dset.attrs['itemsize']
+                        data = dset[:].view(dtype=(np.unicode_, itemsize))
+                    else:
+                        data = f[field][:]
+                    shared_fields_dict[field] = data
 
-            sqn_timestamps_array = dd.io.load(self.infile_name,
-                                              '/sqn_timestamps')
-            for record_num, seq_timestamp in enumerate(sqn_timestamps_array):
-                # format dictionary key in the same way it is done
-                # in datawrite on site
-                seq_datetime = datetime.utcfromtimestamp(seq_timestamp[0])
-                epoch = datetime.utcfromtimestamp(0)
-                key = str(int((seq_datetime - epoch).total_seconds() * 1000))
+                # These are fields which have one element per record, so the
+                # arrays are small enough to be loaded completely into memory
+                unshared_single_elements = dict()
+                for field in self.format.unshared_fields():
+                    if field in self.format.single_element_types():
+                        unshared_single_elements[field] = f[field][:]
 
-                # Make this fresh every time, to reduce memory footprint
-                record_dict = dict()
+                sqn_timestamps_array = f['sqn_timestamps'][:]
 
-                # Copy over the shared fields
-                for k, v in shared_fields_dict.items():
-                    record_dict[k] = v
+                for record_num, seq_timestamp in enumerate(sqn_timestamps_array):
+                    # format dictionary key in the same way it is done
+                    # in datawrite on site
+                    seq_datetime = datetime.utcfromtimestamp(seq_timestamp[0])
+                    epoch = datetime.utcfromtimestamp(0)
+                    key = str(int((seq_datetime - epoch).total_seconds() * 1000))
 
-                # populate site specific fields using given functions
-                # that take both the arrays data and the record number
-                with h5py.File(self.infile_name, 'r') as f:
+                    # Make this fresh every time, to reduce memory footprint
+                    record_dict = dict()
+
+                    # Copy over the shared fields
+                    for k, v in shared_fields_dict.items():
+                        record_dict[k] = v
+
+                    # populate site specific fields using given functions
+                    # that take both the arrays data and the record number
                     for field in self.format.site_specific_fields():
                         record_dict[field] = \
                             self.format.site_specific_fields_generate(
                                 )[field](f, record_num)
 
-                for field in self.format.unshared_fields():
-                    if field in self.format.single_element_types():
-                        datatype = self.format.single_element_types()[field]
-                        # field is not an array, single element per record.
-                        # unshared_field_dims_site should give empty list.
-                        record_dict[field] = \
-                            datatype(unshared_single_elements[field][
-                                         record_num])
-                    else:  # field in array_dtypes
-                        # need to get the dims correct,
-                        # not always equal to the max
-                        field_flag = False
-                        with h5py.File(self.infile_name, 'r') as f:
+                    for field in self.format.unshared_fields():
+                        if field in self.format.single_element_types():
+                            datatype = self.format.single_element_types()[field]
+                            # field is not an array, single element per record.
+                            # unshared_field_dims_site should give empty list.
+                            record_dict[field] = \
+                                datatype(unshared_single_elements[field][
+                                             record_num])
+                        else:  # field in array_dtypes
+                            # need to get the dims correct, not always equal to the max
+                            field_flag = False
                             site_dims = [dimension_function(f, record_num)
                                          for dimension_function in
                                          self.format.unshared_fields_dims_site(
@@ -277,18 +282,16 @@ class BorealisRestructure(object):
                             index_slice = [slice(0, i) for i in site_dims if i != -1]
                             index_slice.insert(0, record_num)
                             index_slice = tuple(index_slice)
-                            # If there was an incorrect dimension (-1 in dims), then use deepdish to extract the field
-                            if field_flag:
-                                record_dict[field] = dd.io.load(self.infile_name, f'/{field}')[index_slice]
-                            else:
-                                record_dict[field] = f[field][index_slice]
-                # Wrap in another dict to use the format method
-                record_dict = OrderedDict({key: record_dict})
-                record_dict = self.format.flatten_site_arrays(record_dict)
+                            record_dict[field] = f[field][index_slice]
 
-                # Write the single record to file
-                self._write_borealis_record(record_dict, key, attribute_types,
-                                            dataset_types)
+                    # Wrap in another dict to use the format method
+                    record_dict = OrderedDict({key: record_dict})
+                    record_dict = self.format.flatten_site_arrays(record_dict)
+                    BorealisUtilities.check_records(self.infile_name, record_dict, attribute_types, dataset_types)
+
+                    # Write the single record to file
+                    self.format.write_records(self.outfile_name, record_dict, attribute_types, dataset_types,
+                                              self.compression)
         except Exception as err:
             raise borealis_exceptions.BorealisRestructureError(
                 'Records for {}: Error restructuring {} from array to site '
@@ -333,7 +336,7 @@ class BorealisRestructure(object):
                     rec_dict.update({k: record.attrs[k] for k in rec_attrs})
                     # Bitwise fields also need to be handled separately
                     for field in self.format.bool_types():
-                        rec_dict[field] = dd.io.load(self.infile_name, f'/{record_name}/{field}')
+                        rec_dict[field] = f[record_name][field]
 
                     # some fields are linear in site style and need to be reshaped.
                     # Pass in record nested in a dictionary, as
@@ -359,8 +362,9 @@ class BorealisRestructure(object):
                                 else:
                                     raise TypeError(f'Field {field} has unrecognized data: {value}')
                             elif field in self.format.array_string_fields():
-                                # h5py reads numpy string arrays as contiguous unsigned ints, so we need deepdish here
-                                new_data_dict[field] = dd.io.load(self.infile_name, f'/{record_name}/{field}')
+                                dset = f[record_name][field]
+                                itemsize = dset.attrs['itemsize']
+                                new_data_dict[field] = dset[:].view(dtype=(np.unicode_, itemsize))
                             else:
                                 raise TypeError(f'Field {field} unrecognized')
 
@@ -374,7 +378,7 @@ class BorealisRestructure(object):
                                 # Initialize array now with correct data type.
                                 dtype = self.format.single_element_types()[field]
                                 new_data_dict[field] = np.empty(num_records, dtype=dtype)
-                                if dtype is np.int64 or dtype is np.uint32:
+                                if dtype in [np.int64, np.uint32, np.uint8]:
                                     new_data_dict[field][:] = -1
                                 else:
                                     new_data_dict[field][:] = np.NaN
@@ -396,7 +400,7 @@ class BorealisRestructure(object):
                                 datatype = self.format.single_element_types()[field]
                             else:  # field in array_dtypes
                                 datatype = self.format.array_dtypes()[field]
-                            if datatype == np.unicode_:
+                            if datatype == str:
                                 # unicode type needs to be explicitly set to
                                 # have multiple chars (256)
                                 datatype = '|U256'
@@ -406,7 +410,7 @@ class BorealisRestructure(object):
                             # change between records), so they are initialized
                             # with a known value first. Initialize floating-
                             # point values to NaN, and integer values to -1.
-                            if datatype is np.int64 or datatype is np.uint32:
+                            if datatype in [np.int64, np.uint32, np.uint8]:
                                 empty_array[:] = -1
                             else:
                                 empty_array[:] = np.NaN
@@ -433,65 +437,13 @@ class BorealisRestructure(object):
             attribute_types = self.format.array_single_element_types()
             dataset_types = self.format.array_array_dtypes()
             unshared_fields = self.format.unshared_fields()
-            BorealisUtilities.check_arrays(self.infile_name, new_data_dict,
-                                           attribute_types, dataset_types,
+            BorealisUtilities.check_arrays(self.infile_name, new_data_dict, attribute_types, dataset_types,
                                            unshared_fields)
-            dd.io.save(self.outfile_name, new_data_dict,
-                       compression=self.compression)
+            self.format.write_arrays(self.outfile_name, new_data_dict, attribute_types, dataset_types, unshared_fields,
+                                     self.compression)
 
         except TypeError as err:
             raise borealis_exceptions.BorealisRestructureError(
                 'Records for {}: Error restructuring {} from site to array '
                 'style: {}'.format(self.infile_name, self.format.__name__, err)
             ) from err
-
-    def _write_borealis_record(self, record: dict, record_name: str,
-                               attribute_types: dict, dataset_types: dict):
-        """
-        Add a record to the output file in site style after checking the record.
-
-        Several Borealis field checks are done to insure the integrity of the
-        record.
-
-        Parameters
-        ----------
-        record: dict
-            Dictionary containing the site-structured record.
-        record_name: str
-            Group name of the record for the HDF5 hierarchy.
-        attribute_types: dict
-            Dictionary with the required types for the attributes in the file.
-        dataset_types: dict
-            Dictionary with the required dtypes for the numpy arrays in the
-            file.
-
-        Raises
-        ------
-        BorealisFieldMissingError
-        BorealisExtraFieldError
-        BorealisDataFormatTypeError
-
-        See Also
-        --------
-        BorealisUtilities
-        """
-        Path(self.outfile_name).touch()
-        BorealisUtilities.check_records(self.infile_name, record,
-                                        attribute_types, dataset_types)
-
-        # use external h5copy utility to move new record into 2hr file.
-
-        warnings.filterwarnings("ignore")
-        # Must use temporary file to append to a file; writing entire
-        # dictionary at once also doesn't work so this is required.
-        tmp_filename = self.outfile_name + '.tmp'
-        Path(tmp_filename).touch()
-
-        dd.io.save(tmp_filename, record[record_name],
-                   compression=self.compression)
-        f = dd.io.load(tmp_filename, '/')
-        cp_cmd = 'h5copy -i {newfile} -o {full_file} -s / -d {dtstr}'
-        cmd = cp_cmd.format(newfile=tmp_filename, full_file=self.outfile_name,
-                            dtstr=record_name)
-        sp.run(cmd.split())
-        os.remove(tmp_filename)

@@ -37,8 +37,9 @@ BorealisSiteWrite
 For more information on Borealis data files and how they convert to SDarn
 files, see: https://borealis.readthedocs.io/en/latest/
 """
-import deepdish as dd
+import h5py
 import logging
+import numpy as np
 
 from typing import List
 
@@ -115,10 +116,10 @@ class BorealisArrayRead():
         # get the version of the file - split by the dash, first part should be
         # 'vX.X'
         try:
-            version = dd.io.load(self.filename,
-                                 group='/borealis_git_hash').split('-')[0]
-            version = '.'.join(version.split('.')[:2])      # vX.Y, ignore patch revision
-        except ValueError as err:
+            with h5py.File(self.filename, 'r') as f:
+                full_version = f.attrs['borealis_git_hash'].decode('utf-8').split('-')[0]
+                version = '.'.join(full_version.split('.')[:2])      # vX.Y, ignore patch revision
+        except KeyError as err:
             raise borealis_exceptions.BorealisStructureError(
                 ' {} Could not find the borealis_git_hash required to '
                 'determine read version (file may be site style) {}'
@@ -242,48 +243,13 @@ class BorealisArrayRead():
         dataset_types = self.format.array_array_dtypes()
         unshared_fields = self.format.unshared_fields()
 
-        self._read_borealis_arrays(attribute_types, dataset_types,
-                                   unshared_fields)
-        return self._arrays
-
-    def _read_borealis_arrays(self, attribute_types: dict,
-                              dataset_types: dict,
-                              unshared_fields: List[str]):
-        """
-        Read the entire file while checking all data fields.
-
-        Parameters
-        ----------
-        attribute_types: dict
-            Dictionary with the required types for the attributes in the file.
-        dataset_types: dict
-            Dictionary with the require dtypes for the numpy arrays in the
-            file.
-        unshared_fields: List[str]
-            List of fields that are not shared between the records and
-            therefore should be an array with first dimension = number of
-            records
-
-        Raises
-        ------
-        BorealisFieldMissingError - when a field is missing from the Borealis
-                                file
-        BorealisExtraFieldError - when an extra field is present in the
-                                Borealis file
-        BorealisDataFormatTypeError - when a field has the incorrect
-                                field type for the Borealis file
-        BorealisNumberOfRecordsError - when the number of records cannot
-                                be discerned from the arrays
-
-        See Also
-        --------
-        BorealisUtilities
-        """
-        arrays = dd.io.load(self.filename)
+        arrays = self.format.read_arrays(self.filename)
         BorealisUtilities.check_arrays(self.filename, arrays,
                                        attribute_types, dataset_types,
                                        unshared_fields)
         self._arrays = arrays
+
+        return self._arrays
 
 
 class BorealisArrayWrite():
@@ -465,7 +431,14 @@ class BorealisArrayWrite():
 
         Raises
         ------
-        BorealisFileTypeError
+        BorealisFieldMissingError - when a field is missing from the Borealis
+                                file
+        BorealisExtraFieldError - when an extra field is present in the
+                                Borealis file
+        BorealisDataFormatTypeError - when a field has the incorrect
+                                field type for the Borealis file
+        BorealisNumberOfRecordsError - when the number of records cannot
+                                be discerned from the arrays
 
         See Also
         --------
@@ -479,45 +452,8 @@ class BorealisArrayWrite():
         attribute_types = self.format.array_single_element_types()
         dataset_types = self.format.array_array_dtypes()
         unshared_fields = self.format.unshared_fields()
-
-        self._write_borealis_arrays(attribute_types, dataset_types,
-                                    unshared_fields)
+        BorealisUtilities.check_arrays(self.filename, self.arrays, attribute_types,
+                                       dataset_types, unshared_fields)
+        self.format.write_arrays(self.filename, self.arrays, attribute_types,
+                                 dataset_types, unshared_fields, self.compression)
         return self.filename
-
-    def _write_borealis_arrays(self, attribute_types: dict,
-                               dataset_types: dict,
-                               unshared_fields: List[str]):
-        """
-        Write the entire file while checking all data fields.
-
-        Parameters
-        ----------
-        attribute_types: dict
-            Dictionary with the required types for the attributes in the file.
-        dataset_types: dict
-            Dictionary with the require dtypes for the numpy arrays in the
-            file.
-        unshared_fields: List[str]
-            List of fields that are not shared between the records and
-            therefore should be an array with first dimension = number of
-            records
-
-        Raises
-        ------
-        BorealisFieldMissingError - when a field is missing from the Borealis
-                                file
-        BorealisExtraFieldError - when an extra field is present in the
-                                Borealis file
-        BorealisDataFormatTypeError - when a field has the incorrect
-                                field type for the Borealis file
-        BorealisNumberOfRecordsError - when the number of records cannot
-                                be discerned from the arrays
-
-        See Also
-        --------
-        BorealisUtilities
-        """
-        BorealisUtilities.check_arrays(self.filename, self.arrays,
-                                       attribute_types, dataset_types,
-                                       unshared_fields)
-        dd.io.save(self.filename, self.arrays, compression=self.compression)

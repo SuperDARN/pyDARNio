@@ -28,7 +28,6 @@ class
 
 """
 import logging
-import deepdish as dd
 import h5py
 import numpy as np
 import sys
@@ -263,7 +262,8 @@ class BorealisUtilities():
         incorrect_types_check = {param: str(attributes_type_dict[param])
                                  for param in attributes_type_dict.keys()
                                  if type(record[param]) !=
-                                 attributes_type_dict[param]}
+                                 attributes_type_dict[param] and
+                                 record[param].shape is not None}
 
         incorrect_types_check.update({param: 'np.ndarray of ' +
                                       str(datasets_type_dict[param])
@@ -322,7 +322,8 @@ class BorealisUtilities():
         incorrect_types_check = {param: str(attributes_type_dict[param])
                                  for param in attributes_type_dict.keys()
                                  if type(file_data[param]) !=
-                                 attributes_type_dict[param]}
+                                 attributes_type_dict[param] and
+                                 file_data[param].shape is not None}
 
         datasets_type_dict_keys = sorted(list(datasets_type_dict.keys()))
         np_array_types = [isinstance(file_data[param], np.ndarray) for param in
@@ -343,7 +344,8 @@ class BorealisUtilities():
                                       str(datasets_type_dict[param])
                                       for param in datasets_type_dict.keys()
                                       if file_data[param].dtype.type !=
-                                      datasets_type_dict[param]})
+                                      datasets_type_dict[param] and
+                                      file_data[param].dtype.type != np.str_})
         if len(incorrect_types_check) > 0:
             raise borealis_exceptions.\
                     BorealisDataFormatTypeError(filename,
@@ -560,19 +562,21 @@ class BorealisUtilities():
         """
         if structure == 'array':
             try:
-                borealis_git_hash = dd.io.load(filename,
-                                               group='/borealis_git_hash')
-            except ValueError as err:
+                with h5py.File(filename, 'r') as f:
+                    borealis_git_hash = f.attrs['borealis_git_hash'].decode('utf-8')
+            except KeyError as err:
                 raise borealis_exceptions.BorealisStructureError(
                     ' {} Could not find the borealis_git_hash required to '
                     'determine file version. Data file may be corrupted. {}'
                     ''.format(filename, err)) from err
         elif structure == 'site':
             try:
-                borealis_git_hash = \
-                    dd.io.load(filename, group='/{}/borealis_git_hash'
-                                               ''.format(record_names[0]))
-            except ValueError as err:
+                with h5py.File(filename, 'r') as f:
+                    records = sorted(list(f.keys()))
+                    first_rec = f[records[0]]
+                    borealis_git_hash = first_rec.attrs['borealis_git_hash']\
+                                            .decode('utf-8')
+            except KeyError as err:
                 raise borealis_exceptions.BorealisStructureError(
                     ' {} Could not find the borealis_git_hash required to '
                     'determine file version. Data file may be corrupted. {}'
