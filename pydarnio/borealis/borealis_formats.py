@@ -11,6 +11,10 @@ BorealisBfiq
 BorealisAntennasIq
 BorealisRawrf
 as well as previous versions of these classes, currently including
+BorealisRawacfv0_6
+BorealisBfiqv0_6
+BorealisAntennasIqv0_6
+BorealisRawrfv0_6
 BorealisRawacfv0_5
 BorealisBfiqv0_5
 BorealisAntennasIqv0_5
@@ -56,9 +60,25 @@ from .base_format import BaseFormat
 
 
 class BorealisFieldsv0_4():
+    """
+    Class containing the mapping of Borealis data fields and types for each 
+    Borealis file type for Borealis v0.4 and earlier.
+
+    See Also
+    --------
+    BorealisFields (most up to date format)
+    """
 
     @classmethod
     def files_with_fields(cls):
+        """
+        Get the mapping of Borealis data fields to each file type.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and a list of file types
+        as the values.
+        """
         return {
             "borealis_git_hash": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
             "experiment_id": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
@@ -106,6 +126,14 @@ class BorealisFieldsv0_4():
 
     @classmethod
     def all_single_element_types(cls):
+        """
+        Get the mapping of Borealis data fields to its single element type.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and the data field variable
+        types as values.
+        """
         return {
             # Identifies the version of Borealis that made this data. Necessary
             # for all versions.
@@ -165,6 +193,14 @@ class BorealisFieldsv0_4():
 
     @classmethod
     def all_array_types(cls):
+        """
+        Get the mapping of Borealis array data fields to its type
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and the data field variable
+        types as values.
+        """
         return {
             # The pulse sequence in multiples of the tau_spacing.
             "pulses": np.uint32,
@@ -219,7 +255,8 @@ class BorealisFieldsv0_4():
         Parameters
         ----------
         file_type: str
-            File type to get single element fields for. One of 'antennas_iq', 'bfiq', 'rawacf', or 'rawrf'
+            File type to get single element fields for. One of 'antennas_iq', 
+            'bfiq', 'rawacf', or 'rawrf'
 
         Returns
         -------
@@ -238,7 +275,8 @@ class BorealisFieldsv0_4():
         Parameters
         ----------
         file_type: str
-            File type to get array fields for. One of 'antennas_iq', 'bfiq', 'rawacf', or 'rawrf'
+            File type to get array fields for. One of 'antennas_iq', 'bfiq', 
+            'rawacf', or 'rawrf'
 
         Returns
         -------
@@ -251,9 +289,26 @@ class BorealisFieldsv0_4():
 
 
 class BorealisFieldsv0_5(BorealisFieldsv0_4):
+    """
+    Class containing the mapping of Borealis data fields and types for each 
+    Borealis file type for Borealis v0.5.
+
+    See Also
+    --------
+    BorealisFields (most up to date format)
+    """
 
     @classmethod
     def files_with_fields(cls):
+        """
+        Get the mapping of Borealis data fields to each file type.
+        Mapping is updated to reflect changes from previous version of Borealis.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and a list of file types
+        as the values.
+        """
         field_file_mapping = super().files_with_fields()
         field_file_mapping.update({
             "slice_id": ['antennas_iq', 'bfiq', 'rawacf'],
@@ -268,6 +323,15 @@ class BorealisFieldsv0_5(BorealisFieldsv0_4):
 
     @classmethod
     def all_single_element_types(cls):
+        """
+        Get the mapping of Borealis data fields to its single element type.
+        Mapping is updated to reflect changes from previous version of Borealis.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and the data field variable
+        types as values.
+        """
         single_element_types = super().all_single_element_types()
         single_element_types.update({
             # the slice id of the file and dataset.
@@ -286,9 +350,26 @@ class BorealisFieldsv0_5(BorealisFieldsv0_4):
 
 
 class BorealisFieldsv0_6(BorealisFieldsv0_5):
+    """
+    Class containing the mapping of Borealis data fields and types for each 
+    Borealis file type for Borealis v0.6.
+
+    See Also
+    --------
+    BorealisFields (most up to date format)
+    """
 
     @classmethod
     def files_with_fields(cls):
+        """
+        Get the mapping of Borealis data fields to each file type.
+        Mapping is updated to reflect changes from previous version of Borealis.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and a list of file types
+        as the values.
+        """
         field_file_mapping = super().files_with_fields()
         field_file_mapping.update({
             "agc_status_word": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
@@ -301,6 +382,15 @@ class BorealisFieldsv0_6(BorealisFieldsv0_5):
 
     @classmethod
     def all_single_element_types(cls):
+        """
+        Get the mapping of Borealis data fields to its single element type.
+        Mapping is updated to reflect changes from previous version of Borealis.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and the data field variable
+        types as values.
+        """
         single_element_types = super().all_single_element_types()
         single_element_types.update({
             # the agc fault status of each transmitter, transmitter/USRP
@@ -327,9 +417,22 @@ class BorealisFieldsv0_6(BorealisFieldsv0_5):
 
 
 class BorealisFields(BorealisFieldsv0_6):
+    """
+    Class containing the mapping of Borealis data fields and types for each 
+    Borealis file type for the current version of Borealis
+    """
 
     @classmethod
     def files_with_fields(cls):
+        """
+        Get the mapping of Borealis data fields to each file type. 
+        Mapping is updated to reflect changes from previous version of Borealis.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and a list of file types
+        as the values.
+        """
         field_file_mapping = super().files_with_fields()
         field_file_mapping.pop('correlation_descriptors')
         field_file_mapping.pop('correlation_dimensions')
@@ -345,6 +448,15 @@ class BorealisFields(BorealisFieldsv0_6):
 
     @classmethod
     def all_single_element_types(cls):
+        """
+        Get the mapping of Borealis data fields to its single element type.
+        Mapping is updated to reflect changes from previous version of Borealis.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and the data field variable
+        types as values.
+        """
         single_element_types = super().all_single_element_types()
         single_element_types.update({
             # the agc fault status of each transmitter, transmitter/USRP
@@ -528,14 +640,12 @@ class BorealisRawacfv0_4(BaseFormat):
             List of parameter names that are not shared between all the records
             in the site restructured file, i.e. may have different dimensions
             between records.
+            
         Returns
         -------
         fields_max_dims: dict
             dictionary containing field names (str) as keys with maximum
             dimensions required to restructure to array file as values (tuples)
-        Raises
-        ------
-
         """
         fields_max_dims, max_num_sequences, max_num_beams = super().site_get_max_dims(filename, unshared_parameters)
 
@@ -861,14 +971,12 @@ class BorealisBfiqv0_4(BaseFormat):
             List of parameter names that are not shared between all the records
             in the site restructured file, i.e. may have different dimensions
             between records.
+
         Returns
         -------
         fields_max_dims: dict
             dictionary containing field names (str) as keys with maximum
             dimensions required to restructure to array file as values (tuples)
-        Raises
-        ------
-
         """
         fields_max_dims, max_num_sequences, max_num_beams = super().site_get_max_dims(filename, unshared_parameters)
 
@@ -1425,14 +1533,12 @@ class BorealisRawrfv0_4(BaseFormat):
             List of parameter names that are not shared between all the records
             in the site restructured file, i.e. may have different dimensions
             between records.
+
         Returns
         -------
         fields_max_dims: dict
             dictionary containing field names (str) as keys with maximum
             dimensions required to restructure to array file as values (tuples)
-        Raises
-        ------
-
         """
         fields_max_dims, max_num_sequences, max_num_beams = super().site_get_max_dims(filename, unshared_parameters)
 
@@ -1827,8 +1933,8 @@ class BorealisRawrfv0_5(BorealisRawrfv0_4):
 
 class BorealisRawacfv0_6(BorealisRawacfv0_5):
     """
-    Class containing Borealis Rawacf data fields and their types for the
-    current version of Borealis (v0.6).
+    Class containing Borealis Rawacf data fields and their types for Borealis 
+    version 0.6.
 
     See Also
     --------
@@ -1891,8 +1997,8 @@ class BorealisRawacfv0_6(BorealisRawacfv0_5):
 
 class BorealisBfiqv0_6(BorealisBfiqv0_5):
     """
-    Class containing Borealis Bfiq data fields and their types for the
-    current version of Borealis (v0.6).
+    Class containing Borealis Bfiq data fields and their types for Borealis
+    version 0.6.
 
     See Also
     --------
@@ -1965,7 +2071,7 @@ class BorealisBfiqv0_6(BorealisBfiqv0_5):
 class BorealisAntennasIqv0_6(BorealisAntennasIqv0_5):
     """
     Class containing Borealis Antennas iq data fields and their types for
-    Borealis current version (v0.6).
+    Borealis version 0.6.
 
     See Also
     --------
@@ -2037,8 +2143,8 @@ class BorealisAntennasIqv0_6(BorealisAntennasIqv0_5):
 
 class BorealisRawrfv0_6(BorealisRawrfv0_5):
     """
-    Class containing Borealis Rawrf data fields and their types for current
-    Borealis version (v0.6).
+    Class containing Borealis Rawrf data fields and their types for Borealis 
+    version 0.6.
 
     See Also
     --------
@@ -2063,7 +2169,7 @@ class BorealisRawrfv0_6(BorealisRawrfv0_5):
 class BorealisRawacf(BorealisRawacfv0_6):
     """
     Class containing Borealis Rawacf data fields and their types for the
-    current version of Borealis (v0.6).
+    current version of Borealis (v0.7).
 
     See Also
     --------
@@ -2081,10 +2187,8 @@ class BorealisRawacf(BorealisRawacfv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    In v0.6, four fields were added to site files:
-    gps_locked, gps_to_system_time_diff, agc_status_word, and
-    lp_status_word. Array structured files contain the same fields,
-    but with dims of [num_records].
+    In v0.7, four fields were added to site files:
+    TODO
     """
     fields = BorealisFields
 
@@ -2092,12 +2196,12 @@ class BorealisRawacf(BorealisRawacfv0_6):
 class BorealisBfiq(BorealisBfiqv0_6):
     """
     Class containing Borealis Bfiq data fields and their types for the
-    current version of Borealis (v0.6).
+    current version of Borealis (v0.7).
 
     See Also
     --------
     BaseFormat
-    BorealisBfiqv0_5
+    BorealisBfiqv0_6
 
     Notes
     -----
@@ -2110,12 +2214,8 @@ class BorealisBfiq(BorealisBfiqv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    In v0.6, four fields were added to site files:
-    gps_locked, gps_to_system_time_diff, agc_status_word, and
-    lp_status_word. Array structured files contain the same fields,
-    but with dims of [num_records].
-
-    pulse_phase_offset was also added
+    In v0.7, four fields were added to site files:
+    TODO
     """
     fields = BorealisFields
 
@@ -2123,12 +2223,12 @@ class BorealisBfiq(BorealisBfiqv0_6):
 class BorealisAntennasIq(BorealisAntennasIqv0_6):
     """
     Class containing Borealis Antennas iq data fields and their types for
-    Borealis current version (v0.6).
+    Borealis current version (v0.7).
 
     See Also
     --------
     BaseFormat
-    BorealisAntennasIqv0_5
+    BorealisAntennasIqv0_6
 
     Notes
     -----
@@ -2140,13 +2240,9 @@ class BorealisAntennasIq(BorealisAntennasIqv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    In v0.6, the following fields were added to the Borealis-produced
+    In v0.7, the following fields were added to the Borealis-produced
     site structured files:
-    gps_locked, gps_to_system_time_diff, agc_status_word, and lp_status_word.
-    Array structured files contain the same fields,
-    but with dims of [num_records].
-
-    pulse_phase_offset was also added to the site-structured files.
+    TODO
     """
     fields = BorealisFields
 
@@ -2154,12 +2250,12 @@ class BorealisAntennasIq(BorealisAntennasIqv0_6):
 class BorealisRawrf(BorealisRawrfv0_6):
     """
     Class containing Borealis Rawrf data fields and their types for current
-    Borealis version (v0.6).
+    Borealis version (v0.7).
 
     See Also
     --------
     BaseFormat
-    BorealisRawrfv0_5
+    BorealisRawrfv0_6
 
     Notes
     -----
@@ -2167,9 +2263,8 @@ class BorealisRawrf(BorealisRawrfv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    In v0.6, the following fields were added to BorealisRawrf:
-    gps_locked, gps_to_system_time_diff, agc_status_word, and
-    lp_status_word.
+    In v0.7, the following fields were added to BorealisRawrf:
+    TODO
     """
     fields = BorealisFields
 
