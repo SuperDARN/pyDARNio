@@ -37,7 +37,6 @@ BorealisSiteWrite
 For more information on Borealis data files and how they convert to SDarn
 files, see: https://borealis.readthedocs.io/en/latest/
 """
-import deepdish as dd
 import h5py
 import logging
 import numpy as np
