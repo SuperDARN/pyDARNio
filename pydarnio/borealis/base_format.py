@@ -1357,7 +1357,7 @@ class BaseFormat():
         """
         Write the file in site style after checking records.
 
-        Several Borealis field checks are done to insure the integrity of the
+        Several Borealis field checks are done to ensure the integrity of the
         file.
 
         Parameters
