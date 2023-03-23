@@ -55,6 +55,321 @@ from collections import OrderedDict
 from .base_format import BaseFormat
 
 
+class BorealisFieldsv0_4():
+
+    @classmethod
+    def files_with_fields(cls):
+        return {
+            "borealis_git_hash": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "experiment_id": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "experiment_name": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "experiment_comment": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "slice_comment": ['antennas_iq', 'bfiq', 'rawacf'],
+            "num_slices": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "station": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "num_sequences": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "range_sep": ['bfiq', 'rawacf'],
+            "first_range_rtt": ['bfiq', 'rawacf'],
+            "first_range": ['bfiq', 'rawacf'],
+            "rx_sample_rate": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "scan_start_marker": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "int_time": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "tx_pulse_len": ['antennas_iq', 'bfiq', 'rawacf'],
+            "tau_spacing": ['antennas_iq', 'bfiq', 'rawacf'],
+            "main_antenna_count": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "intf_antenna_count": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "freq": ['antennas_iq', 'bfiq', 'rawacf'],
+            "samples_data_type": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "data_normalization_factor": ['antennas_iq', 'bfiq', 'rawacf'],
+            "num_beams": ['antennas_iq', 'bfiq', 'rawacf'],
+            "pulses": ['antennas_iq', 'bfiq', 'rawacf'],
+            "lags": ['bfiq', 'rawacf'],
+            "blanked_samples": ['bfiq', 'rawacf'],
+            "sqn_timestamps": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "beam_nums": ['antennas_iq', 'bfiq', 'rawacf'],
+            "beam_azms": ['antennas_iq', 'bfiq', 'rawacf'],
+            "noise_at_freq": ['antennas_iq', 'bfiq', 'rawacf'],
+            "correlation_descriptors": ['rawacf'],
+            "correlation_dimensions": ['rawacf'],
+            "main_acfs": ['rawacf'],
+            "intf_acfs": ['rawacf'],
+            "xcfs": ['rawacf'],
+            "num_samps": ['antennas_iq', 'bfiq', 'rawrf'],
+            "num_ranges": ['bfiq'],
+            "pulse_phase_offset": ['antennas_iq', 'bfiq'],
+            "antenna_arrays_order": ['antennas_iq', 'bfiq'],
+            "data": ['antennas_iq', 'bfiq', 'rawrf'],
+            "data_descriptors": ['antennas_iq', 'bfiq', 'rawrf'],
+            "data_dimensions": ['antennas_iq', 'bfiq', 'rawrf'],
+            "rx_center_freq": ['rawrf'],
+        }
+
+    @classmethod
+    def all_single_element_types(cls):
+        return {
+            # Identifies the version of Borealis that made this data. Necessary
+            # for all versions.
+            "borealis_git_hash": str,
+            # Number used to identify experiment.
+            "experiment_id": np.int64,
+            # Name of the experiment file.
+            "experiment_name": str,
+            # Comment about the whole experiment
+            "experiment_comment": str,
+            # Additional text comment that describes the slice.
+            "slice_comment": str,
+            # Number of slices in the experiment at this integration time.
+            "num_slices": np.int64,
+            # Three letter radar identifier.
+            "station": str,
+            # Number of sampling periods in the integration time.
+            "num_sequences": np.int64,
+            # range gate separation (equivalent distance between samples), km.
+            "range_sep": np.float32,
+            # Round trip time of flight to first range in microseconds.
+            "first_range_rtt": np.float32,
+            # Distance to first range in km.
+            "first_range": np.float32,
+            # Sampling rate of the samples being written to file in Hz.
+            "rx_sample_rate": np.float64,
+            # Designates if the record is the first in a scan.
+            "scan_start_marker": np.uint8,
+            # Integration time in seconds.
+            "int_time": np.float32,
+            # Length of the pulse in microseconds.
+            "tx_pulse_len": np.uint32,
+            # The minimum spacing between pulses, spacing between pulses is
+            # always a multiple of this in microseconds.
+            "tau_spacing": np.uint32,
+            # Number of main array antennas.
+            "main_antenna_count": np.uint32,
+            # Number of interferometer array antennas.
+            "intf_antenna_count": np.uint32,
+            # The frequency used for this experiment slice in kHz.
+            "freq": np.uint32,
+            # str denoting C data type of the samples included in the data
+            # array, such as 'complex float'.
+            "samples_data_type": str,
+            # data normalization factor determined by the filter scaling in the
+            # decimation scheme.
+            "data_normalization_factor": np.float64,
+            # number of beams calculated for the integration time.
+            "num_beams": np.uint32,
+            # Number of samples in the sampling period.
+            "num_samps": np.uint32,
+            # Number of ranges to calculate correlations for.
+            "num_ranges": np.uint32,
+            # The center frequency of this data in kHz
+            "rx_center_freq": np.float64,
+        }
+
+    @classmethod
+    def all_array_types(cls):
+        return {
+            # The pulse sequence in multiples of the tau_spacing.
+            "pulses": np.uint32,
+            # The lags created from combined pulses.
+            "lags": np.uint32,
+            # Samples that have been blanked during TR switching.
+            "blanked_samples": np.uint32,
+            # A list of GPS timestamps of the beginning of transmission for
+            # each sampling period in the integration time. Seconds since
+            # epoch.
+            "sqn_timestamps": np.float64,
+            # A list of beam numbers used in this slice.
+            "beam_nums": np.uint32,
+            # A list of the beams azimuths for each beam in degrees.
+            "beam_azms": np.float64,
+            # Noise at the receive frequency, should be an array
+            # (one value per sequence) (TODO units??) (TODO document
+            # FFT resolution bandwidth for this value, should be =
+            # output_sample rate?)
+            "noise_at_freq": np.float64,
+            # Denotes what each acf/xcf dimension represents. = "num_beams",
+            # "num_ranges", "num_lags" in site rawacf files.
+            "correlation_descriptors": np.unicode_,
+            # The dimensions in which to reshape the acf/xcf data.
+            "correlation_dimensions": np.uint32,
+            # Main array autocorrelations
+            "main_acfs": np.complex64,
+            # Interferometer array autocorrelations
+            "intf_acfs": np.complex64,
+            # Crosscorrelations between main and interferometer arrays
+            "xcfs": np.complex64,
+            # States what order the data is in. Describes the data layout.
+            "antenna_arrays_order": np.unicode_,
+            # Denotes what each data dimension represents. =
+            # "num_antenna_arrays", "num_sequences", "num_beams", "num_samps"
+            # for site bfiq.
+            "data_descriptors": np.unicode_,
+            # The dimensions in which to reshape the data.
+            "data_dimensions": np.uint32,
+            # For pulse encoding phase, in degrees offset.
+            # Contains one phase offset per pulse in pulses.
+            "pulse_phase_offset": np.float32,
+            # A contiguous set of samples (complex float) at given sample rate
+            "data": np.complex64
+        }
+
+    @classmethod
+    def single_element_types(cls, file_type: str) -> dict:
+        """
+        Gets the single element types of a given file type.
+
+        Parameters
+        ----------
+        file_type: str
+            File type to get single element fields for. One of 'antennas_iq', 'bfiq', 'rawacf', or 'rawrf'
+
+        Returns
+        -------
+        dict
+            Dictionary of field: type for all fields contained in file_type.
+        """
+        relevant_fields = [k for k, v in cls.files_with_fields().items() if file_type in v]
+        single_elements = cls.all_single_element_types()
+        return {k: single_elements[k] for k in relevant_fields}
+
+    @classmethod
+    def array_types(cls, file_type: str) -> dict:
+        """
+        Gets the array types of a given file type.
+
+        Parameters
+        ----------
+        file_type: str
+            File type to get array fields for. One of 'antennas_iq', 'bfiq', 'rawacf', or 'rawrf'
+
+        Returns
+        -------
+        dict
+            Dictionary of field: type for all fields contained in file_type.
+        """
+        relevant_fields = [k for k, v in cls.files_with_fields().items() if file_type in v]
+        array_elements = cls.all_array_types()
+        return {k: array_elements[k] for k in relevant_fields}
+
+
+class BorealisFieldsv0_5(BorealisFieldsv0_4):
+
+    @classmethod
+    def files_with_fields(cls):
+        field_file_mapping = super().files_with_fields()
+        field_file_mapping.update({
+            "slice_id": ['antennas_iq', 'bfiq', 'rawacf'],
+            "slice_interfacing": ['antennas_iq', 'bfiq', 'rawacf'],
+            "scheduling_mode": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "averaging_method": ['rawacf'],
+            "num_blanked_samples": ['antennas_iq', 'bfiq', 'rawacf'],
+        })
+        field_file_mapping['blanked_samples'].extend('antennas_iq', 'rawrf')
+
+        return field_file_mapping
+
+    @classmethod
+    def all_single_element_types(cls):
+        single_element_types = super().all_single_element_types()
+        single_element_types.update({
+            # the slice id of the file and dataset.
+            "slice_id": np.uint32,
+            # the interfacing of this slice to other slices.
+            "slice_interfacing": str,
+            # A string describing the type of scheduling time at the time of
+            # this dataset.
+            "scheduling_mode": str,
+            # A string describing the averaging method, ex. mean, median
+            "averaging_method": str,
+            # number of blanked samples in the sequence.
+            "num_blanked_samples": np.uint32
+        })
+        return single_element_types
+
+
+class BorealisFieldsv0_6(BorealisFieldsv0_5):
+
+    @classmethod
+    def files_with_fields(cls):
+        field_file_mapping = super().files_with_fields()
+        field_file_mapping.update({
+            "agc_status_word": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "lp_status_word": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "gps_locked": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "gps_to_system_time_diff": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+        })
+
+        return field_file_mapping
+
+    @classmethod
+    def all_single_element_types(cls):
+        single_element_types = super().all_single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates an agc fault at least once during the integration
+            # period.
+            "agc_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates a low power condition at least once during the
+            # integration period.
+            "lp_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire
+            # integration period
+            "gps_locked": np.uint8,
+            # The max time diffe between GPS and system time during the
+            # integration period. In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
+        })
+        return single_element_types
+
+
+class BorealisFields(BorealisFieldsv0_6):
+
+    @classmethod
+    def files_with_fields(cls):
+        field_file_mapping = super().files_with_fields()
+        field_file_mapping.pop('correlation_descriptors')
+        field_file_mapping.pop('correlation_dimensions')
+        field_file_mapping['data_descriptors'].append('rawacf')
+        field_file_mapping['data_dimensions'].append('rawacf')
+        field_file_mapping['first_range'].append('antennas_iq')
+        field_file_mapping['first_range_rtt'].append('antennas_iq')
+        field_file_mapping['lags'].append('antennas_iq')
+        field_file_mapping['num_ranges'].append('antennas_iq')
+        field_file_mapping['range_sep'].append('antennas_iq')
+
+        return field_file_mapping
+
+    @classmethod
+    def all_single_element_types(cls):
+        single_element_types = super().all_single_element_types()
+        single_element_types.update({
+            # the agc fault status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates an agc fault at least once during the integration
+            # period.
+            "agc_status_word": np.uint32,
+            # the low power status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates a low power condition at least once during the
+            # integration period.
+            "lp_status_word": np.uint32,
+            # Boolean indicating if the GPS was locked during the entire
+            # integration period
+            "gps_locked": np.uint8,
+            # The max time diffe between GPS and system time during the
+            # integration period. In seconds. Negative if GPS time ahead.
+            "gps_to_system_time_diff": np.float64,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16
+        })
+        return single_element_types
+
+
 class BorealisRawacfv0_4(BaseFormat):
     """
     Class containing Borealis Rawacf data fields and their types.
@@ -81,6 +396,7 @@ class BorealisRawacfv0_4(BaseFormat):
     find_num_lags(OrderedDict): int
         Returns the num lags in the data for use in finding dimensions
     """
+    fields = BorealisFieldsv0_4
 
     @staticmethod
     def find_num_ranges(records: OrderedDict) -> int:
@@ -259,56 +575,7 @@ class BorealisRawacfv0_4(BaseFormat):
             All the single-element fields in records of the
             format, as a dictionary fieldname : type.
         """
-        return {
-            # Identifies the version of Borealis that made this data. Necessary
-            # for all versions.
-            "borealis_git_hash": str,
-            # Number used to identify experiment.
-            "experiment_id": np.int64,
-            # Name of the experiment file.
-            "experiment_name": str,
-            # Comment about the whole experiment
-            "experiment_comment": str,
-            # Additional text comment that describes the slice.
-            "slice_comment": str,
-            # Number of slices in the experiment at this integration time.
-            "num_slices": np.int64,
-            # Three letter radar identifier.
-            "station": str,
-            # Number of sampling periods in the integration time.
-            "num_sequences": np.int64,
-            # range gate separation (equivalent distance between samples), km.
-            "range_sep": np.float32,
-            # Round trip time of flight to first range in microseconds.
-            "first_range_rtt": np.float32,
-            # Distance to first range in km.
-            "first_range": np.float32,
-            # Sampling rate of the samples being written to file in Hz.
-            "rx_sample_rate": np.float64,
-            # Designates if the record is the first in a scan.
-            "scan_start_marker": np.uint8,
-            # Integration time in seconds.
-            "int_time": np.float32,
-            # Length of the pulse in microseconds.
-            "tx_pulse_len": np.uint32,
-            # The minimum spacing between pulses, spacing between pulses is
-            # always a multiple of this in microseconds.
-            "tau_spacing": np.uint32,
-            # Number of main array antennas.
-            "main_antenna_count": np.uint32,
-            # Number of interferometer array antennas.
-            "intf_antenna_count": np.uint32,
-            # The frequency used for this experiment slice in kHz.
-            "freq": np.uint32,
-            # str denoting C data type of the samples included in the data
-            # array, such as 'complex float'.
-            "samples_data_type": str,
-            # data normalization factor determined by the filter scaling in the
-            # decimation scheme.
-            "data_normalization_factor": np.float64,
-            # number of beams calculated for the integration time.
-            "num_beams": np.uint32
-            }
+        return cls.fields.single_element_types('rawacf')
 
     @classmethod
     def array_dtypes(cls):
@@ -321,38 +588,7 @@ class BorealisRawacfv0_4(BaseFormat):
             All the array fields in records of the
             format, as a dictionary fieldname : array dtype.
         """
-        return {
-            # The pulse sequence in multiples of the tau_spacing.
-            "pulses": np.uint32,
-            # The lags created from combined pulses.
-            "lags": np.uint32,
-            # Samples that have been blanked during TR switching.
-            "blanked_samples": np.uint32,
-            # A list of GPS timestamps of the beginning of transmission for
-            # each sampling period in the integration time. Seconds since
-            # epoch.
-            "sqn_timestamps": np.float64,
-            # A list of beam numbers used in this slice.
-            "beam_nums": np.uint32,
-            # A list of the beams azimuths for each beam in degrees.
-            "beam_azms": np.float64,
-            # Noise at the receive frequency, should be an array
-            # (one value per sequence) (TODO units??) (TODO document
-            # FFT resolution bandwidth for this value, should be =
-            # output_sample rate?)
-            "noise_at_freq": np.float64,
-            # Denotes what each acf/xcf dimension represents. = "num_beams",
-            # "num_ranges", "num_lags" in site rawacf files.
-            "correlation_descriptors": np.unicode_,
-            # The dimensions in which to reshape the acf/xcf data.
-            "correlation_dimensions": np.uint32,
-            # Main array autocorrelations
-            "main_acfs": np.complex64,
-            # Interferometer array autocorrelations
-            "intf_acfs": np.complex64,
-            # Crosscorrelations between main and interferometer arrays
-            "xcfs": np.complex64
-            }
+        return cls.fields.array_types('rawacf')
 
     @classmethod
     def shared_fields(cls):
@@ -496,6 +732,7 @@ class BorealisBfiqv0_4(BaseFormat):
     find_num_samps(OrderedDict): int
         Returns the number of samples in the data for use in finding dimensions
     """
+    fields = BorealisFieldsv0_4
 
     @staticmethod
     def find_num_antenna_arrays(records: OrderedDict) -> int:
@@ -669,60 +906,7 @@ class BorealisBfiqv0_4(BaseFormat):
             All the single-element fields in records of the
             format, as a dictionary fieldname : type.
         """
-        return {
-            # Identifies the version of Borealis that made this data. Necessary
-            # for all versions.
-            "borealis_git_hash": str,
-            # Number used to identify experiment.
-            "experiment_id": np.int64,
-            # Name of the experiment file.
-            "experiment_name": str,
-            # Comment about the whole experiment
-            "experiment_comment": str,
-            # Additional text comment that describes the slice.
-            "slice_comment": str,
-            # Number of slices in the experiment at this integration time.
-            "num_slices": np.int64,
-            # Three letter radar identifier.
-            "station": str,
-            # Number of sampling periods in the integration time.
-            "num_sequences": np.int64,
-            # Sampling rate of the samples being written to file in Hz.
-            "rx_sample_rate": np.float64,
-            # Designates if the record is the first in a scan.
-            "scan_start_marker": np.uint8,
-            # Integration time in seconds.
-            "int_time": np.float32,
-            # Length of the pulse in microseconds.
-            "tx_pulse_len": np.uint32,
-            # The minimum spacing between pulses, spacing between pulses is
-            # always a multiple of this. In microseconds.
-            "tau_spacing": np.uint32,
-            # Number of main array antennas.
-            "main_antenna_count": np.uint32,
-            # Number of interferometer array antennas.
-            "intf_antenna_count": np.uint32,
-            # The frequency used for this experiment slice in kHz.
-            "freq": np.uint32,
-            # str denoting C data type of the samples included in the data
-            # array, such as 'complex float'.
-            "samples_data_type": str,
-            # Number of samples in the sampling period.
-            "num_samps": np.uint32,
-            # range gate separation (equivalent distance between samples), km
-            "range_sep": np.float32,
-            # Round trip time of flight to first range in microseconds.
-            "first_range_rtt": np.float32,
-            # Distance to first range in km.
-            "first_range": np.float32,
-            # Number of ranges to calculate correlations for.
-            "num_ranges": np.uint32,
-            # data normalization factor determined by the filter scaling in the
-            # decimation scheme.
-            "data_normalization_factor": np.float64,
-            # number of beams calculated for the integration time.
-            "num_beams": np.uint32
-            }
+        return cls.fields.single_element_types('bfiq')
 
     @classmethod
     def array_dtypes(cls):
@@ -735,39 +919,7 @@ class BorealisBfiqv0_4(BaseFormat):
             All the array fields in records of the
             format, as a dictionary fieldname : array dtype.
         """
-        return {
-            # The pulse sequence in multiples of the tau_spacing.
-            "pulses": np.uint32,
-            # The lags created from combined pulses.
-            "lags": np.uint32,
-            # Samples that have been blanked during TR switching.
-            "blanked_samples": np.uint32,
-            # For pulse encoding phase, in degrees offset.
-            # Contains one phase offset per pulse in pulses.
-            "pulse_phase_offset": np.float32,
-            # A list of GPS timestamps of the beginning of transmission for
-            # each sampling period in the integration time. Seconds since
-            # epoch.
-            "sqn_timestamps": np.float64,
-            # A list of beam numbers used in this slice.
-            "beam_nums": np.uint32,
-            # A list of the beams azimuths for each beam in degrees.
-            "beam_azms": np.float64,
-            # Noise at the receive frequency, should be an array (one value per
-            # sequence) (TODO units??) (TODO document FFT resolution
-            # bandwidth for this value, should be = output_sample rate?)
-            "noise_at_freq": np.float64,
-            # States what order the data is in. Describes the data layout.
-            "antenna_arrays_order": np.unicode_,
-            # Denotes what each data dimension represents. =
-            # "num_antenna_arrays", "num_sequences", "num_beams", "num_samps"
-            # for site bfiq.
-            "data_descriptors": np.unicode_,
-            # The dimensions in which to reshape the data.
-            "data_dimensions": np.uint32,
-            # A contiguous set of samples (complex float) at given sample rate
-            "data": np.complex64
-            }
+        return cls.fields.array_types('bfiq')
 
     @classmethod
     def shared_fields(cls):
@@ -896,6 +1048,7 @@ class BorealisAntennasIqv0_4(BaseFormat):
     find_num_samps(OrderedDict): int
         Returns the number of samples in the data for use in finding dimensions
     """
+    fields = BorealisFieldsv0_4
 
     @staticmethod
     def find_num_antennas(records: OrderedDict) -> int:
@@ -980,8 +1133,6 @@ class BorealisAntennasIqv0_4(BaseFormat):
                         reshape(record_dimensions)
 
         return new_records
-
-
 
     @staticmethod
     def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -1071,52 +1222,7 @@ class BorealisAntennasIqv0_4(BaseFormat):
             All the single-element fields in records of the
             format, as a dictionary fieldname : type.
         """
-        return {
-            # Identifies the version of Borealis that made this data. Necessary
-            # for all versions.
-            "borealis_git_hash": str,
-            # Number used to identify experiment.
-            "experiment_id": np.int64,
-            # Name of the experiment file.
-            "experiment_name": str,
-            # Comment about the whole experiment
-            "experiment_comment": str,
-            # Additional text comment that describes the slice.
-            "slice_comment": str,
-            # Number of slices in the experiment at this integration time.
-            "num_slices": np.int64,
-            # Three letter radar identifier.
-            "station": str,
-            # Number of sampling periods in the integration time.
-            "num_sequences": np.int64,
-            # Sampling rate of the samples being written to file in Hz.
-            "rx_sample_rate": np.float64,
-            # Designates if the record is the first in a scan.
-            "scan_start_marker": np.uint8,
-            # Integration time in seconds.
-            "int_time": np.float32,
-            # Length of the pulse in microseconds.
-            "tx_pulse_len": np.uint32,
-            # The minimum spacing between pulses, spacing between pulses is
-            # always a multiple of this in microseconds.
-            "tau_spacing": np.uint32,
-            # Number of main array antennas.
-            "main_antenna_count": np.uint32,
-            # Number of interferometer array antennas.
-            "intf_antenna_count": np.uint32,
-            # The frequency used for this experiment slice in kHz.
-            "freq": np.uint32,
-            # str denoting C data type of the samples included in the data
-            # array, such as 'complex float'.
-            "samples_data_type": str,
-            # Number of samples in the sampling period.
-            "num_samps": np.uint32,
-            # data normalization factor determined by the filter scaling in the
-            # decimation scheme.
-            "data_normalization_factor": np.float64,
-            # number of beams to be calculated for the integration time.
-            "num_beams": np.uint32
-            }
+        return cls.fields.single_element_types('antennas_iq')
 
     @classmethod
     def array_dtypes(cls):
@@ -1129,34 +1235,7 @@ class BorealisAntennasIqv0_4(BaseFormat):
             All the array fields in records of the
             format, as a dictionary fieldname : array dtype.
         """
-        return {
-            # The pulse sequence in multiples of the tau_spacing.
-            "pulses": np.uint32,
-            # For pulse encoding phase, in desgrees offset. Contains one phase
-            # offset per pulse in pulses.
-            "pulse_phase_offset": np.float32,
-            # A list of GPS timestamps of the beginning of transmission for
-            # each sampling period in the integration time. Seconds since
-            # epoch.
-            "sqn_timestamps": np.float64,
-            # A list of beam numbers used in this slice.
-            "beam_nums": np.uint32,
-            # A list of the beams azimuths for each beam in degrees.
-            "beam_azms": np.float64,
-            # Noise at the receive frequency, should be an array (one value
-            # per sequence) (TODO units??) (TODO document FFT resolution
-            # bandwidth for this value, should be = output_sample rate?)
-            "noise_at_freq": np.float64,
-            # States what order the data is in. Describes the data layout.
-            "antenna_arrays_order": np.unicode_,
-            # Denotes what each data dimension represents. = "num_antennas",
-            # "num_sequences", "num_samps" in site antennas_iq.
-            "data_descriptors": np.unicode_,
-            # The dimensions in which to reshape the data.
-            "data_dimensions": np.uint32,
-            # A contiguous set of samples (complex float) at given sample rate
-            "data": np.complex64
-            }
+        return cls.fields.array_types('antennas_iq')
 
     @classmethod
     def shared_fields(cls):
@@ -1272,6 +1351,7 @@ class BorealisRawrfv0_4(BaseFormat):
     and how they are used to verify format files and restructure Borealis
     files to array and site structure.
     """
+    fields = BorealisFieldsv0_4
 
     @staticmethod
     def reshape_site_arrays(records: OrderedDict) -> OrderedDict:
@@ -1399,40 +1479,7 @@ class BorealisRawrfv0_4(BaseFormat):
             All the single-element fields in records of the
             format, as a dictionary fieldname : type.
         """
-        return {
-            # Identifies the version of Borealis that made this data. Necessary
-            # for all versions.
-            "borealis_git_hash": str,
-            # Number used to identify experiment.
-            "experiment_id": np.int64,
-            # Name of the experiment file.
-            "experiment_name": str,
-            # Comment about the whole experiment
-            "experiment_comment": str,
-            # Number of slices in the experiment at this integration time.
-            "num_slices": np.int64,
-            # Three letter radar identifier.
-            "station": str,
-            # Number of sampling periods in the integration time.
-            "num_sequences": np.int64,
-            # Sampling rate of the samples being written to file in Hz.
-            "rx_sample_rate": np.float64,
-            # Designates if the record is the first in a scan.
-            "scan_start_marker": np.uint8,
-            # Integration time in seconds.
-            "int_time": np.float32,
-            # Number of main array antennas.
-            "main_antenna_count": np.uint32,
-            # Number of interferometer array antennas.
-            "intf_antenna_count": np.uint32,
-            # str denoting C data type of the samples included in the data
-            # array, such as 'complex float'.
-            "samples_data_type": str,
-            # The center frequency of this data in kHz
-            "rx_center_freq": np.float64,
-            # Number of samples in the sampling period.
-            "num_samps": np.uint32
-            }
+        return cls.fields.single_element_types('rawrf')
 
     @classmethod
     def array_dtypes(cls):
@@ -1445,19 +1492,7 @@ class BorealisRawrfv0_4(BaseFormat):
             All the array fields in records of the
             format, as a dictionary fieldname : array dtype.
         """
-        return {
-            # A list of GPS timestamps of the beginning of transmission for
-            # each sampling period in the integration time. Seconds since
-            # epoch.
-            "sqn_timestamps": np.float64,
-            # Denotes what each data dimension represents. = "num_sequences",
-            # "num_antennas", "num_samps" for rawrf.
-            "data_descriptors": np.unicode_,
-            # The dimensions in which to reshape the data.
-            "data_dimensions": np.uint32,
-            # A contiguous set of samples (complex float) at given sample rate
-            "data": np.complex64
-            }
+        return cls.fields.array_types('rawrf')
 
 
 class BorealisRawacfv0_5(BorealisRawacfv0_4):
@@ -1487,42 +1522,7 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
     num_blanked_samples, to specify how much data to read in the
     blanked_samples array in the array style file.
     """
-
-    @classmethod
-    def single_element_types(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        single_element_types
-            All the single-element fields in records of the
-            format, as a dictionary fieldname : type.
-
-        Notes
-        -----
-        In Borealis v0.5, slice_id, slice_interfacing, scheduling_mode, and
-        averaging_methods were added as single element fields.
-        num_blanked_samples is an array-specific field as the number may vary
-        from record to record, but it is also a single-element-per-record
-        field.
-        """
-        single_element_types = super(BorealisRawacfv0_5,
-                                     cls).single_element_types()
-        single_element_types.update({
-            # the slice id of the file and dataset.
-            "slice_id": np.uint32,
-            # the interfacing of this slice to other slices.
-            "slice_interfacing": str,
-            # A string describing the type of scheduling time at the time of
-            # this dataset.
-            "scheduling_mode": str,
-            # A string describing the averaging method, ex. mean, median
-            "averaging_method": str,
-            # number of blanked samples in the sequence.
-            "num_blanked_samples": np.uint32
-            })
-        return single_element_types
+    fields = BorealisFieldsv0_5
 
     @classmethod
     def shared_fields(cls):
@@ -1634,43 +1634,7 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
     num_blanked_samples, to specify how much data to read in the
     blanked_samples array in the array style file.
     """
-
-    @classmethod
-    def single_element_types(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        single_element_types
-            All the single-element fields in records of the
-            format, as a dictionary fieldname : type.
-
-        See Also
-        --------
-        https://borealis.readthedocs.io/en/latest/borealis_data.html
-
-        Notes
-        -----
-        In Borealis v0.5, slice_id, slice_interfacing, and scheduling_mode
-        were added as single element fields. num_blanked_samples is an
-        array-specific field as the number may vary from record to record,
-        but it is also a single-element-per-record field.
-        """
-        single_element_types = super(BorealisBfiqv0_5,
-                                     cls).single_element_types()
-        single_element_types.update({
-            # the slice id of the file and dataset.
-            "slice_id": np.uint32,
-            # the interfacing of this slice to other slices.
-            "slice_interfacing": str,
-            # A string describing the type of scheduling time at the time of
-            # this dataset.
-            "scheduling_mode": str,
-            # number of blanked samples in the sequence.
-            "num_blanked_samples": np.uint32
-            })
-        return single_element_types
+    fields = BorealisFieldsv0_5
 
     @classmethod
     def shared_fields(cls):
@@ -1781,62 +1745,7 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
     an array-specific field, num_blanked_samples, to specify how much data to
     read in the blanked_samples array in the array style file.
     """
-
-    @classmethod
-    def single_element_types(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        single_element_types
-            All the single-element fields in records of the
-            format, as a dictionary fieldname : type.
-
-        Notes
-        -----
-        In Borealis v0.5, slice_id, slice_interfacing, and scheduling_mode
-        were added as single element fields. num_blanked_samples is an
-        array-specific field as the number may vary from record to record,
-        but it is also a single-element-per-record field.
-        """
-        single_element_types = super(BorealisAntennasIqv0_5,
-                                     cls).single_element_types()
-        single_element_types.update({
-            # the slice id of the file and dataset.
-            "slice_id": np.uint32,
-            # the interfacing of this slice to other slices.
-            "slice_interfacing": str,
-            # A string describing the type of scheduling time at the time of
-            # this dataset.
-            "scheduling_mode": str,
-            # number of blanked samples in the sequence.
-            "num_blanked_samples": np.uint32
-            })
-        return single_element_types
-
-    @classmethod
-    def array_dtypes(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        array_dtypes
-            All the array fields in records of the
-            format, as a dictionary fieldname : array dtype.
-
-        Notes
-        -----
-        In Borealis v0.5, blanked_samples was added as an array
-        field.
-        """
-        array_dtypes = super(BorealisAntennasIqv0_5, cls).array_dtypes()
-        array_dtypes.update({
-            # Samples that occur during TR switching (transmission times)
-            "blanked_samples": np.uint32
-            })
-        return array_dtypes
+    fields = BorealisFieldsv0_5
 
     @classmethod
     def shared_fields(cls):
@@ -1933,60 +1842,10 @@ class BorealisRawrfv0_5(BorealisRawrfv0_4):
     In v0.5, the following fields were added to BorealisRawrf:
     scheduling_mode and blanked_samples.
     """
-
-    @classmethod
-    def single_element_types(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        single_element_types
-            All the single-element fields in records of the
-            format, as a dictionary fieldname : type.
-
-        Notes
-        -----
-        In Borealis v0.5, scheduling_mode was added as a single
-        element field.
-        """
-        single_element_types = super(BorealisRawrfv0_5,
-                                     cls).single_element_types()
-        single_element_types.update({
-            # A string describing the type of scheduling time at the time of
-            # this dataset.
-            "scheduling_mode": str
-            })
-        return single_element_types
-
-    @classmethod
-    def array_dtypes(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        array_dtypes
-            All the array fields in records of the
-            format, as a dictionary fieldname : array dtype.
-
-        Notes
-        -----
-        In Borealis v0.5, blanked_samples was added as an array
-        field.
-        """
-        array_dtypes = super(BorealisRawrfv0_5, cls).array_dtypes()
-        array_dtypes.update({
-            # Samples that occur during TR switching (transmission times)
-            "blanked_samples": np.uint32
-            })
-        return array_dtypes
+    fields = BorealisFieldsv0_5
 
 
-# The following are the currently used classes, with additions according
-# to Borealis updates.
-
-class BorealisRawacf(BorealisRawacfv0_5):
+class BorealisRawacfv0_6(BorealisRawacfv0_5):
     """
     Class containing Borealis Rawacf data fields and their types for the
     current version of Borealis (v0.6).
@@ -2012,47 +1871,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
     lp_status_word. Array structured files contain the same fields,
     but with dims of [num_records].
     """
-
-    @classmethod
-    def single_element_types(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        single_element_types
-            All the single-element fields in records of the
-            format, as a dictionary fieldname : type.
-
-        Notes
-        -----
-        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and lp_status_word were added as single element fields
-        """
-        single_element_types = super(BorealisRawacf,
-                                     cls).single_element_types()
-        single_element_types.update({
-            # the agc fault status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates an agc fault at least once during the integration
-            # period.
-            "agc_status_word": np.uint32,
-            # the low power status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates a low power condition at least once during the
-            # integration period.
-            "lp_status_word": np.uint32,
-            # Boolean indicating if the GPS was locked during the entire
-            # integration period
-            "gps_locked": np.uint8,
-            # The max time diffe between GPS and system time during the
-            # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64,
-            # Updated to 16 bit number to avoid mismatch when converting
-            # to DMAP format.
-            "experiment_id": np.int16
-        })
-        return single_element_types
+    fields = BorealisFieldsv0_6
 
     @classmethod
     def unshared_fields_dims_array(cls):
@@ -2092,7 +1911,7 @@ class BorealisRawacf(BorealisRawacfv0_5):
         return unshared_fields_dims
 
 
-class BorealisBfiq(BorealisBfiqv0_5):
+class BorealisBfiqv0_6(BorealisBfiqv0_5):
     """
     Class containing Borealis Bfiq data fields and their types for the
     current version of Borealis (v0.6).
@@ -2120,47 +1939,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
 
     pulse_phase_offset was also added
     """
-
-    @classmethod
-    def single_element_types(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        single_element_types
-            All the single-element fields in records of the
-            format, as a dictionary fieldname : type.
-
-        Notes
-        -----
-        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and lp_status_word were added as single element fields
-        """
-        single_element_types = super(BorealisBfiq,
-                                     cls).single_element_types()
-        single_element_types.update({
-            # the agc fault status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates an agc fault at least once during the
-            # integration period.
-            "agc_status_word": np.uint32,
-            # the low power status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates a low power condition at least once during
-            # the integration period.
-            "lp_status_word": np.uint32,
-            # Boolean indicating if the GPS was locked during the entire
-            # integration period
-            "gps_locked": np.uint8,
-            # The max time diffe between GPS and system time during the
-            # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64,
-            # Updated to 16 bit number to avoid mismatch when converting
-            # to DMAP format.
-            "experiment_id": np.int16
-        })
-        return single_element_types
+    fields = BorealisFieldsv0_6
 
     @classmethod
     def unshared_fields_dims_array(cls):
@@ -2207,7 +1986,7 @@ class BorealisBfiq(BorealisBfiqv0_5):
         return unshared_fields_dims
 
 
-class BorealisAntennasIq(BorealisAntennasIqv0_5):
+class BorealisAntennasIqv0_6(BorealisAntennasIqv0_5):
     """
     Class containing Borealis Antennas iq data fields and their types for
     Borealis current version (v0.6).
@@ -2235,47 +2014,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
 
     pulse_phase_offset was also added to the site-structured files.
     """
-
-    @classmethod
-    def single_element_types(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        single_element_types
-            All the single-element fields in records of the
-            format, as a dictionary fieldname : type.
-
-        Notes
-        -----
-        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and lp_status_word were added as single element fields
-        """
-        single_element_types = super(BorealisAntennasIq,
-                                     cls).single_element_types()
-        single_element_types.update({
-            # the agc fault status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates an agc fault at least once during the
-            # integration period.
-            "agc_status_word": np.uint32,
-            # the low power status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates a low power condition at least once during
-            # the integration period.
-            "lp_status_word": np.uint32,
-            # Boolean indicating if the GPS was locked during the entire
-            # integration period
-            "gps_locked": np.uint8,
-            # The max time diffe between GPS and system time during the
-            # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64,
-            # Updated to 16 bit number to avoid mismatch when converting
-            # to DMAP format.
-            "experiment_id": np.int16
-        })
-        return single_element_types
+    fields = BorealisFieldsv0_6
 
     @classmethod
     def unshared_fields_dims_array(cls):
@@ -2322,7 +2061,7 @@ class BorealisAntennasIq(BorealisAntennasIqv0_5):
         return unshared_fields_dims
 
 
-class BorealisRawrf(BorealisRawrfv0_5):
+class BorealisRawrfv0_6(BorealisRawrfv0_5):
     """
     Class containing Borealis Rawrf data fields and their types for current
     Borealis version (v0.6).
@@ -2342,48 +2081,248 @@ class BorealisRawrf(BorealisRawrfv0_5):
     gps_locked, gps_to_system_time_diff, agc_status_word, and
     lp_status_word.
     """
+    fields = BorealisFieldsv0_6
+
+# The following are the currently used classes, with additions according
+# to Borealis updates.
+
+class BorealisRawacf(BorealisRawacfv0_6):
+    """
+    Class containing Borealis Rawacf data fields and their types for the
+    current version of Borealis (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisRawacfv0_6
+    https://borealis.readthedocs.io/en/latest/borealis_data.html
+
+    Notes
+    -----
+    Rawacf data has been mixed, filtered, and decimated; beamformed and
+    combined into antenna arrays; then autocorrelated and correlated between
+    antenna arrays to produce matrices of num_ranges x num_lags.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, four fields were added to site files:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and
+    lp_status_word. Array structured files contain the same fields,
+    but with dims of [num_records].
+    """
+    fields = BorealisFieldsv0_6
 
     @classmethod
-    def single_element_types(cls):
+    def unshared_fields_dims_array(cls):
         """
         See BaseFormat class for description and use of this method.
-
-        Returns
-        -------
-        single_element_types
-            All the single-element fields in records of the
-            format, as a dictionary fieldname : type.
 
         Notes
         -----
         In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
-        and lp_status_word were added as single element fields
+        and lp_status_word were added to rawacf.
+        All are unshared fields because their values may not be the same from
+        record to record.
         """
-        single_element_types = super(BorealisRawrf,
-                                     cls).single_element_types()
-        single_element_types.update({
-            # the agc fault status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates an agc fault at least once during the
-            # integration period.
-            "agc_status_word": np.uint32,
-            # the low power status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates a low power condition at least once during
-            # the integration period.
-            "lp_status_word": np.uint32,
-            # Boolean indicating if the GPS was locked during the entire
-            # integration period
-            "gps_locked": np.uint8,
-            # The max time diffe between GPS and system time during the
-            # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64,
-            # Updated to 16 bit number to avoid mismatch when converting
-            # to DMAP format.
-            "experiment_id": np.int16
-        })
-        return single_element_types
+        unshared_fields_dims = super(BorealisRawacf,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
 
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisRawacf,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            })
+        return unshared_fields_dims
+
+
+class BorealisBfiq(BorealisBfiqv0_6):
+    """
+    Class containing Borealis Bfiq data fields and their types for the
+    current version of Borealis (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisBfiqv0_5
+
+    Notes
+    -----
+    Bfiq data is beamformed i and q data. It has been mixed, filtered,
+    decimated to the final output receive rate, and it has been beamformed
+    and all channels have been combined into their arrays. No correlation
+    or averaging has occurred.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, four fields were added to site files:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and
+    lp_status_word. Array structured files contain the same fields,
+    but with dims of [num_records].
+
+    pulse_phase_offset was also added
+    """
+    fields = BorealisFieldsv0_6
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        lp_status_word and pulse_phase_offset were added to bfiq.
+        All are unshared fields because their values may not be the same from
+        record to record.
+        """
+        unshared_fields_dims = super(BorealisBfiq,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [cls.find_max_pulse_phase_offset]
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisBfiq,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [lambda arrays, record_num:
+                                   -1 if arrays['pulse_phase_offset'].size < arrays['num_sequences'][record_num]
+                                   else
+                                   list((arrays['num_sequences'][record_num],)
+                                        + arrays['pulse_phase_offset'][
+                                              record_num].shape[1:])],
+            })
+        return unshared_fields_dims
+
+
+class BorealisAntennasIq(BorealisAntennasIqv0_6):
+    """
+    Class containing Borealis Antennas iq data fields and their types for
+    Borealis current version (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisAntennasIqv0_5
+
+    Notes
+    -----
+    Antennas iq data is data with all channels separated. It has been mixed
+    and filtered, but it has not been beamformed or combined into the
+    entire antenna array data product.
+
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, the following fields were added to the Borealis-produced
+    site structured files:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and lp_status_word.
+    Array structured files contain the same fields,
+    but with dims of [num_records].
+
+    pulse_phase_offset was also added to the site-structured files.
+    """
+    fields = BorealisFieldsv0_6
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.6, gps_locked, gps_to_system_time_diff, agc_status_word,
+        lp_status_word and pulse_phase_offset were added to the antennas_iq.
+        All are unshared fields because their values may not be the same from
+        record to record.
+        """
+        unshared_fields_dims = super(BorealisAntennasIq,
+                                     cls).unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [cls.find_max_pulse_phase_offset]
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        unshared_fields_dims = super(BorealisAntennasIq,
+                                     cls).unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'agc_status_word': [],
+            'lp_status_word': [],
+            'gps_locked': [],
+            'gps_to_system_time_diff': [],
+            'pulse_phase_offset': [lambda arrays, record_num:
+                                   -1 if arrays['pulse_phase_offset'].size < arrays['num_sequences'][record_num]
+                                   else
+                                   list((arrays['num_sequences'][record_num],)
+                                        + arrays['pulse_phase_offset'][
+                                              record_num].shape[1:])],
+            })
+        return unshared_fields_dims
+
+
+class BorealisRawrf(BorealisRawrfv0_6):
+    """
+    Class containing Borealis Rawrf data fields and their types for current
+    Borealis version (v0.6).
+
+    See Also
+    --------
+    BaseFormat
+    BorealisRawrfv0_5
+
+    Notes
+    -----
+    See BaseFormat for description of classmethods and how they
+    are used to verify format files and restructure Borealis files to
+    array and site structure.
+
+    In v0.6, the following fields were added to BorealisRawrf:
+    gps_locked, gps_to_system_time_diff, agc_status_word, and
+    lp_status_word.
+    """
+    fields = BorealisFieldsv0_6
 
 # borealis versions
 borealis_version_dict = {
@@ -2412,6 +2351,12 @@ borealis_version_dict = {
         'rawrf': BorealisRawrfv0_5
         },
     'v0.6': {
+        'bfiq': BorealisBfiqv0_6,
+        'rawacf': BorealisRawacfv0_6,
+        'antennas_iq': BorealisAntennasIqv0_6,
+        'rawrf': BorealisRawrfv0_6
+        },
+    'v0.7': {
         'bfiq': BorealisBfiq,
         'rawacf': BorealisRawacf,
         'antennas_iq': BorealisAntennasIq,
