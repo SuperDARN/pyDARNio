@@ -378,7 +378,7 @@ class BorealisRestructure(object):
                                 # Initialize array now with correct data type.
                                 dtype = self.format.single_element_types()[field]
                                 new_data_dict[field] = np.empty(num_records, dtype=dtype)
-                                if dtype is np.int64 or dtype is np.uint32 or dtype is np.uint8:
+                                if dtype in [np.int64, np.uint32, np.uint8]:
                                     new_data_dict[field][:] = -1
                                 else:
                                     new_data_dict[field][:] = np.NaN
