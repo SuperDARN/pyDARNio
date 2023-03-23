@@ -39,7 +39,6 @@ files, see: https://borealis.readthedocs.io/en/latest/
 """
 import h5py
 import logging
-import numpy as np
 
 from typing import List
 

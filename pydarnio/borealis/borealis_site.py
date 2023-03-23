@@ -40,7 +40,6 @@ import logging
 import os
 import subprocess as sp
 import warnings
-import numpy as np
 
 from collections import OrderedDict
 from typing import Union
