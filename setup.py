@@ -49,7 +49,7 @@ setup(
     author="SuperDARN",
     include_package_data=True,
     setup_requires=['pyyaml', 'numpy',
-                    'h5py>=3.3.0', 'deepdish', 'pathlib2'],
+                    'h5py>=3.3.0', 'pathlib2'],
     # pyyaml library install
     install_requires=['pyyaml', 'numpy',
                       'h5py>=3.3.0', 'deepdish', 'pathlib2']
