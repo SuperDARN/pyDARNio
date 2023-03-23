@@ -228,7 +228,7 @@ class BorealisFieldsv0_4():
         """
         relevant_fields = [k for k, v in cls.files_with_fields().items() if file_type in v]
         single_elements = cls.all_single_element_types()
-        return {k: single_elements[k] for k in relevant_fields}
+        return {k: v for k, v in single_elements.items() if k in relevant_fields}
 
     @classmethod
     def array_types(cls, file_type: str) -> dict:
@@ -247,7 +247,7 @@ class BorealisFieldsv0_4():
         """
         relevant_fields = [k for k, v in cls.files_with_fields().items() if file_type in v]
         array_elements = cls.all_array_types()
-        return {k: array_elements[k] for k in relevant_fields}
+        return {k: v for k, v in array_elements.items() if k in relevant_fields}
 
 
 class BorealisFieldsv0_5(BorealisFieldsv0_4):
@@ -262,7 +262,7 @@ class BorealisFieldsv0_5(BorealisFieldsv0_4):
             "averaging_method": ['rawacf'],
             "num_blanked_samples": ['antennas_iq', 'bfiq', 'rawacf'],
         })
-        field_file_mapping['blanked_samples'].extend('antennas_iq', 'rawrf')
+        field_file_mapping['blanked_samples'].extend(['antennas_iq', 'rawrf'])
 
         return field_file_mapping
 

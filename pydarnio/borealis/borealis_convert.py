@@ -817,23 +817,27 @@ class BorealisConvert(BorealisRead):
         (record_key, record_dict) = borealis_rawacf_record
 
         shaped_data = {}
+        data_dimensions = record_dict.get('correlation_dimensions', None)     # Until Borealis v0.7
+        if data_dimensions is None:
+            data_dimensions = record_dict.get('data_dimensions')        # Borealis v0.7 onwards
+
         # correlation_descriptors are num_beams, num_ranges, num_lags
         # scale by the scale squared to make up for the multiply
         # in correlation (integer max squared)
         shaped_data['main_acfs'] = record_dict['main_acfs'].reshape(
-            record_dict['correlation_dimensions']).astype(
+            data_dimensions).astype(
             np.complex64) *\
             ((np.iinfo(np.int16).max**2 * scaling_factor) /
              (record_dict['data_normalization_factor']**2))
 
         if 'intf_acfs' in record_dict.keys():
             shaped_data['intf_acfs'] = record_dict['intf_acfs'].reshape(
-                record_dict['correlation_dimensions']).astype(np.complex64) *\
+                data_dimensions).astype(np.complex64) *\
                 ((np.iinfo(np.int16).max**2 * scaling_factor) /
                  (record_dict['data_normalization_factor']**2))
         if 'xcfs' in record_dict.keys():
             shaped_data['xcfs'] = record_dict['xcfs'].reshape(
-                record_dict['correlation_dimensions']).astype(np.complex64) *\
+                data_dimensions).astype(np.complex64) *\
                 ((np.iinfo(np.int16).max**2 * scaling_factor) /
                  (record_dict['data_normalization_factor']**2))
 
@@ -881,8 +885,8 @@ class BorealisConvert(BorealisRead):
                 # in Borealis file because Borealis keeps alternate
                 # lag0
                 new_data = int_data.reshape(
-                    record_dict['correlation_dimensions'][1],
-                    record_dict['correlation_dimensions'][2]-1,
+                    data_dimensions[1],
+                    data_dimensions[2]-1,
                     2)
                 # NOTE: Flattening happening in
                 # convert_to_dmap_datastructures
@@ -973,7 +977,7 @@ class BorealisConvert(BorealisRead):
                 'mppul': np.int16(len(record_dict['pulses'])),
                 # an alternate lag-zero will be given.
                 'mplgs': np.int16(record_dict['lags'].shape[0] - 1),
-                'nrang': np.int16(record_dict['correlation_dimensions'][1]),
+                'nrang': np.int16(data_dimensions[1]),
                 'frang': np.int16(round(record_dict['first_range'])),
                 'rsep': np.int16(round(record_dict['range_sep'])),
                 # False if list is empty.
@@ -996,7 +1000,7 @@ class BorealisConvert(BorealisRead):
                 'pwr0': lag_zero_power.astype(np.float32),
                 # list from 0 to num_ranges
                 'slist': np.array(list(
-                            range(0, record_dict['correlation_dimensions'][1]))
+                            range(0, data_dimensions[1]))
                             ).astype(np.int16),
                 'acfd': correlation_dict['main_acfs'],
                 'xcfd': correlation_dict['xcfs']
