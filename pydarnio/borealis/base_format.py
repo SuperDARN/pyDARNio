@@ -1275,7 +1275,7 @@ class BaseFormat():
                 # Get the attributes (scalar fields)
                 attribute_dict = {}
                 for k, v in group.attrs.items():
-                    if k in ['CLASS', 'TITLE', 'VERSION']:
+                    if k in ['CLASS', 'TITLE', 'VERSION', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION']:
                         continue
                     elif isinstance(v, bytes):
                         attribute_dict[k] = v.tobytes().decode('utf-8')
