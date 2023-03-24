@@ -287,6 +287,61 @@ class BorealisFieldsv0_4():
         array_elements = cls.all_array_types()
         return {k: v for k, v in array_elements.items() if k in relevant_fields}
 
+    @classmethod
+    def all_shared_fields(cls):
+        """
+        List of all fields that are shared between records in a site-structured file.
+
+        Notes
+        -----
+        The dimension info for shared_fields is not necessary because the
+        dimensions will be the same for site and restructured files.
+        """
+        return ['antenna_arrays_order',
+                'blanked_samples',
+                'borealis_git_hash',
+                'data_normalization_factor',
+                'experiment_comment',
+                'experiment_id',
+                'experiment_name',
+                'first_range',
+                'first_range_rtt',
+                'freq',
+                'intf_antenna_count',
+                'lags',
+                'main_antenna_count',
+                'num_ranges',
+                'num_samps',
+                'pulse_phase_offset',
+                'pulses',
+                'range_sep',
+                'rx_sample_rate',
+                'samples_data_type',
+                'slice_comment',
+                'station',
+                'tau_spacing',
+                'tx_pulse_len']
+
+    @classmethod
+    def shared_fields(cls, file_type: str) -> list[str]:
+        """
+        Gets the shared fields of a given file type.
+
+        Parameters
+        ----------
+        file_type: str
+            File type to get shared fields for. One of 'antennas_iq', 'bfiq',
+            'rawacf', or 'rawrf'
+
+        Returns
+        -------
+        list[str]
+            List of shared fields for the given data type.
+        """
+        relevant_fields = [k for k, v in cls.files_with_fields().items() if file_type in v]
+        shared = cls.all_shared_fields()
+        return [k for k in shared if k in relevant_fields]
+
 
 class BorealisFieldsv0_5(BorealisFieldsv0_4):
     """
@@ -347,6 +402,25 @@ class BorealisFieldsv0_5(BorealisFieldsv0_4):
             "num_blanked_samples": np.uint32
         })
         return single_element_types
+
+    @classmethod
+    def all_shared_fields(cls):
+        """
+        List of all fields that are shared between records in a site-structured file.
+
+        Notes
+        -----
+        In Borealis v0.5, slice_id, scheduling_mode, and
+        averaging_method were added and these will be shared fields. These
+        fields will not change from record to record. Blanked samples may
+        change from record to record if a new slice is added and interfaced
+        within the sequence. Therefore, this bug was fixed by changing
+        blanked_samples to an unshared field in Borealis v0.5.
+        """
+        shared = super().all_shared_fields() + \
+            ['slice_id', 'scheduling_mode', 'averaging_method']
+        shared.remove('blanked_samples')
+        return shared
 
 
 class BorealisFieldsv0_6(BorealisFieldsv0_5):
@@ -445,41 +519,6 @@ class BorealisFields(BorealisFieldsv0_6):
         field_file_mapping['range_sep'].append('antennas_iq')
 
         return field_file_mapping
-
-    @classmethod
-    def all_single_element_types(cls):
-        """
-        Get the mapping of Borealis data fields to its single element type.
-        Mapping is updated to reflect changes from previous version of Borealis.
-
-        Returns
-        -------
-        A dictionary containing data fields as keys and the data field variable
-        types as values.
-        """
-        single_element_types = super().all_single_element_types()
-        single_element_types.update({
-            # the agc fault status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates an agc fault at least once during the integration
-            # period.
-            "agc_status_word": np.uint32,
-            # the low power status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates a low power condition at least once during the
-            # integration period.
-            "lp_status_word": np.uint32,
-            # Boolean indicating if the GPS was locked during the entire
-            # integration period
-            "gps_locked": np.uint8,
-            # The max time diffe between GPS and system time during the
-            # integration period. In seconds. Negative if GPS time ahead.
-            "gps_to_system_time_diff": np.float64,
-            # Updated to 16 bit number to avoid mismatch when converting
-            # to DMAP format.
-            "experiment_id": np.int16
-        })
-        return single_element_types
 
 
 class BorealisRawacfv0_4(BaseFormat):
@@ -708,14 +747,7 @@ class BorealisRawacfv0_4(BaseFormat):
         The dimension info for shared_fields is not necessary because the
         dimensions will be the same for site and restructured files.
         """
-        return ['blanked_samples', 'borealis_git_hash',
-                'data_normalization_factor', 'experiment_comment',
-                'experiment_id', 'experiment_name', 'first_range',
-                'first_range_rtt', 'freq', 'intf_antenna_count', 'lags',
-                'main_antenna_count', 'pulses', 'range_sep',
-                'rx_sample_rate', 'samples_data_type',
-                'slice_comment', 'station', 'tau_spacing',
-                'tx_pulse_len']
+        return cls.fields.shared_fields('rawacf')
 
     @classmethod
     def unshared_fields_dims_array(cls):
@@ -1029,18 +1061,13 @@ class BorealisBfiqv0_4(BaseFormat):
     def shared_fields(cls):
         """
         See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        The dimension info for shared_fields is not necessary because the
+        dimensions will be the same for site and restructured files.
         """
-        return ['antenna_arrays_order', 'blanked_samples',
-                'borealis_git_hash',
-                'data_normalization_factor',
-                'experiment_comment', 'experiment_id', 'experiment_name',
-                'first_range', 'first_range_rtt', 'freq',
-                'intf_antenna_count', 'lags', 'main_antenna_count',
-                'num_ranges', 'num_samps',
-                'pulse_phase_offset', 'pulses', 'range_sep',
-                'rx_sample_rate', 'samples_data_type',
-                'slice_comment', 'station', 'tau_spacing',
-                'tx_pulse_len']
+        return cls.fields.shared_fields('bfiq')
 
     @classmethod
     def unshared_fields_dims_array(cls):
@@ -1343,16 +1370,13 @@ class BorealisAntennasIqv0_4(BaseFormat):
     def shared_fields(cls):
         """
         See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        The dimension info for shared_fields is not necessary because the
+        dimensions will be the same for site and restructured files.
         """
-        return ['antenna_arrays_order',
-                'borealis_git_hash',
-                'data_normalization_factor', 'experiment_comment',
-                'experiment_id', 'experiment_name', 'freq',
-                'intf_antenna_count', 'main_antenna_count', 'num_samps',
-                'pulse_phase_offset', 'pulses',
-                'rx_sample_rate', 'samples_data_type',
-                'slice_comment', 'station', 'tau_spacing',
-                'tx_pulse_len']
+        return cls.fields.shared_fields('antennas_iq')
 
     @classmethod
     def unshared_fields_dims_array(cls):
@@ -1623,25 +1647,6 @@ class BorealisRawacfv0_5(BorealisRawacfv0_4):
     fields = BorealisFieldsv0_5
 
     @classmethod
-    def shared_fields(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Notes
-        -----
-        In Borealis v0.5, slice_id, scheduling_mode, and
-        averaging_method were added and these will be shared fields. These
-        fields will not change from record to record. Blanked samples may
-        change from record to record if a new slice is added and interfaced
-        within the sequence. Therefore, this bug was fixed by changing
-        blanked_samples to an unshared field in Borealis v0.5.
-        """
-        shared = super().shared_fields() + \
-            ['slice_id', 'scheduling_mode', 'averaging_method']
-        shared.remove('blanked_samples')
-        return shared
-
-    @classmethod
     def unshared_fields_dims_array(cls):
         """
         See BaseFormat class for description and use of this method.
@@ -1731,25 +1736,6 @@ class BorealisBfiqv0_5(BorealisBfiqv0_4):
     fields = BorealisFieldsv0_5
 
     @classmethod
-    def shared_fields(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Notes
-        -----
-        In Borealis v0.5, slice_id and scheduling_mode were added and these
-        will be shared fields. These fields will not change from record to
-        record. Blanked samples may  change from record to record if a new
-        slice is added and interfaced within the sequence. Therefore, this bug
-        was fixed by changing blanked_samples to an unshared field in Borealis
-        v0.5.
-        """
-        shared = super().shared_fields() + \
-            ['slice_id', 'scheduling_mode']
-        shared.remove('blanked_samples')
-        return shared
-
-    @classmethod
     def unshared_fields_dims_array(cls):
         """
         See BaseFormat class for description and use of this method.
@@ -1836,20 +1822,6 @@ class BorealisAntennasIqv0_5(BorealisAntennasIqv0_4):
     read in the blanked_samples array in the array style file.
     """
     fields = BorealisFieldsv0_5
-
-    @classmethod
-    def shared_fields(cls):
-        """
-        See BaseFormat class for description and use of this method.
-
-        Notes
-        -----
-        In Borealis v0.5, slice_id and scheduling_mode were added and these
-        will be shared fields.
-        """
-        shared = super().shared_fields() + \
-            ['slice_id', 'scheduling_mode']
-        return shared
 
     @classmethod
     def unshared_fields_dims_array(cls):
@@ -2187,8 +2159,8 @@ class BorealisRawacf(BorealisRawacfv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    In v0.7, four fields were added to site files:
-    TODO
+    In v0.7, the fields correlation_descriptors and correlation-dimensions
+    were replaced by data_descriptors and data_dimensions, respectively.
     """
     fields = BorealisFields
 
@@ -2214,8 +2186,7 @@ class BorealisBfiq(BorealisBfiqv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    In v0.7, four fields were added to site files:
-    TODO
+    There were no changes to the bfiq file format in v0.7.
     """
     fields = BorealisFields
 
@@ -2241,8 +2212,12 @@ class BorealisAntennasIq(BorealisAntennasIqv0_6):
     array and site structure.
 
     In v0.7, the following fields were added to the Borealis-produced
-    site structured files:
-    TODO
+    site structured files for ease of postprocessing:
+    first_range
+    first_range_rtt
+    lags
+    num_ranges
+    range_sep
     """
     fields = BorealisFields
 
@@ -2263,8 +2238,7 @@ class BorealisRawrf(BorealisRawrfv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    In v0.7, the following fields were added to BorealisRawrf:
-    TODO
+    There were no changes to the rawrf file format in v0.7.
     """
     fields = BorealisFields
 
