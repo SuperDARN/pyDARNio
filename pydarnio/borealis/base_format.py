@@ -605,7 +605,7 @@ class BaseFormat():
                                 actual_size = site_file[record_name][field].size
                                 num_sequences = site_file[record_name]['data_dimensions'][1]
                                 num_pulses = site_file[record_name]['pulses'].size
-                                if actual_size != num_sequences * num_pulses:
+                                if actual_size != num_sequences * num_pulses and actual_size != 0:
                                     if actual_size == 1:    # This is the special case
                                         field_shape = (0,)
                                     else:

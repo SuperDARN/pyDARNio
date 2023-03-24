@@ -336,7 +336,7 @@ class BorealisRestructure(object):
                     rec_dict.update({k: record.attrs[k] for k in rec_attrs})
                     # Bitwise fields also need to be handled separately
                     for field in self.format.bool_types():
-                        rec_dict[field] = f[record_name][field]
+                        rec_dict[field] = f[record_name].attrs[field]
 
                     # some fields are linear in site style and need to be reshaped.
                     # Pass in record nested in a dictionary, as

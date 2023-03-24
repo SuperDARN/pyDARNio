@@ -520,6 +520,51 @@ class BorealisFields(BorealisFieldsv0_6):
 
         return field_file_mapping
 
+    @classmethod
+    def all_single_element_types(cls):
+        """
+        Get the mapping of Borealis data fields to its single element type.
+        Mapping is updated to reflect changes from previous version of Borealis.
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and the data field variable
+        types as values.
+
+        Notes
+        -----
+        In v0.7, gps_locked and scan_start_marker were changed to np.bool_ fields from np.uint8.
+        """
+        single_element_types = super().all_single_element_types()
+        single_element_types.update({
+            "gps_locked": np.bool_,
+            "scan_start_marker": np.bool_,
+        })
+        return single_element_types
+
+    @classmethod
+    def all_array_types(cls):
+        """
+        Get the mapping of Borealis array data fields to its type
+
+        Returns
+        -------
+        A dictionary containing data fields as keys and the data field variable
+        types as values.
+
+        Notes
+        -----
+        In v0.7, antenna_arrays_order and data_descriptors were changed to np.array(np.bytes_).
+        """
+        all_arrays = super().all_array_types()
+        all_arrays.update({
+            "antenna_arrays_order": np.bytes_,
+            "data_descriptors": np.bytes_,
+        })
+        all_arrays.pop('correlation_dimensions')
+        all_arrays.pop('correlation_descriptors')
+        return all_arrays
+
 
 class BorealisRawacfv0_4(BaseFormat):
     """
@@ -2163,6 +2208,173 @@ class BorealisRawacf(BorealisRawacfv0_6):
     were replaced by data_descriptors and data_dimensions, respectively.
     """
     fields = BorealisFields
+
+    @staticmethod
+    def find_num_ranges(records: OrderedDict) -> int:
+        """
+        Find the number of ranges given the records dictionary, for
+        restructuring to arrays.
+
+        Parameters
+        ----------
+        records
+            The records dictionary from a site-style file.
+
+        Returns
+        -------
+        num_ranges
+            The number of ranges being calculated in the acfs.
+
+        Notes
+        -----
+        Num_ranges is unique to a slice so cannot change inside file.
+        """
+        first_key = list(records.keys())[0]
+        num_ranges = records[first_key]['data_dimensions'][1]
+        return num_ranges
+
+    @staticmethod
+    def find_num_lags(records: OrderedDict) -> int:
+        """
+        Find the number of lags given the records dictionary, for
+        restructuring to arrays.
+
+        Parameters
+        ----------
+        records
+            The records dictionary from a site-style file.
+
+        Returns
+        -------
+        num_lags
+            The number of lags being calculated in the acfs.
+
+        Notes
+        -----
+        Num_lags is unique to a slice so cannot change inside file.
+        """
+        first_key = list(records.keys())[0]
+        num_lags = records[first_key]['data_dimensions'][2]
+        return num_lags
+
+    @classmethod
+    def site_specific_fields_generate(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        return {
+            'data_descriptors': lambda arrays, record_num: np.array(
+                ['num_beams', 'num_ranges', 'num_lags']),
+            'data_dimensions': lambda arrays, record_num: np.array(
+                [arrays['num_beams'][record_num], arrays['main_acfs'].shape[2],
+                 arrays['main_acfs'].shape[3]], dtype=np.uint32)
+            }
+
+    @classmethod
+    def array_specific_fields_generate(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        return {
+            'num_beams': lambda records: np.array(
+                [len(record['beam_nums']) for key, record in records.items()],
+                dtype=np.uint32),
+            'data_descriptors': lambda records: np.array(
+                ['num_records', 'max_num_beams', 'num_ranges', 'num_lags'])
+        }
+
+    @staticmethod
+    def reshape_site_arrays(records: OrderedDict) -> OrderedDict:
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        records
+            An OrderedDict of the site style data, organized
+            by record. Records are stored with timestamps
+            as the keys and the data for that timestamp
+            stored as a dictionary.
+
+        Returns
+        -------
+        records
+            An OrderedDict of the site style data, with the main_acfs,
+            intf_acfs, and xcfs fields in all records reshaped to the correct
+            dimensions.
+
+        Notes
+        -----
+        BorealisRawacf has the correlation fields non-flattened, so nothing needs to be done.
+        """
+        # dimensions provided in data_dimensions field as num_beams,
+        # num_ranges, num_lags for the rawacf format.
+        new_records = copy.deepcopy(records)
+        return new_records
+
+    @staticmethod
+    def flatten_site_arrays(records: OrderedDict) -> OrderedDict:
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        records
+            An OrderedDict of the site style data, organized
+            by record. Records are stored with timestamps
+            as the keys and the data for that timestamp
+            stored as a dictionary.
+
+        Returns
+        -------
+        records
+            An OrderedDict of the site style data.
+
+        Notes
+        -----
+        BorealisRawacf has the main_acfs, intf_acfs, and xcfs fields non-flattened
+        in the site structured files, so nothing needs to be done.
+        """
+        new_records = copy.deepcopy(records)
+        return new_records
+
+    @classmethod
+    def site_get_max_dims(cls, filename: str, unshared_parameters: List[str]):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the site file being checked
+        unshared_parameters: List[str]
+            List of parameter names that are not shared between all the records
+            in the site restructured file, i.e. may have different dimensions
+            between records.
+
+        Returns
+        -------
+        fields_max_dims: dict
+            dictionary containing field names (str) as keys with maximum
+            dimensions required to restructure to array file as values (tuples)
+        """
+        fields_max_dims, max_num_sequences, max_num_beams = BaseFormat.site_get_max_dims(filename, unshared_parameters)
+
+        # Now change the main_acfs, int_acfs and xcfs dicts to maximum required dims
+
+        # Get the num_ranges and num_lags fields directly from one record of the file
+        with h5py.File(filename, 'r') as site_file:
+            # hacky way to get first key with KeyView object from .keys()
+            record_name = [k for i, k in enumerate(site_file.keys()) if i == 0][0]
+            _, num_ranges, num_lags = site_file[record_name]['data_dimensions']
+
+        # Change the data dimensions to the multidimensional size instead of flattened size
+        reshaped_correlation_dims = (max_num_beams, num_ranges, num_lags)
+        fields_max_dims['main_acfs'] = reshaped_correlation_dims
+        fields_max_dims['intf_acfs'] = reshaped_correlation_dims
+        fields_max_dims['xcfs'] = reshaped_correlation_dims
+
+        return fields_max_dims, max_num_sequences, max_num_beams
 
 
 class BorealisBfiq(BorealisBfiqv0_6):
