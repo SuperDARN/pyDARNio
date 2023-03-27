@@ -2262,26 +2262,22 @@ class BorealisRawacf(BorealisRawacfv0_6):
         """
         See BaseFormat class for description and use of this method.
         """
-        return {
-            'data_descriptors': lambda arrays, record_num: np.array(
-                ['num_beams', 'num_ranges', 'num_lags']),
-            'data_dimensions': lambda arrays, record_num: np.array(
-                [arrays['num_beams'][record_num], arrays['main_acfs'].shape[2],
-                 arrays['main_acfs'].shape[3]], dtype=np.uint32)
-            }
+        fields_generate = super().site_specific_fields_generate()
+        data_descriptors = fields_generate.pop('correlation_descriptors')
+        data_dimensions = fields_generate.pop('correlation_dimensions')
+        fields_generate['data_descriptors'] = data_descriptors
+        fields_generate['data_dimensions'] = data_dimensions
+        return fields_generate
 
     @classmethod
     def array_specific_fields_generate(cls):
         """
         See BaseFormat class for description and use of this method.
         """
-        return {
-            'num_beams': lambda records: np.array(
-                [len(record['beam_nums']) for key, record in records.items()],
-                dtype=np.uint32),
-            'data_descriptors': lambda records: np.array(
-                ['num_records', 'max_num_beams', 'num_ranges', 'num_lags'])
-        }
+        fields_generate = super().array_specific_fields_generate()
+        data_descriptors = fields_generate.pop('correlation_descriptors')
+        fields_generate['data_descriptors'] = data_descriptors
+        return fields_generate
 
     @staticmethod
     def reshape_site_arrays(records: OrderedDict) -> OrderedDict:
