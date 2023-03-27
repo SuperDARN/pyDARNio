@@ -2263,10 +2263,12 @@ class BorealisRawacf(BorealisRawacfv0_6):
         See BaseFormat class for description and use of this method.
         """
         fields_generate = super().site_specific_fields_generate()
-        data_descriptors = fields_generate.pop('correlation_descriptors')
         data_dimensions = fields_generate.pop('correlation_dimensions')
-        fields_generate['data_descriptors'] = data_descriptors
         fields_generate['data_dimensions'] = data_dimensions
+        fields_generate.pop('correlation_descriptors')
+        fields_generate['data_descriptors'] = lambda arrays, record_num: np.bytes_(
+            ['num_beams', 'num_ranges', 'num_lags'])
+
         return fields_generate
 
     @classmethod
@@ -2275,8 +2277,9 @@ class BorealisRawacf(BorealisRawacfv0_6):
         See BaseFormat class for description and use of this method.
         """
         fields_generate = super().array_specific_fields_generate()
-        data_descriptors = fields_generate.pop('correlation_descriptors')
-        fields_generate['data_descriptors'] = data_descriptors
+        fields_generate.pop('correlation_descriptors')
+        fields_generate['data_descriptors'] = lambda records: np.bytes_(
+            ['num_records', 'max_num_beams', 'num_ranges', 'num_lags'])
         return fields_generate
 
     @staticmethod
