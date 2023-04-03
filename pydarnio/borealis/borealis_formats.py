@@ -80,48 +80,48 @@ class BorealisFieldsv0_4():
         as the values.
         """
         return {
-            "borealis_git_hash": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "experiment_id": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "experiment_name": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "experiment_comment": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "slice_comment": ['antennas_iq', 'bfiq', 'rawacf'],
-            "num_slices": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "station": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "num_sequences": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "range_sep": ['bfiq', 'rawacf'],
-            "first_range_rtt": ['bfiq', 'rawacf'],
-            "first_range": ['bfiq', 'rawacf'],
-            "rx_sample_rate": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "scan_start_marker": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "int_time": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "tx_pulse_len": ['antennas_iq', 'bfiq', 'rawacf'],
-            "tau_spacing": ['antennas_iq', 'bfiq', 'rawacf'],
-            "main_antenna_count": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "intf_antenna_count": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "freq": ['antennas_iq', 'bfiq', 'rawacf'],
-            "samples_data_type": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "data_normalization_factor": ['antennas_iq', 'bfiq', 'rawacf'],
-            "num_beams": ['antennas_iq', 'bfiq', 'rawacf'],
-            "pulses": ['antennas_iq', 'bfiq', 'rawacf'],
-            "lags": ['bfiq', 'rawacf'],
-            "blanked_samples": ['bfiq', 'rawacf'],
-            "sqn_timestamps": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "beam_nums": ['antennas_iq', 'bfiq', 'rawacf'],
+            "antenna_arrays_order": ['antennas_iq', 'bfiq'],
             "beam_azms": ['antennas_iq', 'bfiq', 'rawacf'],
-            "noise_at_freq": ['antennas_iq', 'bfiq', 'rawacf'],
+            "beam_nums": ['antennas_iq', 'bfiq', 'rawacf'],
+            "blanked_samples": ['bfiq', 'rawacf'],
+            "borealis_git_hash": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
             "correlation_descriptors": ['rawacf'],
             "correlation_dimensions": ['rawacf'],
-            "main_acfs": ['rawacf'],
-            "intf_acfs": ['rawacf'],
-            "xcfs": ['rawacf'],
-            "num_samps": ['antennas_iq', 'bfiq', 'rawrf'],
-            "num_ranges": ['bfiq'],
-            "pulse_phase_offset": ['antennas_iq', 'bfiq'],
-            "antenna_arrays_order": ['antennas_iq', 'bfiq'],
             "data": ['antennas_iq', 'bfiq', 'rawrf'],
             "data_descriptors": ['antennas_iq', 'bfiq', 'rawrf'],
             "data_dimensions": ['antennas_iq', 'bfiq', 'rawrf'],
+            "data_normalization_factor": ['antennas_iq', 'bfiq', 'rawacf'],
+            "experiment_id": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "experiment_name": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "experiment_comment": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "first_range": ['bfiq', 'rawacf'],
+            "first_range_rtt": ['bfiq', 'rawacf'],
+            "freq": ['antennas_iq', 'bfiq', 'rawacf'],
+            "int_time": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "intf_acfs": ['rawacf'],
+            "intf_antenna_count": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "lags": ['bfiq', 'rawacf'],
+            "main_acfs": ['rawacf'],
+            "main_antenna_count": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "noise_at_freq": ['antennas_iq', 'bfiq', 'rawacf'],
+            "num_beams": ['antennas_iq', 'bfiq', 'rawacf'],
+            "num_ranges": ['bfiq'],
+            "num_samps": ['antennas_iq', 'bfiq', 'rawrf'],
+            "num_sequences": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "num_slices": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "pulse_phase_offset": ['antennas_iq', 'bfiq'],
+            "pulses": ['antennas_iq', 'bfiq', 'rawacf'],
+            "range_sep": ['bfiq', 'rawacf'],
             "rx_center_freq": ['rawrf'],
+            "rx_sample_rate": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "samples_data_type": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "scan_start_marker": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "slice_comment": ['antennas_iq', 'bfiq', 'rawacf'],
+            "sqn_timestamps": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "station": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "tau_spacing": ['antennas_iq', 'bfiq', 'rawacf'],
+            "tx_pulse_len": ['antennas_iq', 'bfiq', 'rawacf'],
+            "xcfs": ['rawacf'],
         }
 
     @classmethod
@@ -138,57 +138,57 @@ class BorealisFieldsv0_4():
             # Identifies the version of Borealis that made this data. Necessary
             # for all versions.
             "borealis_git_hash": str,
+            # data normalization factor determined by the filter scaling in the
+            # decimation scheme.
+            "data_normalization_factor": np.float64,
+            # Comment about the whole experiment
+            "experiment_comment": str,
             # Number used to identify experiment.
             "experiment_id": np.int64,
             # Name of the experiment file.
             "experiment_name": str,
-            # Comment about the whole experiment
-            "experiment_comment": str,
-            # Additional text comment that describes the slice.
-            "slice_comment": str,
-            # Number of slices in the experiment at this integration time.
-            "num_slices": np.int64,
-            # Three letter radar identifier.
-            "station": str,
-            # Number of sampling periods in the integration time.
-            "num_sequences": np.int64,
-            # range gate separation (equivalent distance between samples), km.
-            "range_sep": np.float32,
-            # Round trip time of flight to first range in microseconds.
-            "first_range_rtt": np.float32,
             # Distance to first range in km.
             "first_range": np.float32,
-            # Sampling rate of the samples being written to file in Hz.
-            "rx_sample_rate": np.float64,
-            # Designates if the record is the first in a scan.
-            "scan_start_marker": np.uint8,
-            # Integration time in seconds.
-            "int_time": np.float32,
-            # Length of the pulse in microseconds.
-            "tx_pulse_len": np.uint32,
-            # The minimum spacing between pulses, spacing between pulses is
-            # always a multiple of this in microseconds.
-            "tau_spacing": np.uint32,
-            # Number of main array antennas.
-            "main_antenna_count": np.uint32,
-            # Number of interferometer array antennas.
-            "intf_antenna_count": np.uint32,
+            # Round trip time of flight to first range in microseconds.
+            "first_range_rtt": np.float32,
             # The frequency used for this experiment slice in kHz.
             "freq": np.uint32,
+            # Integration time in seconds.
+            "int_time": np.float32,
+            # Number of interferometer array antennas.
+            "intf_antenna_count": np.uint32,
+            # Number of main array antennas.
+            "main_antenna_count": np.uint32,
+            # number of beams calculated for the integration time.
+            "num_beams": np.uint32,
+            # Number of ranges to calculate correlations for.
+            "num_ranges": np.uint32,
+            # Number of samples in the sampling period.
+            "num_samps": np.uint32,
+            # Number of sampling periods in the integration time.
+            "num_sequences": np.int64,
+            # Number of slices in the experiment at this integration time.
+            "num_slices": np.int64,
+            # range gate separation (equivalent distance between samples), km.
+            "range_sep": np.float32,
+            # The center frequency of this data in kHz
+            "rx_center_freq": np.float64,
+            # Sampling rate of the samples being written to file in Hz.
+            "rx_sample_rate": np.float64,
             # str denoting C data type of the samples included in the data
             # array, such as 'complex float'.
             "samples_data_type": str,
-            # data normalization factor determined by the filter scaling in the
-            # decimation scheme.
-            "data_normalization_factor": np.float64,
-            # number of beams calculated for the integration time.
-            "num_beams": np.uint32,
-            # Number of samples in the sampling period.
-            "num_samps": np.uint32,
-            # Number of ranges to calculate correlations for.
-            "num_ranges": np.uint32,
-            # The center frequency of this data in kHz
-            "rx_center_freq": np.float64,
+            # Designates if the record is the first in a scan.
+            "scan_start_marker": np.uint8,
+            # Additional text comment that describes the slice.
+            "slice_comment": str,
+            # Three letter radar identifier.
+            "station": str,
+            # The minimum spacing between pulses, spacing between pulses is
+            # always a multiple of this in microseconds.
+            "tau_spacing": np.uint32,
+            # Length of the pulse in microseconds.
+            "tx_pulse_len": np.uint32,
         }
 
     @classmethod
@@ -202,49 +202,49 @@ class BorealisFieldsv0_4():
         types as values.
         """
         return {
-            # The pulse sequence in multiples of the tau_spacing.
-            "pulses": np.uint32,
-            # The lags created from combined pulses.
-            "lags": np.uint32,
-            # Samples that have been blanked during TR switching.
-            "blanked_samples": np.uint32,
-            # A list of GPS timestamps of the beginning of transmission for
-            # each sampling period in the integration time. Seconds since
-            # epoch.
-            "sqn_timestamps": np.float64,
-            # A list of beam numbers used in this slice.
-            "beam_nums": np.uint32,
+            # States what order the data is in. Describes the data layout.
+            "antenna_arrays_order": np.unicode_,
             # A list of the beams azimuths for each beam in degrees.
             "beam_azms": np.float64,
-            # Noise at the receive frequency, should be an array
-            # (one value per sequence) (TODO units??) (TODO document
-            # FFT resolution bandwidth for this value, should be =
-            # output_sample rate?)
-            "noise_at_freq": np.float64,
+            # A list of beam numbers used in this slice.
+            "beam_nums": np.uint32,
+            # Samples that have been blanked during TR switching.
+            "blanked_samples": np.uint32,
             # Denotes what each acf/xcf dimension represents. = "num_beams",
             # "num_ranges", "num_lags" in site rawacf files.
             "correlation_descriptors": np.unicode_,
             # The dimensions in which to reshape the acf/xcf data.
             "correlation_dimensions": np.uint32,
-            # Main array autocorrelations
-            "main_acfs": np.complex64,
-            # Interferometer array autocorrelations
-            "intf_acfs": np.complex64,
-            # Crosscorrelations between main and interferometer arrays
-            "xcfs": np.complex64,
-            # States what order the data is in. Describes the data layout.
-            "antenna_arrays_order": np.unicode_,
+            # A contiguous set of samples (complex float) at given sample rate
+            "data": np.complex64,
             # Denotes what each data dimension represents. =
             # "num_antenna_arrays", "num_sequences", "num_beams", "num_samps"
             # for site bfiq.
             "data_descriptors": np.unicode_,
             # The dimensions in which to reshape the data.
             "data_dimensions": np.uint32,
+            # Interferometer array autocorrelations
+            "intf_acfs": np.complex64,
+            # The lags created from combined pulses.
+            "lags": np.uint32,
+            # Main array autocorrelations
+            "main_acfs": np.complex64,
+            # Noise at the receive frequency, should be an array
+            # (one value per sequence) (TODO units??) (TODO document
+            # FFT resolution bandwidth for this value, should be =
+            # output_sample rate?)
+            "noise_at_freq": np.float64,
             # For pulse encoding phase, in degrees offset.
             # Contains one phase offset per pulse in pulses.
             "pulse_phase_offset": np.float32,
-            # A contiguous set of samples (complex float) at given sample rate
-            "data": np.complex64
+            # The pulse sequence in multiples of the tau_spacing.
+            "pulses": np.uint32,
+            # A list of GPS timestamps of the beginning of transmission for
+            # each sampling period in the integration time. Seconds since
+            # epoch.
+            "sqn_timestamps": np.float64,
+            # Crosscorrelations between main and interferometer arrays
+            "xcfs": np.complex64,
         }
 
     @classmethod
@@ -366,11 +366,11 @@ class BorealisFieldsv0_5(BorealisFieldsv0_4):
         """
         field_file_mapping = super().files_with_fields()
         field_file_mapping.update({
-            "slice_id": ['antennas_iq', 'bfiq', 'rawacf'],
-            "slice_interfacing": ['antennas_iq', 'bfiq', 'rawacf'],
-            "scheduling_mode": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
             "averaging_method": ['rawacf'],
             "num_blanked_samples": ['antennas_iq', 'bfiq', 'rawacf'],
+            "scheduling_mode": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "slice_id": ['antennas_iq', 'bfiq', 'rawacf'],
+            "slice_interfacing": ['antennas_iq', 'bfiq', 'rawacf'],
         })
         field_file_mapping['blanked_samples'].extend(['antennas_iq', 'rawrf'])
 
@@ -389,17 +389,17 @@ class BorealisFieldsv0_5(BorealisFieldsv0_4):
         """
         single_element_types = super().all_single_element_types()
         single_element_types.update({
+            # A string describing the averaging method, ex. mean, median
+            "averaging_method": str,
+            # number of blanked samples in the sequence.
+            "num_blanked_samples": np.uint32,
+            # A string describing the type of scheduling time at the time of
+            # this dataset.
+            "scheduling_mode": str,
             # the slice id of the file and dataset.
             "slice_id": np.uint32,
             # the interfacing of this slice to other slices.
             "slice_interfacing": str,
-            # A string describing the type of scheduling time at the time of
-            # this dataset.
-            "scheduling_mode": str,
-            # A string describing the averaging method, ex. mean, median
-            "averaging_method": str,
-            # number of blanked samples in the sequence.
-            "num_blanked_samples": np.uint32
         })
         return single_element_types
 
@@ -418,7 +418,7 @@ class BorealisFieldsv0_5(BorealisFieldsv0_4):
         blanked_samples to an unshared field in Borealis v0.5.
         """
         shared = super().all_shared_fields() + \
-            ['slice_id', 'scheduling_mode', 'averaging_method']
+            ['averaging_method', 'scheduling_mode', 'slice_id']
         shared.remove('blanked_samples')
         return shared
 
@@ -447,9 +447,9 @@ class BorealisFieldsv0_6(BorealisFieldsv0_5):
         field_file_mapping = super().files_with_fields()
         field_file_mapping.update({
             "agc_status_word": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
-            "lp_status_word": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
             "gps_locked": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
             "gps_to_system_time_diff": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
+            "lp_status_word": ['antennas_iq', 'bfiq', 'rawacf', 'rawrf'],
         })
 
         return field_file_mapping
@@ -472,20 +472,20 @@ class BorealisFieldsv0_6(BorealisFieldsv0_5):
             # A '1' indicates an agc fault at least once during the integration
             # period.
             "agc_status_word": np.uint32,
-            # the low power status of each transmitter, transmitter/USRP
-            # mapped to bit position
-            # A '1' indicates a low power condition at least once during the
-            # integration period.
-            "lp_status_word": np.uint32,
+            # Updated to 16 bit number to avoid mismatch when converting
+            # to DMAP format.
+            "experiment_id": np.int16,
             # Boolean indicating if the GPS was locked during the entire
             # integration period
             "gps_locked": np.uint8,
             # The max time diffe between GPS and system time during the
             # integration period. In seconds. Negative if GPS time ahead.
             "gps_to_system_time_diff": np.float64,
-            # Updated to 16 bit number to avoid mismatch when converting
-            # to DMAP format.
-            "experiment_id": np.int16
+            # the low power status of each transmitter, transmitter/USRP
+            # mapped to bit position
+            # A '1' indicates a low power condition at least once during the
+            # integration period.
+            "lp_status_word": np.uint32,
         })
         return single_element_types
 
