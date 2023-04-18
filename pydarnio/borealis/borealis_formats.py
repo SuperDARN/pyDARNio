@@ -517,6 +517,7 @@ class BorealisFields(BorealisFieldsv0_6):
         field_file_mapping['lags'].append('antennas_iq')
         field_file_mapping['num_ranges'].append('antennas_iq')
         field_file_mapping['range_sep'].append('antennas_iq')
+        field_file_mapping['tx_antenna_mag'] = ['antennas_iq', 'bfiq', 'rawacf', 'rawrf']
 
         return field_file_mapping
 
@@ -560,6 +561,7 @@ class BorealisFields(BorealisFieldsv0_6):
         all_arrays.update({
             "antenna_arrays_order": np.bytes_,
             "data_descriptors": np.bytes_,
+            "tx_antenna_mag": np.float32,
         })
         all_arrays.pop('correlation_dimensions')
         all_arrays.pop('correlation_descriptors')
