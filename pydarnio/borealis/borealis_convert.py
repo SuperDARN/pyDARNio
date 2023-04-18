@@ -910,12 +910,12 @@ class BorealisConvert(BorealisRead):
             # TX Antenna Mag only introduced in Borealis v0.7 onwards, so txpow defaults to -1 if not present.
             # If present, txpow is a bitfield mapping of whether each antenna was transmitting. Antenna 15 is the
             # MSB, and Antenna 0 the LSB. Since txpow is a signed int in DMAP, -1 means all antennas transmitting.
-            if 'tx_antenna_mag' not in record_dict.keys():
+            if 'tx_antenna_phases' not in record_dict.keys():
                 txpow = -1      # This is the same as if all antennas were transmitting.
             else:
                 txpow = np.uint16()
-                for i in range(len(record_dict['tx_antenna_mag'])):
-                    if record_dict['tx_antenna_mag'][i] > 0:
+                for i in range(len(record_dict['tx_antenna_phases'])):
+                    if np.abs(record_dict['tx_antenna_phases'][i]) > 0:
                         txpow += 1 << i
 
             sdarn_record_dict = {
