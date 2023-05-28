@@ -6,6 +6,7 @@ The file types that are supported:
     - Iqdat
     - Rawacf
     - Fitacf
+    - Snd
     - Grid
     - Map
 
@@ -254,6 +255,7 @@ class SDarnRead(DmapRead):
         Iqdat
         Rawacf
         Fitacf
+        Snd
         Grid
         Map
     ...
@@ -281,6 +283,8 @@ class SDarnRead(DmapRead):
         reads and checks rawacf DMAP binary data
     read_fitacf()
         reads and checks fitacf DMAP binary data
+    read_snd()
+        reads and checks snd DMAP binary data
     read_grid()
         reads and checks grid DMAP binary data
     read_map()
@@ -470,6 +474,26 @@ class SDarnRead(DmapRead):
         self.records = dmap2dict(self._dmap_records)
         return self.records
 
+    def read_snd(self) -> List[dict]:
+        """
+        Reads Snd DMAP file/stream
+
+        Returns
+        -------
+        dmap_records : List[dict]
+            DMAP record of the Snd data
+        """
+        pyDARNio_log.info("Reading Snd file: {}".format(self.dmap_file))
+
+        file_struct_list = [superdarn_formats.Snd.types,
+                            superdarn_formats.Snd.optional_fields,
+                            superdarn_formats.Snd.fitted_fields,
+                            superdarn_formats.Snd.xcf_fields]
+        optional_list = [superdarn_formats.Snd.optional_fields]
+        self._read_darn_records(file_struct_list, optional_list)
+        self.records = dmap2dict(self._dmap_records)
+        return self.records
+
     def read_grid(self) -> List[dict]:
         """
         Reads Grid DMAP file/stream
@@ -538,11 +562,14 @@ class SDarnWrite(DmapWrite):
     write_iqdat(filename)
         Writes dmap records to SuperDARN IQDAT file structure
         with the given filename
-    write_fitacf(filename)
+    write_rawacf(filename)
         Write dmap records to SuperDARN RAWACF file structure
         with the given filename
-    write_rawacf(filename)
+    write_fitacf(filename)
         Writes dmap records to SuperDARN FITACF file structure
+        with the given filename
+    write_snd(filename)
+        Writes dmap records to SuperDARN SND file structure
         with the given filename
     write_grid(filename)
         Writes dmap records to SuperDARN GRID file structure
@@ -693,6 +720,44 @@ class SDarnWrite(DmapWrite):
                             superdarn_formats.Fitacf.xcf_fields_fitacf2
                            ]
         optional_list = [superdarn_formats.Fitacf.optional_fields]
+        self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
+        with open(self.filename, 'wb') as f:
+            f.write(self.dmap_bytearr)
+
+    def write_snd(self, filename: str = ""):
+        """
+        Writes SuperDARN file type SND
+
+        Parameters
+        -----------
+        filename : str
+            The name of the SND file including path
+
+
+        Raises
+        -------
+        superDARNExtraFieldError - if there is an extra field
+        SuperDARNFieldMissingError- if there is an missing field
+        SuperDARNDataFormatTypeError - if there is a formatting error
+                               like an incorrect data type format
+
+        See Also
+        ---------
+        extra_field_check
+        missing_field_check
+        superdarn_formats.Snd - module contain the data types
+                                 in each SuperDARN files types
+        """
+        pyDARNio_log.info("Writing Snd file: {}".format(self.filename))
+
+        self._filename_check(filename)
+        self._empty_record_check()
+        file_struct_list = [superdarn_formats.Snd.types,
+                            superdarn_formats.Snd.optional_fields,
+                            superdarn_formats.Snd.fitted_fields,
+                            superdarn_formats.Snd.xcf_fields
+                           ]
+        optional_list = [superdarn_formats.Snd.optional_fields]
         self.superDARN_file_structure_to_bytes(file_struct_list, optional_list)
         with open(self.filename, 'wb') as f:
             f.write(self.dmap_bytearr)
