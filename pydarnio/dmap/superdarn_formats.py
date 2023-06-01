@@ -496,6 +496,7 @@ class Snd():
         'w_l': 'f'}
 
     xcf_fields = {
+        'x_qflg': 'c',
         'phi0': 'f',
         'phi0_e': 'f',
     }
