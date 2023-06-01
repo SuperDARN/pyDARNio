@@ -482,8 +482,8 @@ class Snd():
         'combf': 's',
         'fitacf.revision.major': 'i',
         'fitacf.revision.minor': 'i',
-        'snd.revision.major': 'i',
-        'snd.revision.minor': 'i'}
+        'snd.revision.major': 'h',
+        'snd.revision.minor': 'h'}
     # Fields added if the data is good and can be
     # fitted
     fitted_fields = {
