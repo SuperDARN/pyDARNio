@@ -861,6 +861,7 @@ class DmapWrite(object):
                                                       - Iqdat
                                                       - Rawacf
                                                       - Fitacf
+                                                      - Snd
                                                       - Grid
                                                       - Map
 
@@ -876,6 +877,7 @@ class DmapWrite(object):
                                      - 'iqdat' : SuperDARN file type
                                      - 'rawacf' : SuperDARN file type
                                      - 'fitacf' : SuperDARN file type
+                                     - 'snd' : SuperDARN file type
                                      - 'grid' : SuperDARN file type
                                      - 'map' : SuperDARN file type
                                      - 'dmap' : writes a file in DMap format
