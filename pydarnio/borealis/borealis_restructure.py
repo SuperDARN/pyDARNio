@@ -31,9 +31,6 @@ Notes
 For more information on Borealis data files and their structures,
 see: https://borealis.readthedocs.io/en/master/
 """
-import os
-import subprocess as sp
-import warnings
 import h5py
 import logging
 import numpy as np
@@ -229,7 +226,9 @@ class BorealisRestructure(object):
                 for field in self.format.unshared_fields():
                     if field in self.format.single_element_types():
                         if field in self.format.single_string_fields():
-                            unshared_single_elements[field] = str(f[field][:])
+                            dset = f[field]
+                            itemsize = dset.attrs['itemsize']
+                            unshared_single_elements[field] = dset[:].view(dtype=(np.unicode_, itemsize))
                         else:
                             unshared_single_elements[field] = f[field][:]
 
@@ -266,7 +265,6 @@ class BorealisRestructure(object):
                                              record_num])
                         else:  # field in array_dtypes
                             # need to get the dims correct, not always equal to the max
-                            field_flag = False
                             site_dims = [dimension_function(f, record_num)
                                          for dimension_function in
                                          self.format.unshared_fields_dims_site(
@@ -278,8 +276,6 @@ class BorealisRestructure(object):
                                         dims.append(i)
                                 else:
                                     dims.append(dim)
-                            if -1 in dims:
-                                field_flag = True
 
                             site_dims = dims
                             index_slice = [slice(0, i) for i in site_dims if i != -1]
