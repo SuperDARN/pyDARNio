@@ -228,7 +228,10 @@ class BorealisRestructure(object):
                 unshared_single_elements = dict()
                 for field in self.format.unshared_fields():
                     if field in self.format.single_element_types():
-                        unshared_single_elements[field] = f[field][:]
+                        if field in self.format.single_string_fields():
+                            unshared_single_elements[field] = str(f[field][:])
+                        else:
+                            unshared_single_elements[field] = f[field][:]
 
                 sqn_timestamps_array = f['sqn_timestamps'][:]
 
@@ -290,7 +293,7 @@ class BorealisRestructure(object):
                     BorealisUtilities.check_records(self.infile_name, record_dict, attribute_types, dataset_types)
 
                     # Write the single record to file
-                    self.format.write_records(self.outfile_name, record_dict, attribute_types, dataset_types,
+                    self.format.write_records(self.outfile_name, record_dict,
                                               self.compression)
         except Exception as err:
             raise borealis_exceptions.BorealisRestructureError(
@@ -439,8 +442,7 @@ class BorealisRestructure(object):
             unshared_fields = self.format.unshared_fields()
             BorealisUtilities.check_arrays(self.infile_name, new_data_dict, attribute_types, dataset_types,
                                            unshared_fields)
-            self.format.write_arrays(self.outfile_name, new_data_dict, attribute_types, dataset_types, unshared_fields,
-                                     self.compression)
+            self.format.write_arrays(self.outfile_name, new_data_dict, self.compression)
 
         except TypeError as err:
             raise borealis_exceptions.BorealisRestructureError(
