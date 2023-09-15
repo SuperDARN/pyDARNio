@@ -323,7 +323,7 @@ class BorealisFieldsv0_4():
                 'tx_pulse_len']
 
     @classmethod
-    def shared_fields(cls, file_type: str) -> list[str]:
+    def shared_fields(cls, file_type: str) -> list:
         """
         Gets the shared fields of a given file type.
 
