@@ -34,7 +34,6 @@ pyDARNio's setup will download the following dependencies:
 - [Git](https://git-scm.com/) (For developers)
 - [pip3](https://help.dreamhost.com/hc/en-us/articles/115000699011-Using-pip3-to-install-Python3-modules)
 - [NumPy](https://numpy.org/)
-- [deepdish](https://deepdish.readthedocs.io/en/latest/api_io.html)
 - [pathlib2](https://docs.python.org/dev/library/pathlib.html)
 - [PyYAML](https://pyyaml.org/wiki/PyYAMLDocumentation)
 - [h5py](https://www.h5py.org/)
