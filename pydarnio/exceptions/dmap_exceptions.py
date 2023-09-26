@@ -24,10 +24,10 @@ class CursorError(Exception):
                  rec_num: int = 0, message=''):
         self.cursor = cursor
         if message == '':
-            self.message = "Error: Cursor is at {cursor} and"\
-                    "it needs to be {expected}. Failed at record {rec}"\
-                    "".format(cursor=cursor, expected=expected_value,
-                              rec=rec_num)
+            self.message = "".join(
+                ["Error: Cursor is at {cursor} and it ".format(cursor=cursor),
+                 "needs to be {expected}. Failed at record {rec}".format(
+                     expected=expected_value, rec=rec_num)])
         else:
             self.message = message
         super().__init__(self.message)
@@ -45,7 +45,7 @@ class EmptyFileError(Exception):
     """
     def __init__(self, filename: str):
         self.filename = filename
-        self.message = "Error: {} is empty or"\
+        self.message = "Error: {} is empty or" \
             " please check this is the correct file".format(filename)
         super().__init__(self.message)
         pyDARNio_logger.error(self.message)

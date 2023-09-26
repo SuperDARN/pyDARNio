@@ -16,7 +16,7 @@ import dmap_data_sets
 rawacf_stream = "../testfiles/20170410.1801.00.sas.stream.rawacf.bz2"
 rawacf_file = "../testfiles/20170410.1801.00.sas.rawacf"
 
-pydarnio_logger = logging.getLogger('pydarnio')
+pydarnio_logger = logging.getLogger('pyDARNio')
 
 
 class IntegrationDmap(unittest.TestCase):
