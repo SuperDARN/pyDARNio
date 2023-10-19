@@ -1278,7 +1278,10 @@ class BaseFormat():
                     if k in ['CLASS', 'TITLE', 'VERSION', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION']:
                         continue
                     elif isinstance(v, bytes):
-                        attribute_dict[k] = v.tobytes().decode('utf-8')
+                        if v.itemsize == 0:
+                            attribute_dict[k] = ''
+                        else:
+                            attribute_dict[k] = v.tobytes().decode('utf-8')
                     elif isinstance(v, h5py.Empty):
                         dtype = v.dtype.type
                         data = dtype()
@@ -1338,7 +1341,10 @@ class BaseFormat():
                 if k in ['CLASS', 'TITLE', 'VERSION', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION']:
                     continue
                 elif isinstance(v, bytes):
-                    attribute_dict[k] = v.tobytes().decode('utf-8')
+                    if v.itemsize == 0:
+                        attribute_dict[k] = ''
+                    else:
+                        attribute_dict[k] = v.tobytes().decode('utf-8')
                 elif isinstance(v, h5py.Empty):
                     dtype = v.dtype.type
                     data = dtype()
