@@ -42,9 +42,8 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7'],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     packages=find_packages(exclude=['docs', 'test']),
     author="SuperDARN",
     include_package_data=True,
@@ -52,5 +51,5 @@ setup(
                     'h5py>=3.3.0', 'pathlib2'],
     # pyyaml library install
     install_requires=['pyyaml', 'numpy',
-                      'h5py>=3.3.0', 'deepdish', 'pathlib2']
+                      'h5py>=3.3.0', 'pathlib2']
 )

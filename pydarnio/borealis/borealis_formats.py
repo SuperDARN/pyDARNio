@@ -323,7 +323,7 @@ class BorealisFieldsv0_4():
                 'tx_pulse_len']
 
     @classmethod
-    def shared_fields(cls, file_type: str) -> list[str]:
+    def shared_fields(cls, file_type: str) -> list:
         """
         Gets the shared fields of a given file type.
 
@@ -517,6 +517,7 @@ class BorealisFields(BorealisFieldsv0_6):
         field_file_mapping['lags'].append('antennas_iq')
         field_file_mapping['num_ranges'].append('antennas_iq')
         field_file_mapping['range_sep'].append('antennas_iq')
+        field_file_mapping['tx_antenna_phases'] = ['antennas_iq', 'bfiq', 'rawacf', 'rawrf']
 
         return field_file_mapping
 
@@ -560,10 +561,33 @@ class BorealisFields(BorealisFieldsv0_6):
         all_arrays.update({
             "antenna_arrays_order": np.bytes_,
             "data_descriptors": np.bytes_,
+            "tx_antenna_phases": np.complex64,
         })
         all_arrays.pop('correlation_dimensions')
         all_arrays.pop('correlation_descriptors')
         return all_arrays
+
+    @staticmethod
+    def find_num_antennas_site(records: OrderedDict) -> int:
+        """
+        Find the number of antennas given the records dictionary, for restructuring to arrays.
+
+        Parameters
+        ----------
+        records
+            The records dictionary from a site-style file.
+
+        Returns
+        -------
+        num_antennas
+            The number of antennas that have been recorded and stored in the file.
+
+        Notes
+        -----
+        Num_antennas is unique to a slice so cannot change inside file.
+        """
+        first_key = list(records.keys())[0]
+        return records[first_key]['tx_antenna_phases'].shape[0]
 
 
 class BorealisRawacfv0_4(BaseFormat):
@@ -2206,6 +2230,7 @@ class BorealisRawacf(BorealisRawacfv0_6):
 
     In v0.7, the fields correlation_descriptors and correlation-dimensions
     were replaced by data_descriptors and data_dimensions, respectively.
+    The field tx_antenna_phases was also added.
     """
     fields = BorealisFields
 
@@ -2375,6 +2400,38 @@ class BorealisRawacf(BorealisRawacfv0_6):
 
         return fields_max_dims, max_num_sequences, max_num_beams
 
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.7, tx_antenna_phases was added to rawacf. It is an
+        unshared field because its values may not be the same from record to record.
+        """
+        unshared_fields_dims = super().unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'tx_antenna_phases': [cls.fields.find_num_antennas_site],
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.7, tx_antenna_phases was added to rawacf. It is an
+        unshared field because its values may not be the same from record to record.
+        """
+        unshared_fields_dims = super().unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'tx_antenna_phases': [lambda arrays, record_num: arrays['tx_antenna_phases'].shape[1]],
+            })
+        return unshared_fields_dims
+
 
 class BorealisBfiq(BorealisBfiqv0_6):
     """
@@ -2397,9 +2454,41 @@ class BorealisBfiq(BorealisBfiqv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    There were no changes to the bfiq file format in v0.7.
+    The field tx_antenna_phases was added to the bfiq format in v0.7.
     """
     fields = BorealisFields
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.7, tx_antenna_phases was added to bfiq. It is an
+        unshared field because its values may not be the same from record to record.
+        """
+        unshared_fields_dims = super().unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'tx_antenna_phases': [cls.fields.find_num_antennas_site],
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.7, tx_antenna_phases was added to bfiq. It is an
+        unshared field because its values may not be the same from record to record.
+        """
+        unshared_fields_dims = super().unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'tx_antenna_phases': [lambda arrays, record_num: arrays['tx_antenna_phases'].shape[1]],
+            })
+        return unshared_fields_dims
 
 
 class BorealisAntennasIq(BorealisAntennasIqv0_6):
@@ -2429,8 +2518,42 @@ class BorealisAntennasIq(BorealisAntennasIqv0_6):
     lags
     num_ranges
     range_sep
+
+    The field tx_antenna_phases was added to the antennas_iq format in v0.7.
     """
     fields = BorealisFields
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.7, tx_antenna_phases was added to antennas_iq. It is an
+        unshared field because its values may not be the same from record to record.
+        """
+        unshared_fields_dims = super().unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'tx_antenna_phases': [cls.find_num_antennas],
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.7, tx_antenna_phases was added to antennas_iq. It is an
+        unshared field because its values may not be the same from record to record.
+        """
+        unshared_fields_dims = super().unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'tx_antenna_phases': [lambda arrays, record_num: arrays['data'].shape[1]],
+            })
+        return unshared_fields_dims
 
 
 class BorealisRawrf(BorealisRawrfv0_6):
@@ -2449,9 +2572,42 @@ class BorealisRawrf(BorealisRawrfv0_6):
     are used to verify format files and restructure Borealis files to
     array and site structure.
 
-    There were no changes to the rawrf file format in v0.7.
+    The field tx_antenna_phases was added to the rawrf format in v0.7.
     """
     fields = BorealisFields
+
+    @classmethod
+    def unshared_fields_dims_array(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.7, tx_antenna_phases was added to rawrf. It is an
+        unshared field because their values may not be the same from record to record.
+        """
+        unshared_fields_dims = super().unshared_fields_dims_array()
+        unshared_fields_dims.update({
+            'tx_antenna_phases': [cls.find_num_antennas],
+            })
+        return unshared_fields_dims
+
+    @classmethod
+    def unshared_fields_dims_site(cls):
+        """
+        See BaseFormat class for description and use of this method.
+
+        Notes
+        -----
+        In Borealis v0.7, tx_antenna_phases was added to rawrf. It is an
+        unshared field because their values may not be the same from record to record.
+        """
+        unshared_fields_dims = super().unshared_fields_dims_site()
+        unshared_fields_dims.update({
+            'tx_antenna_phases': [lambda arrays, record_num: arrays['data'].shape[1]],
+            })
+        return unshared_fields_dims
+
 
 # borealis versions
 borealis_version_dict = {

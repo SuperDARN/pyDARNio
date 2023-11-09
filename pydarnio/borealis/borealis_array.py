@@ -453,6 +453,5 @@ class BorealisArrayWrite():
         unshared_fields = self.format.unshared_fields()
         BorealisUtilities.check_arrays(self.filename, self.arrays, attribute_types,
                                        dataset_types, unshared_fields)
-        self.format.write_arrays(self.filename, self.arrays, attribute_types,
-                                 dataset_types, unshared_fields, self.compression)
+        self.format.write_arrays(self.filename, self.arrays, self.compression)
         return self.filename

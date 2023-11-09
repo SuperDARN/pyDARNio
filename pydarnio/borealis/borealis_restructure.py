@@ -31,9 +31,6 @@ Notes
 For more information on Borealis data files and their structures,
 see: https://borealis.readthedocs.io/en/master/
 """
-import os
-import subprocess as sp
-import warnings
 import h5py
 import logging
 import numpy as np
@@ -228,7 +225,12 @@ class BorealisRestructure(object):
                 unshared_single_elements = dict()
                 for field in self.format.unshared_fields():
                     if field in self.format.single_element_types():
-                        unshared_single_elements[field] = f[field][:]
+                        if field in self.format.single_string_fields():
+                            dset = f[field]
+                            itemsize = dset.attrs['itemsize']
+                            unshared_single_elements[field] = dset[:].view(dtype=(np.unicode_, itemsize))
+                        else:
+                            unshared_single_elements[field] = f[field][:]
 
                 sqn_timestamps_array = f['sqn_timestamps'][:]
 
@@ -263,7 +265,6 @@ class BorealisRestructure(object):
                                              record_num])
                         else:  # field in array_dtypes
                             # need to get the dims correct, not always equal to the max
-                            field_flag = False
                             site_dims = [dimension_function(f, record_num)
                                          for dimension_function in
                                          self.format.unshared_fields_dims_site(
@@ -275,8 +276,6 @@ class BorealisRestructure(object):
                                         dims.append(i)
                                 else:
                                     dims.append(dim)
-                            if -1 in dims:
-                                field_flag = True
 
                             site_dims = dims
                             index_slice = [slice(0, i) for i in site_dims if i != -1]
@@ -290,7 +289,7 @@ class BorealisRestructure(object):
                     BorealisUtilities.check_records(self.infile_name, record_dict, attribute_types, dataset_types)
 
                     # Write the single record to file
-                    self.format.write_records(self.outfile_name, record_dict, attribute_types, dataset_types,
+                    self.format.write_records(self.outfile_name, record_dict,
                                               self.compression)
         except Exception as err:
             raise borealis_exceptions.BorealisRestructureError(
@@ -439,8 +438,7 @@ class BorealisRestructure(object):
             unshared_fields = self.format.unshared_fields()
             BorealisUtilities.check_arrays(self.infile_name, new_data_dict, attribute_types, dataset_types,
                                            unshared_fields)
-            self.format.write_arrays(self.outfile_name, new_data_dict, attribute_types, dataset_types, unshared_fields,
-                                     self.compression)
+            self.format.write_arrays(self.outfile_name, new_data_dict, self.compression)
 
         except TypeError as err:
             raise borealis_exceptions.BorealisRestructureError(

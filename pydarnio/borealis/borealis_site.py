@@ -486,6 +486,5 @@ class BorealisSiteWrite():
         dataset_types = self.format.site_array_dtypes()
         BorealisUtilities.check_records(self.filename, self.records,
                                         attribute_types, dataset_types)
-        self.format.write_records(self.filename, self.records, attribute_types,
-                                  dataset_types, self.compression)
+        self.format.write_records(self.filename, self.records, self.compression)
         return self.filename

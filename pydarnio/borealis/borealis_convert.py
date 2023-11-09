@@ -907,6 +907,17 @@ class BorealisConvert(BorealisRead):
             else:
                 lp_sw = record_dict['lp_status_word']
 
+            # TX Antenna Mag only introduced in Borealis v0.7 onwards, so txpow defaults to -1 if not present.
+            # If present, txpow is a bitfield mapping of whether each antenna was transmitting. Antenna 15 is the
+            # MSB, and Antenna 0 the LSB. Since txpow is a signed int in DMAP, -1 means all antennas transmitting.
+            if 'tx_antenna_phases' not in record_dict.keys():
+                txpow = -1      # This is the same as if all antennas were transmitting.
+            else:
+                txpow = np.uint16()
+                for i in range(len(record_dict['tx_antenna_phases'])):
+                    if np.abs(record_dict['tx_antenna_phases'][i]) > 0:
+                        txpow += 1 << i
+
             sdarn_record_dict = {
                 'radar.revision.major': np.int8(borealis_major_revision),
                 'radar.revision.minor': np.int8(borealis_minor_revision),
@@ -948,7 +959,7 @@ class BorealisConvert(BorealisRead):
                                     utcfromtimestamp(
                                         record_dict['sqn_timestamps'][0]).
                                     microsecond),
-                'txpow': np.int16(-1),
+                'txpow': np.int16(txpow),
                 # see Borealis documentation
                 'nave': np.int16(record_dict['num_sequences']),
                 'atten': np.int16(0),
