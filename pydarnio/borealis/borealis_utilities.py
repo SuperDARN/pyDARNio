@@ -480,14 +480,31 @@ class BorealisUtilities():
         """
         all_format_fields = [attribute_types, dataset_types]
 
+        all_records_good = True
+        records_with_missing_fields = dict()
+        records_with_extra_fields = dict()
+        records_with_incorrect_types = dict()
         for record_name, record in records.items():
-            cls.record_missing_field_check(origin_string, all_format_fields,
-                                           record, record_name=record_name)
-            cls.record_extra_field_check(origin_string, all_format_fields,
-                                         record, record_name=record_name)
-            cls.record_incorrect_types_check(origin_string, attribute_types,
-                                             dataset_types, record,
-                                             record_name)
+            try:
+                cls.record_missing_field_check(origin_string, all_format_fields,
+                                               record, record_name=record_name)
+                cls.record_extra_field_check(origin_string, all_format_fields,
+                                             record, record_name=record_name)
+                cls.record_incorrect_types_check(origin_string, attribute_types,
+                                                 dataset_types, record,
+                                                 record_name)
+            except borealis_exceptions.BorealisFieldMissingError as err:
+                records_with_missing_fields[record_name] = err.fields
+                all_records_good = False
+            except borealis_exceptions.BorealisExtraFieldError as err:
+                records_with_extra_fields[record_name] = err.fields
+                all_records_good = False
+            except borealis_exceptions.BorealisDataFormatTypeError as err:
+                records_with_incorrect_types[record_name] = err.incorrect_types
+                all_records_good = False
+        if not all_records_good:
+            raise borealis_exceptions.BorealisBadRecordsError(origin_string, records_with_missing_fields,
+                                                              records_with_extra_fields, records_with_incorrect_types)
 
     @staticmethod
     def get_record_names(filename: str):
