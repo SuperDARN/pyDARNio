@@ -28,6 +28,41 @@ import logging
 pyDARNio_logger = logging.getLogger('pyDARNio')
 
 
+class BorealisBadRecordsError(Exception):
+    """
+    SuperDARN Borealis file has missing, extra, or incorrect record(s).
+
+    Parameters
+    ----------
+    filename: str
+        name of the file associated to the wrong SuperDARN Borealis file type
+    missing_dict: dict
+        Dictionary of {record name: missing fields}
+    extra_dict: dict
+        Dictionary of {record name: extra fields}
+    incorrect_dict: dict
+        Dictionary of {record name: fields of incorrect type}
+
+
+    Attributes
+    ----------
+    message: str
+        The message to display with the error
+    """
+
+    def __init__(self, filename: str, missing_dict: dict, extra_dict: dict, incorrect_dict: dict):
+        self.filename = filename
+        self.missing_fields = missing_dict
+        self.extra_fields = extra_dict
+        self.incorrect_fields = incorrect_dict
+        self.message = (f"{filename} contains invalid records.\n"
+                        f"\tRecords with missing fields: {missing_dict}\n"
+                        f"\tRecords with extra fields: {extra_dict}\n"
+                        f"\tRecords with fields of incorrect types: {incorrect_dict}")
+        pyDARNio_logger.error(self.message)
+        Exception.__init__(self, self.message)
+
+
 class BorealisFileTypeError(Exception):
     """
     SuperDARN Borealis file type is not implemented or an incorrect type
