@@ -346,6 +346,10 @@ class BorealisUtilities():
                                       if file_data[param].dtype.type !=
                                       datasets_type_dict[param] and
                                       file_data[param].dtype.type != np.str_})
+        if 'pulse_phase_offset' in incorrect_types_check.keys():
+            if file_data['pulse_phase_offset'].dtype.type == np.int64 and file_data['pulse_phase_offset'].shape == (2,):
+                incorrect_types_check.pop('pulse_phase_offset')     # This field is problematic, hack to ignore
+
         if len(incorrect_types_check) > 0:
             raise borealis_exceptions.\
                     BorealisDataFormatTypeError(filename,
@@ -378,7 +382,10 @@ class BorealisUtilities():
 
         dimensions = list(num_records.values())
         try:
-            if not all(x[0] == dimensions[0][0] for x in dimensions):
+            dim_compliance = {k: v[0] == dimensions[0][0] for k, v in num_records.items()}
+            # if 'pulse_phase_offset' in dim_compliance.keys() and dim_compliance['pulse_phase_offset'] == False:
+            #     dim_compliance.pop('pulse_phase_offset')    # This field is broken in older versions
+            if not all(dim_compliance.values()):
                 raise borealis_exceptions.\
                         BorealisNumberOfRecordsError(filename, num_records)
         except IndexError:  # some fields are not arrays!
@@ -608,3 +615,26 @@ class BorealisUtilities():
         version = '.'.join(version.split('.')[:2])  # vX.Y, ignore patch revision
 
         return version
+
+    @staticmethod
+    def pulse_phase_offset_array_fix(data_dict: dict):
+        """
+        Fixes the dtype and shape of the pulse_phase_offset field. Modifies data_dict in place.
+        """
+        if 'pulse_phase_offset' not in data_dict:
+            return
+        ppo = data_dict['pulse_phase_offset']
+        if ppo.shape == (2,):  # The field is broken, was empty when written to file and so was restructured improperly
+            data_dict['pulse_phase_offset'] = np.zeros((data_dict['num_sequences'].shape[0], 0), dtype=np.float32)
+
+    @staticmethod
+    def pulse_phase_offset_site_fix(data_dict: dict):
+        """
+        Fixes the dtype and shape of the pulse_phase_offset field. Modifies data_dict in place.
+        """
+        for rec in data_dict.values():
+            if 'pulse_phase_offset' not in rec:
+                continue
+            ppo = rec['pulse_phase_offset']
+            if ppo.shape != rec['pulses'].shape:  # The field is broken, was empty when written to file and so was restructured improperly
+                rec['pulse_phase_offset'] = np.zeros(rec['pulses'].shape, dtype=np.float32)

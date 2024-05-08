@@ -267,6 +267,7 @@ class BorealisSiteRead():
         dataset_types = self.format.site_array_dtypes()
 
         records = self.format.read_records(self.filename)
+        BorealisUtilities.pulse_phase_offset_site_fix(records)
         BorealisUtilities.check_records(self.filename, records,
                                         attribute_types, dataset_types)
 

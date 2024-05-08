@@ -286,6 +286,7 @@ class BorealisRestructure(object):
                     # Wrap in another dict to use the format method
                     record_dict = OrderedDict({key: record_dict})
                     record_dict = self.format.flatten_site_arrays(record_dict)
+                    BorealisUtilities.pulse_phase_offset_site_fix(record_dict)
                     BorealisUtilities.check_records(self.infile_name, record_dict, attribute_types, dataset_types)
 
                     # Write the single record to file

@@ -243,6 +243,7 @@ class BorealisArrayRead():
         unshared_fields = self.format.unshared_fields()
 
         arrays = self.format.read_arrays(self.filename)
+        BorealisUtilities.pulse_phase_offset_array_fix(arrays)  # To fix the problematic field stemming from deepdish
         BorealisUtilities.check_arrays(self.filename, arrays,
                                        attribute_types, dataset_types,
                                        unshared_fields)
