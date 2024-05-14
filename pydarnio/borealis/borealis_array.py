@@ -39,7 +39,6 @@ files, see: https://borealis.readthedocs.io/en/latest/
 """
 import h5py
 import logging
-import numpy as np
 
 from typing import List
 
@@ -244,6 +243,7 @@ class BorealisArrayRead():
         unshared_fields = self.format.unshared_fields()
 
         arrays = self.format.read_arrays(self.filename)
+        BorealisUtilities.pulse_phase_offset_array_fix(arrays)  # To fix the problematic field stemming from deepdish
         BorealisUtilities.check_arrays(self.filename, arrays,
                                        attribute_types, dataset_types,
                                        unshared_fields)
@@ -454,6 +454,5 @@ class BorealisArrayWrite():
         unshared_fields = self.format.unshared_fields()
         BorealisUtilities.check_arrays(self.filename, self.arrays, attribute_types,
                                        dataset_types, unshared_fields)
-        self.format.write_arrays(self.filename, self.arrays, attribute_types,
-                                 dataset_types, unshared_fields, self.compression)
+        self.format.write_arrays(self.filename, self.arrays, self.compression)
         return self.filename
