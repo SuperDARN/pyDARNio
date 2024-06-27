@@ -8,12 +8,13 @@ Currently the library support reading for DMAP files:
 - FITACF
 - GRID
 - MAP
+- SND
 
 As well as Borealis HDF5 files:
 
-- IQDAT
-- BeamIQ
-- RAWACF
+- antennas_iq
+- bfiq
+- rawacf
 
 There is also utilities for converting Borealis files to SuperDARN DMAP file structures. 
 
