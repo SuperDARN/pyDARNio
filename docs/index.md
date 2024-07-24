@@ -30,9 +30,8 @@ If you have any questions or concerns please submit an **Issue** on the SuperDAR
   - [Citing](user/citing.md)
   - Tutorials 
     - IO 
-        - [Read SuperDARN files](user/SDarnRead.md)
-        - [Write SuperDARN files](user/SDarnWrite.md)
-        - [Read/Write Borealis files](user/BorealisIO.md)
+        - [SuperDARN (DMAP) files](user/SDarn.md)
+        - [Borealis files](user/BorealisIO.md)
     - Convert
-      - [Borealis to SuperDARN](user/Borealis2SuperDARN.md)
+      - [Borealis to SuperDARN (DMAP)](user/Borealis2SuperDARN.md)
     - [Radar and Hardware Information](user/hardware.md)
