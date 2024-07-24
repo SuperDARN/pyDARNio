@@ -262,7 +262,7 @@ class BaseFormat():
         return {
             # Identifies the version of Borealis that made this data.
             # Necessary for all versions and formats.
-            "borealis_git_hash": np.unicode_,
+            "borealis_git_hash": np.str_,
             }
 
     @classmethod
@@ -1267,7 +1267,7 @@ class BaseFormat():
                     dset = group[dset_name]
                     if 'strtype' in dset.attrs:     # string type, requires some handling
                         itemsize = dset.attrs['itemsize']
-                        data = dset[:].view(dtype=(np.unicode_, itemsize))
+                        data = dset[:].view(dtype=(np.str_, itemsize))
                     else:
                         data = dset[:]      # non-string, can simply load
                     rec_dict[dset_name] = data
@@ -1330,7 +1330,7 @@ class BaseFormat():
                 dset = f[array_name]
                 if 'strtype' in dset.attrs:  # string type, requires some handling
                     itemsize = dset.attrs['itemsize']
-                    data = dset[:].view(dtype=(np.unicode_, itemsize))
+                    data = dset[:].view(dtype=(np.str_, itemsize))
                 else:
                     data = dset[:]  # non-string, can simply load
                 arrays[array_name] = data

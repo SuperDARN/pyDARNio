@@ -215,7 +215,7 @@ class BorealisRestructure(object):
                     elif field in self.format.array_string_fields():
                         dset = f[field]
                         itemsize = dset.attrs['itemsize']
-                        data = dset[:].view(dtype=(np.unicode_, itemsize))
+                        data = dset[:].view(dtype=(np.str_, itemsize))
                     else:
                         data = f[field][:]
                     shared_fields_dict[field] = data
@@ -228,7 +228,7 @@ class BorealisRestructure(object):
                         if field in self.format.single_string_fields():
                             dset = f[field]
                             itemsize = dset.attrs['itemsize']
-                            unshared_single_elements[field] = dset[:].view(dtype=(np.unicode_, itemsize))
+                            unshared_single_elements[field] = dset[:].view(dtype=(np.str_, itemsize))
                         else:
                             unshared_single_elements[field] = f[field][:]
 
@@ -364,7 +364,7 @@ class BorealisRestructure(object):
                             elif field in self.format.array_string_fields():
                                 dset = f[record_name][field]
                                 itemsize = dset.attrs['itemsize']
-                                new_data_dict[field] = dset[:].view(dtype=(np.unicode_, itemsize))
+                                new_data_dict[field] = dset[:].view(dtype=(np.str_, itemsize))
                             else:
                                 raise TypeError(f'Field {field} unrecognized')
 
