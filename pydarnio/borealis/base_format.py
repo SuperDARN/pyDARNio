@@ -1109,11 +1109,13 @@ class BaseFormat():
             empty_array = np.empty(array_dims, dtype=datatype)
             # Some indices may not be filled due to dimensions that are maximum values (num_sequences, etc. can change
             # between records), so they are initialized with a known value first.
-            # Initialize floating-point values to NaN, and integer values to -1.
-            if datatype in [np.int64, np.uint32, np.uint8]:
+            # Initialize floating-point values to NaN, and integer values to -1 or 0.
+            if datatype in [np.int64]:
                 empty_array[:] = -1
+            elif datatype in [np.uint32, np.uint8]:
+                empty_array[:] = 0
             else:
-                empty_array[:] = np.NaN
+                empty_array[:] = np.nan
             temp_array_dict[field] = empty_array
 
         # iterate through the records, filling the unshared and array only
