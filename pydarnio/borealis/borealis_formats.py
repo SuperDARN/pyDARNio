@@ -203,7 +203,7 @@ class BorealisFieldsv0_4():
         """
         return {
             # States what order the data is in. Describes the data layout.
-            "antenna_arrays_order": np.unicode_,
+            "antenna_arrays_order": np.str_,
             # A list of the beams azimuths for each beam in degrees.
             "beam_azms": np.float64,
             # A list of beam numbers used in this slice.
@@ -212,7 +212,7 @@ class BorealisFieldsv0_4():
             "blanked_samples": np.uint32,
             # Denotes what each acf/xcf dimension represents. = "num_beams",
             # "num_ranges", "num_lags" in site rawacf files.
-            "correlation_descriptors": np.unicode_,
+            "correlation_descriptors": np.str_,
             # The dimensions in which to reshape the acf/xcf data.
             "correlation_dimensions": np.uint32,
             # A contiguous set of samples (complex float) at given sample rate
@@ -220,7 +220,7 @@ class BorealisFieldsv0_4():
             # Denotes what each data dimension represents. =
             # "num_antenna_arrays", "num_sequences", "num_beams", "num_samps"
             # for site bfiq.
-            "data_descriptors": np.unicode_,
+            "data_descriptors": np.str_,
             # The dimensions in which to reshape the data.
             "data_dimensions": np.uint32,
             # Interferometer array autocorrelations

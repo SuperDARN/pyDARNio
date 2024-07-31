@@ -215,7 +215,7 @@ class BorealisRestructure(object):
                     elif field in self.format.array_string_fields():
                         dset = f[field]
                         itemsize = dset.attrs['itemsize']
-                        data = dset[:].view(dtype=(np.unicode_, itemsize))
+                        data = dset[:].view(dtype=(np.str_, itemsize))
                     else:
                         data = f[field][:]
                     shared_fields_dict[field] = data
@@ -228,7 +228,7 @@ class BorealisRestructure(object):
                         if field in self.format.single_string_fields():
                             dset = f[field]
                             itemsize = dset.attrs['itemsize']
-                            unshared_single_elements[field] = dset[:].view(dtype=(np.unicode_, itemsize))
+                            unshared_single_elements[field] = dset[:].view(dtype=(np.str_, itemsize))
                         else:
                             unshared_single_elements[field] = f[field][:]
 
@@ -364,7 +364,7 @@ class BorealisRestructure(object):
                             elif field in self.format.array_string_fields():
                                 dset = f[record_name][field]
                                 itemsize = dset.attrs['itemsize']
-                                new_data_dict[field] = dset[:].view(dtype=(np.unicode_, itemsize))
+                                new_data_dict[field] = dset[:].view(dtype=(np.str_, itemsize))
                             else:
                                 raise TypeError(f'Field {field} unrecognized')
 
@@ -378,10 +378,12 @@ class BorealisRestructure(object):
                                 # Initialize array now with correct data type.
                                 dtype = self.format.single_element_types()[field]
                                 new_data_dict[field] = np.empty(num_records, dtype=dtype)
-                                if dtype in [np.int64, np.uint32, np.uint8]:
+                                if dtype in [np.int64]:
                                     new_data_dict[field][:] = -1
+                                elif dtype in [np.uint32, np.uint8]:
+                                    new_data_dict[field][:] = 0
                                 else:
-                                    new_data_dict[field][:] = np.NaN
+                                    new_data_dict[field][:] = np.nan
 
                     # Add data for this record to all fields that are
                     # array-specific and record-dependent
@@ -409,11 +411,13 @@ class BorealisRestructure(object):
                             # that are maximum values (num_sequences, etc. can
                             # change between records), so they are initialized
                             # with a known value first. Initialize floating-
-                            # point values to NaN, and integer values to -1.
-                            if datatype in [np.int64, np.uint32, np.uint8]:
+                            # point values to NaN, and integer values to -1 or 0.
+                            if datatype in [np.int64]:
                                 empty_array[:] = -1
+                            elif datatype in [np.uint32, np.uint8]:
+                                empty_array[:] = 0
                             else:
-                                empty_array[:] = np.NaN
+                                empty_array[:] = np.nan
                             new_data_dict[field] = empty_array
                         first_time = False
 
