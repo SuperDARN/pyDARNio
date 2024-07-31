@@ -438,3 +438,66 @@ class Iqdat():
         'data': 'h',
         }
     optional_fields = {}    # future-proofing
+
+
+
+class Snd():
+    """
+    Class containing Snd fields
+    """
+    # Standard fields
+    types = {
+        'radar.revision.major': 'c',
+        'radar.revision.minor': 'c',
+        'origin.code': 'c',
+        'origin.time': 's',
+        'origin.command': 's',
+        'cp': 'h',
+        'stid': 'h',
+        'time.yr': 'h',
+        'time.mo': 'h',
+        'time.dy': 'h',
+        'time.hr': 'h',
+        'time.mt': 'h',
+        'time.sc': 'h',
+        'time.us': 'i',
+        'nave': 'h',
+        'lagfr': 'h',
+        'smsep': 'h',
+        'noise.search': 'f',
+        'noise.mean': 'f',
+        'channel': 'h',
+        'bmnum': 'h',
+        'bmazm': 'f',
+        'scan': 'h',
+        'rxrise': 'h',
+        'intt.sc': 'h',
+        'intt.us': 'i',
+        'nrang': 'h',
+        'frang': 'h',
+        'rsep': 'h',
+        'xcf': 'h',
+        'tfreq': 'h',
+        'noise.sky': 'f',
+        'combf': 's',
+        'fitacf.revision.major': 'i',
+        'fitacf.revision.minor': 'i',
+        'snd.revision.major': 'h',
+        'snd.revision.minor': 'h'}
+    # Fields added if the data is good and can be
+    # fitted
+    fitted_fields = {
+        'slist': 'h',
+        'qflg': 'c',
+        'gflg': 'c',
+        'v': 'f',
+        'v_e': 'f',
+        'p_l': 'f',
+        'w_l': 'f'}
+
+    xcf_fields = {
+        'x_qflg': 'c',
+        'phi0': 'f',
+        'phi0_e': 'f',
+    }
+    optional_fields = {}    # future-proofing

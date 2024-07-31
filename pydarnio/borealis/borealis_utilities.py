@@ -28,7 +28,6 @@ class
 
 """
 import logging
-import deepdish as dd
 import h5py
 import numpy as np
 import sys
@@ -263,7 +262,8 @@ class BorealisUtilities():
         incorrect_types_check = {param: str(attributes_type_dict[param])
                                  for param in attributes_type_dict.keys()
                                  if type(record[param]) !=
-                                 attributes_type_dict[param]}
+                                 attributes_type_dict[param] and
+                                 record[param].shape is not None}
 
         incorrect_types_check.update({param: 'np.ndarray of ' +
                                       str(datasets_type_dict[param])
@@ -322,7 +322,8 @@ class BorealisUtilities():
         incorrect_types_check = {param: str(attributes_type_dict[param])
                                  for param in attributes_type_dict.keys()
                                  if type(file_data[param]) !=
-                                 attributes_type_dict[param]}
+                                 attributes_type_dict[param] and
+                                 file_data[param].shape is not None}
 
         datasets_type_dict_keys = sorted(list(datasets_type_dict.keys()))
         np_array_types = [isinstance(file_data[param], np.ndarray) for param in
@@ -343,7 +344,12 @@ class BorealisUtilities():
                                       str(datasets_type_dict[param])
                                       for param in datasets_type_dict.keys()
                                       if file_data[param].dtype.type !=
-                                      datasets_type_dict[param]})
+                                      datasets_type_dict[param] and
+                                      file_data[param].dtype.type != np.str_})
+        if 'pulse_phase_offset' in incorrect_types_check.keys():
+            if file_data['pulse_phase_offset'].dtype.type == np.int64 and file_data['pulse_phase_offset'].shape == (2,):
+                incorrect_types_check.pop('pulse_phase_offset')     # This field is problematic, hack to ignore
+
         if len(incorrect_types_check) > 0:
             raise borealis_exceptions.\
                     BorealisDataFormatTypeError(filename,
@@ -376,7 +382,10 @@ class BorealisUtilities():
 
         dimensions = list(num_records.values())
         try:
-            if not all(x[0] == dimensions[0][0] for x in dimensions):
+            dim_compliance = {k: v[0] == dimensions[0][0] for k, v in num_records.items()}
+            # if 'pulse_phase_offset' in dim_compliance.keys() and dim_compliance['pulse_phase_offset'] == False:
+            #     dim_compliance.pop('pulse_phase_offset')    # This field is broken in older versions
+            if not all(dim_compliance.values()):
                 raise borealis_exceptions.\
                         BorealisNumberOfRecordsError(filename, num_records)
         except IndexError:  # some fields are not arrays!
@@ -478,14 +487,31 @@ class BorealisUtilities():
         """
         all_format_fields = [attribute_types, dataset_types]
 
+        all_records_good = True
+        records_with_missing_fields = dict()
+        records_with_extra_fields = dict()
+        records_with_incorrect_types = dict()
         for record_name, record in records.items():
-            cls.record_missing_field_check(origin_string, all_format_fields,
-                                           record, record_name=record_name)
-            cls.record_extra_field_check(origin_string, all_format_fields,
-                                         record, record_name=record_name)
-            cls.record_incorrect_types_check(origin_string, attribute_types,
-                                             dataset_types, record,
-                                             record_name)
+            try:
+                cls.record_missing_field_check(origin_string, all_format_fields,
+                                               record, record_name=record_name)
+                cls.record_extra_field_check(origin_string, all_format_fields,
+                                             record, record_name=record_name)
+                cls.record_incorrect_types_check(origin_string, attribute_types,
+                                                 dataset_types, record,
+                                                 record_name)
+            except borealis_exceptions.BorealisFieldMissingError as err:
+                records_with_missing_fields[record_name] = err.fields
+                all_records_good = False
+            except borealis_exceptions.BorealisExtraFieldError as err:
+                records_with_extra_fields[record_name] = err.fields
+                all_records_good = False
+            except borealis_exceptions.BorealisDataFormatTypeError as err:
+                records_with_incorrect_types[record_name] = err.incorrect_types
+                all_records_good = False
+        if not all_records_good:
+            raise borealis_exceptions.BorealisBadRecordsError(origin_string, records_with_missing_fields,
+                                                              records_with_extra_fields, records_with_incorrect_types)
 
     @staticmethod
     def get_record_names(filename: str):
@@ -560,19 +586,21 @@ class BorealisUtilities():
         """
         if structure == 'array':
             try:
-                borealis_git_hash = dd.io.load(filename,
-                                               group='/borealis_git_hash')
-            except ValueError as err:
+                with h5py.File(filename, 'r') as f:
+                    borealis_git_hash = f.attrs['borealis_git_hash'].decode('utf-8')
+            except KeyError as err:
                 raise borealis_exceptions.BorealisStructureError(
                     ' {} Could not find the borealis_git_hash required to '
                     'determine file version. Data file may be corrupted. {}'
                     ''.format(filename, err)) from err
         elif structure == 'site':
             try:
-                borealis_git_hash = \
-                    dd.io.load(filename, group='/{}/borealis_git_hash'
-                                               ''.format(record_names[0]))
-            except ValueError as err:
+                with h5py.File(filename, 'r') as f:
+                    records = sorted(list(f.keys()))
+                    first_rec = f[records[0]]
+                    borealis_git_hash = first_rec.attrs['borealis_git_hash']\
+                                            .decode('utf-8')
+            except KeyError as err:
                 raise borealis_exceptions.BorealisStructureError(
                     ' {} Could not find the borealis_git_hash required to '
                     'determine file version. Data file may be corrupted. {}'
@@ -587,3 +615,26 @@ class BorealisUtilities():
         version = '.'.join(version.split('.')[:2])  # vX.Y, ignore patch revision
 
         return version
+
+    @staticmethod
+    def pulse_phase_offset_array_fix(data_dict: dict):
+        """
+        Fixes the dtype and shape of the pulse_phase_offset field. Modifies data_dict in place.
+        """
+        if 'pulse_phase_offset' not in data_dict:
+            return
+        ppo = data_dict['pulse_phase_offset']
+        if ppo.shape == (2,):  # The field is broken, was empty when written to file and so was restructured improperly
+            data_dict['pulse_phase_offset'] = np.zeros((data_dict['num_sequences'].shape[0], 0), dtype=np.float32)
+
+    @staticmethod
+    def pulse_phase_offset_site_fix(data_dict: dict):
+        """
+        Fixes the dtype and shape of the pulse_phase_offset field. Modifies data_dict in place.
+        """
+        for rec in data_dict.values():
+            if 'pulse_phase_offset' not in rec:
+                continue
+            ppo = rec['pulse_phase_offset']
+            if ppo.shape != rec['pulses'].shape:  # The field is broken, was empty when written to file and so was restructured improperly
+                rec['pulse_phase_offset'] = np.zeros(rec['pulses'].shape, dtype=np.float32)

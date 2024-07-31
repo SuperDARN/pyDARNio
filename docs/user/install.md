@@ -4,7 +4,7 @@ author(s) Marina Schmidt-->
 ---
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) 
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) 
+[![Python 3.7](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/superdarn/pyDARNio)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4009470.svg)](https://doi.org/10.5281/zenodo.4009470)
 
@@ -12,7 +12,7 @@ author(s) Marina Schmidt-->
 
 ## Prerequisites
 
-**python 3.6+**
+**python 3.7+**
 
 | Ubuntu      | OpenSuse       | Fedora        | OSX           |
 | ----------- | -------------- | ------------- | ------------- |
@@ -34,7 +34,6 @@ pyDARNio's setup will download the following dependencies:
 - [Git](https://git-scm.com/) (For developers)
 - [pip3](https://help.dreamhost.com/hc/en-us/articles/115000699011-Using-pip3-to-install-Python3-modules)
 - [NumPy](https://numpy.org/)
-- [deepdish](https://deepdish.readthedocs.io/en/latest/api_io.html)
 - [pathlib2](https://docs.python.org/dev/library/pathlib.html)
 - [PyYAML](https://pyyaml.org/wiki/PyYAMLDocumentation)
 - [h5py](https://www.h5py.org/)
@@ -57,7 +56,7 @@ Instructions can be found here [virtual environment](https://packaging.python.or
 
 !!! Note
     If you have multiple versions of python 3 on your machine, you can access a specific version by: `python<version number>`. 
-    For example, if you want to install python 3.6 virtual environment: `python3.6 -m pip install --user virtualenv`.
+    For example, if you want to install python 3.7 virtual environment: `python3.7 -m pip install --user virtualenv`.
 
 ### Anaconda Virtual Environment
 Instructions can be found here [conda environment](https://uoa-eresearch.github.io/eresearch-cookbook/recipe/2014/11/20/conda/) and installing [anaconda](https://docs.anaconda.com/anaconda/install/)
@@ -96,7 +95,7 @@ To install:
 `$ pip3 install . --user`
 
 !!! Note
-    If `pip --version` is pointing to python 3.6+ then you can use `pip install . --user` instead. 
+    If `pip --version` is pointing to python 3.7+ then you can use `pip install . --user` instead. 
 
 !!! Warning
     Do not install pyDARNio with `python setup.py install` as this may install other libraries pyDARNio requires in a local directory causing issues down the road.

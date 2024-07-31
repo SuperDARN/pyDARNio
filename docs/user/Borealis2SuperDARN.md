@@ -45,8 +45,6 @@ Other information can be gathered from the converter if desired, for example:
 
 ```python
 borealis_array_data = converter.arrays
-
 sdarn_dictionary = converter.sdarn_dict # python dictionary of the SDarn standard fields.
-
 dmap_records = converter.sdarn_dmap_records
 ```

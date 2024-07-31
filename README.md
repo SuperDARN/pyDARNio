@@ -1,7 +1,7 @@
 ![pyDARNio](https://raw.githubusercontent.com/SuperDARN/pyDARNio/master/docs/imgs/pydarnio_logo.png)
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) 
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) 
+[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-360/) 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/superdarn/pyDARNio)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4009470.svg)](https://doi.org/10.5281/zenodo.4009470)
 
@@ -9,15 +9,10 @@ Python data IO library for the Super Dual Auroral Radar Network (SuperDARN).
 
 ## Changelog
 
-## Version 1.2.1 - Patch Release!
+## Version 1.3 - Release!
 
-This patch release includes a fix for the depreciation of a Numpy method.
-Below is more information for the most recent minor release.
-
-The most recent minor release included:
-- Handling of extra fields in fitacf files coming in the next RST release, including the name of the ACF fitting algorithm used (`algorithm`), the value of TDIFF used to calculate the elevation angles (`tdiff`), and more descriptive field names for the elevation angle fields in FitACF 3.0 (`elv_error` & `elv_fitted`)
-- More flexibility around optional fields for all file types
-- Updates and speed improvements for Borealis file io
+This release includes changes to support Borealis v0.7 files,
+``snd`` files, and removes the deprecated ``deepdish`` dependency.
 
 ## Documentation
 

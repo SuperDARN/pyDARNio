@@ -35,7 +35,6 @@ Future Work
 Add compression to bzip2
 
 """
-import deepdish as dd
 import h5py
 import logging
 import os
@@ -43,7 +42,6 @@ import subprocess as sp
 import warnings
 
 from collections import OrderedDict
-from pathlib2 import Path
 from typing import Union
 
 from pydarnio import borealis_exceptions, borealis_formats
@@ -125,11 +123,11 @@ class BorealisSiteRead():
         # 'vX.X'
 
         try:
-            version = dd.io.load(self.filename,
-                                 group='/'+self._record_names[0]
-                                 )['borealis_git_hash'].split('-')[0]
-            version = '.'.join(version.split('.')[:2])      # vX.Y, ignore patch revision
-        except (IndexError, ValueError) as err:
+            with h5py.File(self.filename, 'r') as f:
+                first_rec = f[self._record_names[0]]
+                full_version = first_rec.attrs['borealis_git_hash'].decode('utf-8').split('-')[0]
+                version = '.'.join(full_version.split('.')[:2])      # vX.Y, ignore patch revision
+        except (IndexError, KeyError) as err:
             # if this is an array style file, it will raise
             # IndexError on the array.
             raise borealis_exceptions.BorealisStructureError(
@@ -247,36 +245,9 @@ class BorealisSiteRead():
         records: OrderedDict{dict}
             records of Borealis rawacf data. Keys are first sequence timestamp
             (in ms since epoch).
-        """
-        pyDARNio_log.info("Reading Borealis {} {} file: {}"
-                          "".format(self.software_version,
-                                    self.borealis_filetype, self.filename))
-
-        attribute_types = self.format.site_single_element_types()
-        dataset_types = self.format.site_array_dtypes()
-
-        self._read_borealis_records(attribute_types, dataset_types)
-        return self._records
-
-    def _read_borealis_records(self, attribute_types: dict,
-                               dataset_types: dict):
-        """
-        Read the entire file while checking all data fields.
-
-        Several Borealis field checks are done to insure the integrity of the
-        file.
-
-        Parameters
-        ----------
-        attribute_types: dict
-            Dictionary with the required types for the attributes in the file.
-        dataset_types: dict
-            Dictionary with the require dtypes for the numpy arrays in the
-            file.
 
         Raises
         ------
-        OSError: file does not exist
         BorealisFieldMissingError - when a field is missing from the Borealis
                                 file/stream type
         BorealisExtraFieldError - when an extra field is present in the
@@ -288,11 +259,20 @@ class BorealisSiteRead():
         --------
         BorealisUtilities
         """
-        records = dd.io.load(self.filename)
+        pyDARNio_log.info("Reading Borealis {} {} file: {}"
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
+
+        attribute_types = self.format.site_single_element_types()
+        dataset_types = self.format.site_array_dtypes()
+
+        records = self.format.read_records(self.filename)
+        BorealisUtilities.pulse_phase_offset_site_fix(records)
         BorealisUtilities.check_records(self.filename, records,
                                         attribute_types, dataset_types)
 
         self._records = OrderedDict(sorted(records.items()))
+        return self._records
 
 
 class BorealisSiteWrite():
@@ -487,34 +467,8 @@ class BorealisSiteWrite():
 
         Returns
         -------
-        filename
+        filename: str
             The filename written to.
-        """
-        pyDARNio_log.info("Writing Borealis {} {} file: {}"
-                          "".format(self.software_version,
-                                    self.borealis_filetype, self.filename))
-
-        attribute_types = self.format.site_single_element_types()
-        dataset_types = self.format.site_array_dtypes()
-
-        self._write_borealis_records(attribute_types, dataset_types)
-        return self.filename
-
-    def _write_borealis_records(self, attribute_types: dict,
-                                dataset_types: dict):
-        """
-        Write the file in site style after checking records.
-
-        Several Borealis field checks are done to insure the integrity of the
-        file.
-
-        Parameters
-        ----------
-        attributes_type_dict: dict
-            Dictionary with the required types for the attributes in the file.
-        datasets_type_dict: dict
-            Dictionary with the require dtypes for the numpy arrays in the
-            file.
 
         Raises
         ------
@@ -524,27 +478,14 @@ class BorealisSiteWrite():
                                 Borealis file/stream type
         BorealisDataFormatTypeError - when a field has the incorrect
                                 field type for the Borealis file/stream type
-
-        See Also
-        --------
-        BorealisUtilities
         """
-        Path(self.filename).touch()
+        pyDARNio_log.info("Writing Borealis {} {} file: {}"
+                          "".format(self.software_version,
+                                    self.borealis_filetype, self.filename))
+
+        attribute_types = self.format.site_single_element_types()
+        dataset_types = self.format.site_array_dtypes()
         BorealisUtilities.check_records(self.filename, self.records,
                                         attribute_types, dataset_types)
-
-        # use external h5copy utility to move new record into 2hr file.
-
-        warnings.filterwarnings("ignore")
-        # Must use temporary file to append to a file; writing entire
-        # dictionary at once also doesn't work so this is required.
-        tmp_filename = self.filename + '.tmp'
-        Path(tmp_filename).touch()
-        for group_name, group_dict in self.records.items():
-            dd.io.save(tmp_filename, {str(group_name): group_dict},
-                       compression=self.compression)
-            cp_cmd = 'h5copy -i {newfile} -o {full_file} -s {dtstr} -d {dtstr}'
-            cmd = cp_cmd.format(newfile=tmp_filename, full_file=self.filename,
-                                dtstr='/'+str(group_name))
-            sp.call(cmd.split())
-            os.remove(tmp_filename)
+        self.format.write_records(self.filename, self.records, self.compression)
+        return self.filename

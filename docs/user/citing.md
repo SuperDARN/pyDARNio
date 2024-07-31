@@ -59,14 +59,10 @@ pyDARNio uses other python libraries and the SuperDARN community's help.
 
 ### Python Library References 
 
-#### Matplotlib
-John D. Hunter. Matplotlib: A 2D Graphics Environment, Computing in Science & Engineering, 9, 90-95 (2007), [DOI:10.5281/zenodo.3264781](https://zenodo.org/record/3264781)
-
 #### Numpy 
 Stéfan van der Walt, S. Chris Colbert and Gaël Varoquaux. The NumPy Array: A Structure for Efficient Numerical Computation, Computing in Science & Engineering, 13, 22-30 (2011), [DOI:10.1109/MCSE.2011.37](https://ieeexplore.ieee.org/document/5725236)
 
 #### H5PY
-
 A. Collette, Python and HDF5, O'Reilly (2014) (http://shop.oreilly.com/product/0636920030249.do)
 
 

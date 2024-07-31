@@ -37,12 +37,12 @@ Notes
 """
 
 import copy
+import h5py
 import numpy as np
 
 from collections import OrderedDict
 from datetime import datetime
 from typing import Callable, List
-import h5py
 
 from pydarnio import borealis_exceptions
 
@@ -262,7 +262,7 @@ class BaseFormat():
         return {
             # Identifies the version of Borealis that made this data.
             # Necessary for all versions and formats.
-            "borealis_git_hash": np.unicode_,
+            "borealis_git_hash": np.str_,
             }
 
     @classmethod
@@ -605,7 +605,7 @@ class BaseFormat():
                                 actual_size = site_file[record_name][field].size
                                 num_sequences = site_file[record_name]['data_dimensions'][1]
                                 num_pulses = site_file[record_name]['pulses'].size
-                                if actual_size != num_sequences * num_pulses:
+                                if actual_size != num_sequences * num_pulses and actual_size != 0:
                                     if actual_size == 1:    # This is the special case
                                         field_shape = (0,)
                                     else:
@@ -1102,18 +1102,20 @@ class BaseFormat():
                 datatype = cls.single_element_types()[field]
             else:  # field in array_dtypes
                 datatype = cls.array_dtypes()[field]
-            if datatype == np.unicode_:
+            if datatype == str:
                 # unicode type needs to be explicitly set to have
                 # multiple chars (256)
                 datatype='|U256'
             empty_array = np.empty(array_dims, dtype=datatype)
             # Some indices may not be filled due to dimensions that are maximum values (num_sequences, etc. can change
             # between records), so they are initialized with a known value first.
-            # Initialize floating-point values to NaN, and integer values to -1.
-            if datatype is np.int64 or datatype is np.uint32:
+            # Initialize floating-point values to NaN, and integer values to -1 or 0.
+            if datatype in [np.int64]:
                 empty_array[:] = -1
+            elif datatype in [np.uint32, np.uint8]:
+                empty_array[:] = 0
             else:
-                empty_array[:] = np.NaN
+                empty_array[:] = np.nan
             temp_array_dict[field] = empty_array
 
         # iterate through the records, filling the unshared and array only
@@ -1228,6 +1230,203 @@ class BaseFormat():
         timestamp_dict = cls.flatten_site_arrays(timestamp_dict)
 
         return timestamp_dict
+
+    @classmethod
+    def read_records(cls, filename: str) -> OrderedDict:
+        """
+        Base function for reading in a Borealis site file.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the file to load records from
+
+        Returns
+        -------
+        OrderedDict
+            a dict of timestamped records loaded from an hdf5 Borealis site file
+
+        Raises
+        ------
+        OSError: file does not exist
+
+        Notes
+        -----
+        The results will differ based on the format class, as many of the
+        class methods used inside this method should be specific
+        to the format and updated in the child class.
+        """
+        records = OrderedDict()
+        with h5py.File(filename, 'r') as f:
+            record_keys = sorted(list(f.keys()))
+            for rec_key in record_keys:
+                rec_dict = {}
+                group = f[rec_key]
+
+                # Get the datasets (vector fields)
+                datasets = list(group.keys())
+                for dset_name in datasets:
+                    dset = group[dset_name]
+                    if 'strtype' in dset.attrs:     # string type, requires some handling
+                        itemsize = dset.attrs['itemsize']
+                        data = dset[:].view(dtype=(np.str_, itemsize))
+                    else:
+                        data = dset[:]      # non-string, can simply load
+                    rec_dict[dset_name] = data
+
+                # Get the attributes (scalar fields)
+                attribute_dict = {}
+                for k, v in group.attrs.items():
+                    if k in ['CLASS', 'TITLE', 'VERSION', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION']:
+                        continue
+                    elif isinstance(v, bytes):
+                        if v.itemsize == 0:
+                            attribute_dict[k] = ''
+                        else:
+                            attribute_dict[k] = v.tobytes().decode('utf-8')
+                    elif isinstance(v, h5py.Empty):
+                        dtype = v.dtype.type
+                        data = dtype()
+                        if isinstance(data, bytes):
+                            data = data.decode('utf-8')
+                        attribute_dict[k] = data
+                    else:
+                        attribute_dict[k] = v
+                rec_dict.update(attribute_dict)
+
+                records[rec_key] = rec_dict
+
+        return records
+
+    @classmethod
+    def read_arrays(cls, filename: str) -> OrderedDict:
+        """
+        Base function for reading in a Borealis array file.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the file to load arrays from
+
+        Returns
+        -------
+        OrderedDict
+            a dict of arrays loaded from an hdf5 Borealis array file
+
+        Raises
+        ------
+        OSError: file does not exist
+
+        Notes
+        -----
+        The results will differ based on the format class, as many of the
+        class methods used inside this method should be specific
+        to the format and updated in the child class.
+        """
+        arrays = OrderedDict()
+        with h5py.File(filename, 'r') as f:
+
+            # Get the datasets (vector fields)
+            array_names = sorted(list(f.keys()))
+            for array_name in array_names:
+                dset = f[array_name]
+                if 'strtype' in dset.attrs:  # string type, requires some handling
+                    itemsize = dset.attrs['itemsize']
+                    data = dset[:].view(dtype=(np.str_, itemsize))
+                else:
+                    data = dset[:]  # non-string, can simply load
+                arrays[array_name] = data
+
+            # Get the attributes (scalar fields)
+            attribute_dict = {}
+            for k, v in f.attrs.items():
+                if k in ['CLASS', 'TITLE', 'VERSION', 'DEEPDISH_IO_VERSION', 'PYTABLES_FORMAT_VERSION']:
+                    continue
+                elif isinstance(v, bytes):
+                    if v.itemsize == 0:
+                        attribute_dict[k] = ''
+                    else:
+                        attribute_dict[k] = v.tobytes().decode('utf-8')
+                elif isinstance(v, h5py.Empty):
+                    dtype = v.dtype.type
+                    data = dtype()
+                    if isinstance(data, bytes):
+                        data = data.decode('utf-8')
+                    attribute_dict[k] = data
+                else:
+                    attribute_dict[k] = v
+            arrays.update(attribute_dict)
+
+        return arrays
+
+    @classmethod
+    def write_records(cls, filename: str, records: OrderedDict, compression: str):
+        """
+        Write the file in site style after checking records.
+
+        Several Borealis field checks are done to ensure the integrity of the
+        file.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the file to write to.
+        records: OrderedDict
+            Dictionary containing site-formatted fields to write to file.
+        compression: str
+            Type of compression to use for the HDF5 file.
+        """
+        attribute_types = cls.site_single_element_types()
+        dataset_types = cls.site_array_dtypes()
+        with h5py.File(filename, 'a') as f:
+            for group_name, group_dict in records.items():
+                group = f.create_group(str(group_name))
+                for k, v in group_dict.items():
+                    if k in attribute_types.keys():
+                        if isinstance(v, str):
+                            group.attrs[k] = np.bytes_(v)
+                        else:
+                            group.attrs[k] = v
+                    elif v.dtype.type == np.str_:
+                        itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
+                        dset = group.create_dataset(k, data=v.view(dtype=(np.uint8)),
+                                                    compression=compression)
+                        dset.attrs['strtype'] = b'unicode'
+                        dset.attrs['itemsize'] = itemsize
+                    else:
+                        group.create_dataset(k, data=v, compression=compression)
+
+    @classmethod
+    def write_arrays(cls, filename: str, arrays: OrderedDict, compression: str):
+        """
+        Write arrays to file while checking all data fields.
+
+        Parameters
+        ----------
+        filename: str
+            Name of the file to write to.
+        arrays: OrderedDict
+            Dictionary containing array-formatted fields to write to file.
+        compression: str
+            Type of compression to use for the HDF5 file.
+        """
+        attribute_types = cls.array_single_element_types()
+        dataset_types = cls.array_array_dtypes()
+        unshared_fields = cls.unshared_fields()
+        with h5py.File(filename, 'a') as f:
+            for k, v in arrays.items():
+                if k in attribute_types:
+                    if isinstance(v, str):
+                        f.attrs[k] = np.bytes_(v)
+                    else:
+                        f.attrs[k] = v
+                elif v.dtype.type == np.str_:
+                    itemsize = v.dtype.itemsize // 4  # every character is 4 bytes
+                    dset = f.create_dataset(k, data=v.view(dtype=(np.uint8)), compression=compression)
+                    dset.attrs['strtype'] = b'unicode'
+                    dset.attrs['itemsize'] = itemsize
+                else:
+                    f.create_dataset(k, data=v, compression=compression)
 
     # STATIC METHODS COMMON ACROSS FORMATS
     # i.e. common methods that can be used by multiple formats in restructuring

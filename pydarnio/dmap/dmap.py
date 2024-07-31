@@ -510,7 +510,7 @@ class DmapRead():
         scalar_type_fmt = DMAP_DATA_TYPES[scalar_type][0]
         scalar_fmt_byte = DMAP_DATA_TYPES[scalar_type][1]
 
-        if scalar_type_fmt != DMAP:
+        if scalar_type_fmt != '':
             scalar_value = self.read_data(scalar_type_fmt, scalar_fmt_byte)
         else:
             message = "Error: Trying to read DMap data type for a scalar."\
@@ -861,6 +861,7 @@ class DmapWrite(object):
                                                       - Iqdat
                                                       - Rawacf
                                                       - Fitacf
+                                                      - Snd
                                                       - Grid
                                                       - Map
 
@@ -876,6 +877,7 @@ class DmapWrite(object):
                                      - 'iqdat' : SuperDARN file type
                                      - 'rawacf' : SuperDARN file type
                                      - 'fitacf' : SuperDARN file type
+                                     - 'snd' : SuperDARN file type
                                      - 'grid' : SuperDARN file type
                                      - 'map' : SuperDARN file type
                                      - 'dmap' : writes a file in DMap format

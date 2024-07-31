@@ -34,7 +34,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # Setup information
 setup(
     name="pydarnio",
-    version="1.2.1",
+    version="1.3",
     long_description=long_description,
     long_description_content_type='text/markdown',
     description="Python library for reading and writing SuperDARN data",
@@ -42,15 +42,14 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'],
-    python_requires='>=3.6',
+        'Programming Language :: Python :: 3.8'],
+    python_requires='>=3.8',
     packages=find_packages(exclude=['docs', 'test']),
     author="SuperDARN",
     include_package_data=True,
     setup_requires=['pyyaml', 'numpy',
-                    'h5py', 'deepdish', 'pathlib2'],
+                    'h5py>=3.11.0', 'pathlib2'],
     # pyyaml library install
     install_requires=['pyyaml', 'numpy',
-                      'h5py', 'deepdish', 'pathlib2']
+                      'h5py>=3.11.0', 'pathlib2']
 )
