@@ -11,32 +11,26 @@ module, classes, and functions.
 """
 # KEEP THIS FILE AS MINIMAL AS POSSIBLE!
 
-import os
-
 # Importing pydarnio exception classes
-from .exceptions import dmap_exceptions
-from .exceptions import superdarn_exceptions
 from .exceptions import borealis_exceptions
 from .exceptions.warning_formatting import standard_warning_format
 from .exceptions.warning_formatting import only_message_warning_format
 
-# Importing pydarnio pydmap data structure classes
-from .dmap.datastructures import DmapScalar
-from .dmap.datastructures import DmapArray
-from .dmap import superdarn_formats
-
-# importing utils
-from .utils.conversions import dict2dmap
-from .utils.conversions import dmap2dict
-
-# Importing pydarnio dmap classes
-from .dmap.dmap import DmapRead
-from .dmap.dmap import DmapWrite
-
-# Importing pydarnio superdarn classes
-from .dmap.superdarn import SDarnRead
-from .dmap.superdarn import SDarnWrite
-from .dmap.superdarn import SDarnUtilities
+# Import the dmap I/O functions
+from dmap import (
+    read_iqdat,
+    read_rawacf,
+    read_fitacf,
+    read_grid,
+    read_map,
+    read_snd,
+    write_iqdat,
+    write_rawacf,
+    write_fitacf,
+    write_grid,
+    write_map,
+    write_snd
+)
 
 # Importing pydarnio borealis classes
 from .borealis import borealis_formats
