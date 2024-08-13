@@ -256,7 +256,7 @@ class Grid():
         'vector.wdt.sd': 'f'
     }
     optional_fields = {
-        'vector.srng': 'f'}
+        'vector.srng': 'f'
     }
 
 
@@ -371,7 +371,7 @@ class Map():
         'vector.wdt.sd': 'f',
     }
     optional_fields = {
-        'vector.srng': 'f'}
+        'vector.srng': 'f'
     }
 
 
