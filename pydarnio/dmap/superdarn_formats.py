@@ -255,7 +255,9 @@ class Grid():
         'vector.wdt.median': 'f',
         'vector.wdt.sd': 'f'
     }
-    optional_fields = {}    # future-proofing
+    optional_fields = {
+        'vector.srng': 'f'
+    }
 
 
 class Map():
@@ -368,7 +370,10 @@ class Map():
         'vector.wdt.median': 'f',
         'vector.wdt.sd': 'f',
     }
-    optional_fields = {}    # future-proofing
+    optional_fields = {
+        'vector.srng': 'f'
+    }
+
 
 
 class Iqdat():

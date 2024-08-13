@@ -186,7 +186,8 @@ class SDarnUtilities():
 
     @staticmethod
     def extra_field_check(file_struct_list: List[dict],
-                          record: dict, rec_num: int):
+                          record: dict, rec_num: int,
+                          optional_list: list = []):
         """
         Check if there is an extra field in the file structure list and record.
 
@@ -199,14 +200,21 @@ class SDarnUtilities():
             Dmap record
         rec_num : int
             Record number for better error message information
+        optional_list : List[dict]
+            List of dictionaries for possible file structure fields that are
+            optional and thus do not need to be included as extra
 
         Raises
         -------
         SuperDARNFieldExtra
 
         """
-        file_struct = SDarnUtilities.dict_list2set(file_struct_list)
-        extra_fields = SDarnUtilities.dict_key_diff(record, file_struct)
+        extra_fields = set()
+        for file_struct in file_struct_list:
+            if file_struct not in optional_list:
+                diff_fields = SDarnUtilities.dict_key_diff(file_struct, record)
+                if len(diff_fields) not in (0, len(file_struct)):
+                    extra_fields = extra_fields.union(diff_fields)
 
         if len(extra_fields) > 0:
             raise superdarn_exceptions.SuperDARNExtraFieldError(rec_num,
@@ -217,7 +225,7 @@ class SDarnUtilities():
     # of dict_list2set method.
     @staticmethod
     def incorrect_types_check(file_struct_list: List[dict], record: dict,
-                              rec_num: int):
+                              rec_num: int, optional_list: list = []):
         """
         Checks if the file structure fields data type formats are correct
         in the record.
@@ -231,6 +239,9 @@ class SDarnUtilities():
             Dmap record
         rec_num : int
             Record number for a better error message information
+        optional_list : List[dict]
+            List of dictionaries for possible file structure fields that are
+            optional
 
         Raises
         ------
@@ -238,6 +249,8 @@ class SDarnUtilities():
         """
         complete_dict = {}
         for file_struct in file_struct_list:
+            complete_dict.update(file_struct)
+        for file_struct in optional_list:
             complete_dict.update(file_struct)
         incorrect_types_check = {param: complete_dict[param]
                                  for param in record.keys()
@@ -365,9 +378,10 @@ class SDarnRead(DmapRead):
             optional_list = []
         SDarnUtilities.missing_field_check(format_fields, record, self.rec_num,
                                            optional_list)
-        SDarnUtilities.extra_field_check(format_fields, record, self.rec_num)
+        SDarnUtilities.extra_field_check(format_fields, record, self.rec_num,
+                                         optional_list)
         SDarnUtilities.incorrect_types_check(format_fields, record,
-                                             self.rec_num)
+                                             self.rec_num, optional_list)
         self._dmap_records.append(record)
 
     def _read_darn_records(self, format_fields: List[dict],
@@ -511,7 +525,8 @@ class SDarnRead(DmapRead):
         file_struct_list = [superdarn_formats.Grid.types,
                             superdarn_formats.Grid.fitted_fields,
                             superdarn_formats.Grid.extra_fields]
-        self._read_darn_records(file_struct_list)
+        optional_list = [superdarn_formats.Grid.optional_fields]
+        self._read_darn_records(file_struct_list, optional_list)
         self.records = dmap2dict(self._dmap_records)
         return self.records
 
@@ -538,7 +553,8 @@ class SDarnRead(DmapRead):
                             superdarn_formats.Map.fit_fields,
                             superdarn_formats.Map.hmb_fields,
                             superdarn_formats.Map.model_fields]
-        self._read_darn_records(file_struct_list)
+        optional_list = [superdarn_formats.Map.optional_fields]
+        self._read_darn_records(file_struct_list, optional_list)
         self.records = dmap2dict(self._dmap_records)
         return self.records
 
@@ -891,10 +907,10 @@ class SDarnWrite(DmapWrite):
             record = self.dmap_records[self.rec_num]
             # field checks
             SDarnUtilities.extra_field_check(file_struct_list, record,
-                                             self.rec_num)
+                                             self.rec_num, optional_list)
             SDarnUtilities.missing_field_check(file_struct_list, record,
                                                self.rec_num, optional_list)
             SDarnUtilities.incorrect_types_check(file_struct_list, record,
-                                                 self.rec_num)
+                                                 self.rec_num, optional_list)
             # start converting
             self._dmap_record_to_bytes(record)
