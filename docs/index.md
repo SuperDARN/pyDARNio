@@ -29,8 +29,6 @@ If you have any questions or concerns please submit an **Issue** on the SuperDAR
   - [SuperDARN Data Access](user/superdarn_data.md)
   - [Citing](user/citing.md)
   - Tutorials 
-    - IO 
-      - [SuperDARN (DMAP) files](user/SDarn.md)
-      - [Borealis files](user/BorealisIO.md)
-    - Convert
-      - [Borealis to SuperDARN (DMAP)](user/Borealis2SuperDARN.md)
+    - [SuperDARN (DMAP) files](user/SDarn.md)
+    - [Borealis files](user/BorealisIO.md)
+    - [Borealis to SuperDARN (DMAP)](user/Borealis2SuperDARN.md)
