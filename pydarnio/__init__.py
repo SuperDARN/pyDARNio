@@ -24,12 +24,14 @@ from dmap import (
     read_grid,
     read_map,
     read_snd,
+    read_dmap,
     write_iqdat,
     write_rawacf,
     write_fitacf,
     write_grid,
     write_map,
-    write_snd
+    write_snd,
+    write_dmap
 )
 
 # Importing pydarnio borealis classes
