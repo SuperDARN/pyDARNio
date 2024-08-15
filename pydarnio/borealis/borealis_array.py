@@ -40,7 +40,6 @@ files, see: https://borealis.readthedocs.io/en/latest/
 import h5py
 import logging
 
-from typing import List
 
 from pydarnio import borealis_exceptions, borealis_formats
 
