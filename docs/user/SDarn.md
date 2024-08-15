@@ -4,6 +4,7 @@ Data Map (DMap) is a binary self-describing format that was developed by Rob Bar
 This format is currently the primary format used by SuperDARN. 
 For more information on DMap please see [RST Documentation](https://radar-software-toolkit-rst.readthedocs.io/en/latest/).
 Types of files used by SuperDARN which are usually accessed in DMap format are:
+
 - IQDAT
 - RAWACF
 - FITACF
@@ -16,7 +17,7 @@ This tutorial will focus on reading in DMap structured files using pyDARNio, inc
 ## The basics
 
 The basic code to read and write a DMap structured file is as follows:
-```python3
+```python
 import pydarnio
 
 file = "path/to/rawacf_file"
@@ -27,27 +28,27 @@ pydarnio.write_rawacf(data, outfile)
 which puts the file contents into `data`, then writes out to `"path/to/outfile.rawacf". `data` will be a list of dictionaries, 
 where each dictionary is a DMAP record. The supported reading functions are:
 
-* `read_iqdat`, 
-* `read_rawacf`, 
-* `read_fitacf`, 
-* `read_grid`, 
-* `read_map`,  
-* `read_snd`, and
-* `read_dmap`.
+- `read_iqdat`, 
+- `read_rawacf`, 
+- `read_fitacf`, 
+- `read_grid`, 
+- `read_map`,  
+- `read_snd`, and
+- `read_dmap`.
 
 The supported writing functions are:
 
-* `write_iqdat`, 
-* `write_rawacf`,
-* `write_fitacf`, 
-* `write_grid`, 
-* `write_map`, 
-* `write_snd`, and
-* `write_dmap`.
+- `write_iqdat`, 
+- `write_rawacf`,
+- `write_fitacf`, 
+- `write_grid`, 
+- `write_map`, 
+- `write_snd`, and
+- `write_dmap`.
 
 ### Accessing data fields
 To see the names of the variables you've loaded in and now have access to, try using the `keys()` method:
-```python3
+```python
 print(data[0].keys())
 ```
 which will tell you all the variables in the first [0th] record.
@@ -64,7 +65,7 @@ cpcps=[rec['pot.drop'] for rec in map_data]
 ## I/O on a compressed file
 
 pyDARNio will handle compressing and decompressing `.bz2` files seamlessly, detecting the compression via the file extension. E.g.
-```python3
+```python
 import pydarnio
 fitacf_file = "path/to/file.bz2"
 data = pydarnio.read_fitacf(fitacf_file)
@@ -79,7 +80,8 @@ be properly formatted as a DMap file, but otherwise no checks are conducted.
 **NOTE:** When using the generic writing function `write_dmap`, scalar fields will possibly be resized; e.g., the `stid`
 field may be stored as an 8-bit integer, as opposed to a 16-bit integer as usual. As such, reading with a specific method
 (e.g. `read_fitacf`) on a file written using `write_dmap` will likely not pass the DMap consistency checks.
-```python3
+
+```python
 import pydarnio
 generic_file = "path/to/file"  # can be iqdat, rawacf, fitacf, grid, map, snd, and optionally .bz2 compressed
 data = pydarnio.read_dmap(generic_file)
