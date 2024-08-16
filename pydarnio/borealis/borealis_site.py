@@ -37,9 +37,6 @@ Add compression to bzip2
 """
 import h5py
 import logging
-import os
-import subprocess as sp
-import warnings
 
 from collections import OrderedDict
 from typing import Union

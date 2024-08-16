@@ -594,7 +594,7 @@ class BaseFormat():
                         field_value = site_file[record_name].attrs[field]
                         if field == 'num_sequences':
                             max_num_sequences = max(max_num_sequences, field_value)
-                    except (KeyError, TypeError) as e:
+                    except (KeyError, TypeError):
                         try:
                             # Raises KeyError if field DNE as dataset
                             field_shape = site_file[record_name][field].shape
@@ -1102,7 +1102,7 @@ class BaseFormat():
                 datatype = cls.single_element_types()[field]
             else:  # field in array_dtypes
                 datatype = cls.array_dtypes()[field]
-            if datatype == str:
+            if datatype is str:
                 # unicode type needs to be explicitly set to have
                 # multiple chars (256)
                 datatype='|U256'
@@ -1123,7 +1123,7 @@ class BaseFormat():
         for rec_idx, k in enumerate(data_dict.keys()):
             for field in cls.unshared_fields():  # all unshared fields
                 empty_array = temp_array_dict[field]
-                if type(data_dict[first_key][field]) == np.ndarray:
+                if type(data_dict[first_key][field]) is np.ndarray:
                     # only fill the correct length, appended NaNs occur for
                     # dims with a determined max value
                     data_buffer = data_dict[k][field]
@@ -1377,7 +1377,6 @@ class BaseFormat():
             Type of compression to use for the HDF5 file.
         """
         attribute_types = cls.site_single_element_types()
-        dataset_types = cls.site_array_dtypes()
         with h5py.File(filename, 'a') as f:
             for group_name, group_dict in records.items():
                 group = f.create_group(str(group_name))
@@ -1411,8 +1410,6 @@ class BaseFormat():
             Type of compression to use for the HDF5 file.
         """
         attribute_types = cls.array_single_element_types()
-        dataset_types = cls.array_array_dtypes()
-        unshared_fields = cls.unshared_fields()
         with h5py.File(filename, 'a') as f:
             for k, v in arrays.items():
                 if k in attribute_types:

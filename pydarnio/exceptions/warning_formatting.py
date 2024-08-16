@@ -61,7 +61,5 @@ def only_message_warning_format(message: str, category: str, filename: str,
     -------
         formatted warning message to be printed to the console
     """
-    return "{category}: {message}\n".format(filename=filename,
-                                            linenum=lineno,
-                                            category=category.__name__,
+    return "{category}: {message}\n".format(category=category.__name__,
                                             message=message)

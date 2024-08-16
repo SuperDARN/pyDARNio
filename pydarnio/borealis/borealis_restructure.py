@@ -402,7 +402,7 @@ class BorealisRestructure(object):
                                 datatype = self.format.single_element_types()[field]
                             else:  # field in array_dtypes
                                 datatype = self.format.array_dtypes()[field]
-                            if datatype == str:
+                            if datatype is str:
                                 # unicode type needs to be explicitly set to
                                 # have multiple chars (256)
                                 datatype = '|U256'
@@ -424,7 +424,7 @@ class BorealisRestructure(object):
                     # Fill the unshared and array-only fields for this record
                     for field in self.format.unshared_fields():
                         empty_array = new_data_dict[field]
-                        if type(data_dict[field]) == np.ndarray:
+                        if type(data_dict[field]) is np.ndarray:
                             # only fill the correct length, appended NaNs occur
                             # for dims with a determined max value
                             data_buffer = data_dict[field]
