@@ -11,8 +11,6 @@ module, classes, and functions.
 """
 # KEEP THIS FILE AS MINIMAL AS POSSIBLE!
 
-import os
-
 # Importing pydarnio exception classes
 from .exceptions import dmap_exceptions
 from .exceptions import superdarn_exceptions
@@ -44,3 +42,4 @@ from .borealis.borealis import BorealisRead
 from .borealis.borealis import BorealisWrite
 from .borealis.borealis_convert import BorealisConvert
 from .borealis.borealis_restructure import BorealisRestructure
+from .borealis.v1_onwards import BorealisV1Read, BorealisV1Convert
