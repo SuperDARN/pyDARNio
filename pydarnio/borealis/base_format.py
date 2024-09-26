@@ -1569,4 +1569,3 @@ class BaseFormat():
             max_ppo_shape = tmp.max(axis=0)        
 
         return list(max_ppo_shape)
-
