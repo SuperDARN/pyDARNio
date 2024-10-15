@@ -30,9 +30,7 @@ filetypes, see: https://borealis.readthedocs.io/en/latest/
 """
 
 import logging
-from collections import OrderedDict
 from datetime import datetime
-from typing import Union
 
 import h5py
 import numpy as np
