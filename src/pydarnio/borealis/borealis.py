@@ -38,13 +38,14 @@ filetypes, see: https://borealis.readthedocs.io/en/latest/
 """
 
 import logging
-
 from collections import OrderedDict
 from typing import Union
+import h5py
 
 from pydarnio import borealis_exceptions
 from .borealis_site import BorealisSiteRead, BorealisSiteWrite
 from .borealis_array import BorealisArrayRead, BorealisArrayWrite
+from .v1_onwards import BorealisV1Read
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 
@@ -129,21 +130,35 @@ class BorealisRead():
                 self.filename, borealis_filetype)
         self.borealis_filetype = borealis_filetype
 
-        if borealis_file_structure is None:
-            self._reader, self._borealis_file_structure = \
-                self.return_reader(self.filename, self.borealis_filetype)
-        elif borealis_file_structure == 'site':
-            self._reader = BorealisSiteRead(self.filename,
-                                            self.borealis_filetype)
-            self._borealis_file_structure = 'site'
-        elif borealis_file_structure == 'array':
-            self._reader = BorealisArrayRead(self.filename,
-                                             self.borealis_filetype)
-            self._borealis_file_structure = 'array'
-        else:  # unknown structure
-            raise borealis_exceptions.\
-                BorealisStructureError("Unknown structure type: {}"
-                                       "".format(borealis_file_structure))
+        with h5py.File(self.filename, 'r') as f:
+            keys = sorted(list(f.keys()))
+            if 'borealis_git_hash' in f.attrs.keys():
+                version = f.attrs['borealis_git_hash']
+            elif 'borealis_git_hash' in f[keys[0]].attrs.keys():
+                version = f[keys[0]].attrs['borealis_git_hash']
+            elif 'borealis_git_hash' in f[keys[0]].keys():
+                version = f[keys[0]]['borealis_git_hash'][()][:].decode('utf-8')
+            else:
+                raise borealis_exceptions.BorealisVersionError("Unable to determine Borealis version")
+        self.version = [int(x) for x in version.lstrip('v').split('-')[0].split('.')]
+        # version is 'v0.6.1-abcdefg' or similar
+
+        if self.version[0] < 1:
+            if borealis_file_structure is None:
+                self._reader, self._borealis_file_structure = \
+                    self.return_reader(self.filename, self.borealis_filetype)
+            elif borealis_file_structure == 'site':
+                self._reader = BorealisSiteRead(self.filename,
+                                                self.borealis_filetype)
+                self._borealis_file_structure = 'site'
+            elif borealis_file_structure == 'array':
+                self._reader = BorealisArrayRead(self.filename,
+                                                 self.borealis_filetype)
+                self._borealis_file_structure = 'array'
+            else:  # unknown structure
+                raise borealis_exceptions.\
+                    BorealisStructureError("Unknown structure type: {}"
+                                           "".format(borealis_file_structure))
 
     def __repr__(self):
         """ for representation of the class object"""
@@ -175,7 +190,10 @@ class BorealisRead():
         These correspond to Borealis file record write times (in ms since
         epoch), and are equal to the group names in the site file types.
         """
-        return self._reader.record_names
+        if self.version[0] < 1:
+            return self._reader.record_names
+        else:
+            return []
 
     @property
     def records(self):
@@ -183,7 +201,10 @@ class BorealisRead():
         The Borealis data in a dictionary of records, according to the
         site file format.
         """
-        return self._reader.records
+        if self.version[0] < 1:
+            return self._reader.records
+        else:
+            return BorealisV1Read.read_records(self.filename)
 
     @property
     def arrays(self):
@@ -191,7 +212,10 @@ class BorealisRead():
         The Borealis data in a dictionary of arrays, according to the
         restructured array file format.
         """
-        return self._reader.arrays
+        if self.version[0] < 1:
+            return self._reader.arrays
+        else:
+            return BorealisV1Read.read_arrays(self.filename)
 
     @property
     def software_version(self):
@@ -202,14 +226,20 @@ class BorealisRead():
             May impact the fields included in the file
             as each version has a different field structure/format
         """
-        return self._reader.software_version
+        if self.version[0] < 1:
+            return self._reader.software_version
+        else:
+            return f"v{'.'.join(self.version)}"
 
     @property
     def format(self):
         """
         The format class used for the file, from the borealis_formats module.
         """
-        return self._reader.format
+        if self.version[0] < 1:
+            return self._reader.format
+        else:
+            return None
 
     @staticmethod
     def return_reader(borealis_hdf5_file: str, borealis_filetype: str) -> \
@@ -346,46 +376,54 @@ class BorealisWrite():
         self.data = borealis_data
         self.borealis_filetype = borealis_filetype
 
-        if borealis_file_structure is None:
-            self._writer, self._borealis_file_structure = \
-                self.return_writer(self.filename, self.data,
-                                   self.borealis_filetype, **kwargs)
-        elif borealis_file_structure == 'site':
-            self._writer = BorealisSiteWrite(self.filename, self.data,
-                                             self.borealis_filetype,
-                                             **kwargs)
-            self._borealis_file_structure = 'site'
-        elif borealis_file_structure == 'array':
-            self._writer = BorealisArrayWrite(self.filename, self.data,
-                                              self.borealis_filetype, **kwargs)
-            self._borealis_file_structure = 'array'
-        else:  # unknown structure
-            raise borealis_exceptions.\
-                BorealisStructureError('Unknown structure type: {}'
-                                       ''.format(borealis_file_structure))
+        if 'borealis_git_hash' in borealis_data.keys():
+            version = borealis_data['borealis_git_hash']
+        else:
+            version = borealis_data[0]['borealis_git_hash']
+        self.version = [int(x) for x in version.lstrip('v').split('-')[0].split('.')]
+
+        if self.version[0] < 1:
+            if borealis_file_structure is None:
+                self._writer, self._borealis_file_structure = \
+                    self.return_writer(self.filename, self.data,
+                                       self.borealis_filetype, **kwargs)
+            elif borealis_file_structure == 'site':
+                self._writer = BorealisSiteWrite(self.filename, self.data,
+                                                 self.borealis_filetype,
+                                                 **kwargs)
+                self._borealis_file_structure = 'site'
+            elif borealis_file_structure == 'array':
+                self._writer = BorealisArrayWrite(self.filename, self.data,
+                                                  self.borealis_filetype, **kwargs)
+                self._borealis_file_structure = 'array'
+            else:  # unknown structure
+                raise borealis_exceptions.\
+                    BorealisStructureError('Unknown structure type: {}'
+                                           ''.format(borealis_file_structure))
+        else:
+            raise NotImplementedError("Writing v1.0+ Borealis files is not supported")
 
     def __repr__(self):
         """For representation of the class object"""
 
-        return "{class_name}({filename}, {current_record_name})"\
+        return "{class_name}({filename})"\
                "".format(class_name=self.__class__.__name__,
-                         filename=self.filename,
-                         current_record_name=self.current_record_name)
+                         filename=self.filename)
 
     def __str__(self):
         """For printing of the class object"""
 
-        return "Writing to filename: {filename} at record name: "\
-               "{current_record_name}"\
-               "".format(filename=self.filename,
-                         current_record_name=self.current_record_name)
+        return "Writing to filename: {filename} ".format(filename=self.filename)
 
     @property
     def borealis_file_structure(self):
         """
         The structure of the file read, 'site' or 'array'. Default None.
         """
-        return self._borealis_file_structure
+        if self.version[0] < 1:
+            return self._borealis_file_structure
+        else:
+            return None
 
     @property
     def compression(self):
@@ -398,7 +436,10 @@ class BorealisWrite():
         will have 'zlib' compression to enable a faster read time
         for downstream users.
         """
-        return self._writer.compression
+        if self.version[0] < 1:
+            return self._writer.compression
+        else:
+            return None
 
     @property
     def record_names(self):
@@ -407,7 +448,10 @@ class BorealisWrite():
         These correspond to Borealis file record write times (in ms since
         epoch), and are equal to the group names in the site file types.
         """
-        return self._writer.record_names
+        if self.version[0] < 1:
+            return self._writer.record_names
+        else:
+            return None
 
     @property
     def records(self):
@@ -415,7 +459,10 @@ class BorealisWrite():
         The Borealis data in a dictionary of records, according to the
         site file format.
         """
-        return self._writer.records
+        if self.version[0] < 1:
+            return self._writer.records
+        else:
+            return None
 
     @property
     def arrays(self):
@@ -423,7 +470,10 @@ class BorealisWrite():
         The Borealis data in a dictionary of arrays, according to the
         restructured array file format.
         """
-        return self._writer.arrays
+        if self.version[0] < 1:
+            return self._writer.arrays
+        else:
+            return None
 
     @property
     def software_version(self):
@@ -434,14 +484,20 @@ class BorealisWrite():
             May impact the fields included in the file
             as each version has a different field structure/format
         """
-        return self._writer.software_version
+        if self.version[0] < 1:
+            return self._writer.software_version
+        else:
+            return f"v{'.'.join(self.version)}"
 
     @property
     def format(self):
         """
         The format class used for the file, from the borealis_formats module.
         """
-        return self._writer.format
+        if self.version[0] < 1:
+            return self._writer.format
+        else:
+            return None
 
     @staticmethod
     def return_writer(filename: str, data: Union[dict, OrderedDict],

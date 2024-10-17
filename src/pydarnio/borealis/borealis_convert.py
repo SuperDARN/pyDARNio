@@ -47,54 +47,10 @@ from datetime import datetime
 from typing import Union
 
 from pydarnio import (borealis_exceptions, BorealisRead, SDarnWrite, dict2dmap)
+from pydarnio.borealis.borealis_utilities import code_to_stid
+from pydarnio.borealis.v1_onwards import BorealisV1Convert
 
 pyDARNio_log = logging.getLogger('pyDARNio')
-
-# 3 letter radar code, mapped to station id for SDarn files conversion.
-# TODO: when merged with plotting, remove this dictionary and call the
-#    one in the plotting folder... also move Radars.py to a more
-#    central location.
-code_to_stid = {
-    "tst": 0,
-    "gbr": 1,
-    "sch": 2,
-    "kap": 3,
-    "hal": 4,
-    "sas": 5,
-    "pgr": 6,
-    "kod": 7,
-    "sto": 8,
-    "pyk": 9,
-    "han": 10,
-    "san": 11,
-    "sys": 12,
-    "sye": 13,
-    "tig": 14,
-    "ker": 15,
-    "ksr": 16,
-    "unw": 18,
-    "zho": 19,
-    "mcm": 20,
-    "fir": 21,
-    "sps": 22,
-    "bpk": 24,
-    "wal": 32,
-    "bks": 33,
-    "hok": 40,
-    "hkw": 41,
-    "inv": 64,
-    "rkn": 65,
-    "cly": 66,
-    "dce": 96,
-    "svb": 128,
-    "fhw": 204,
-    "fhe": 205,
-    "cvw": 206,
-    "cve": 207,
-    "adw": 208,
-    "ade": 209,
-    "ekb": 512,
-}
 
 
 class BorealisConvert(BorealisRead):
@@ -212,17 +168,18 @@ class BorealisConvert(BorealisRead):
         self.sdarn_filename = sdarn_filename
         self.borealis_filename = self.filename
 
-        try:
-            first_key = list(self.records.keys())[0]
-            self._borealis_slice_id = self.records[first_key]['slice_id']
-        except KeyError as kerr:
-            if borealis_slice_id is not None:
-                self._borealis_slice_id = int(borealis_slice_id)
-            else:
-                raise borealis_exceptions.BorealisStructureError(
-                    'The slice_id could not be found in the file: Borealis '
-                    'files produced before Borealis v0.5 must provide the '
-                    'slice_id value to the BorealisConvert class.') from kerr
+        if self.version[0] < 1:
+            try:
+                first_key = list(self.records.keys())[0]
+                self._borealis_slice_id = self.records[first_key]['slice_id']
+            except KeyError as kerr:
+                if borealis_slice_id is not None:
+                    self._borealis_slice_id = int(borealis_slice_id)
+                else:
+                    raise borealis_exceptions.BorealisStructureError(
+                        'The slice_id could not be found in the file: Borealis '
+                        'files produced before Borealis v0.5 must provide the '
+                        'slice_id value to the BorealisConvert class.') from kerr
 
         self._sdarn_dmap_records = {}
         self._sdarn_dict = {}
@@ -325,11 +282,17 @@ class BorealisConvert(BorealisRead):
         BorealisConversionTypesError
         """
         if self.sdarn_filetype == 'iqdat':
-            if self._is_convertible_to_iqdat():
-                self._convert_bfiq_to_iqdat()
+            if self.version[0] < 1:
+                if self._is_convertible_to_iqdat():
+                    self._convert_bfiq_to_iqdat()
+            else:
+                self._sdarn_dmap_records = BorealisV1Convert.bfiq_to_dmap(self.borealis_filename)
         elif self.sdarn_filetype == 'rawacf':
-            if self._is_convertible_to_rawacf():
-                self._convert_rawacf_to_rawacf()
+            if self.version[0] < 1:
+                if self._is_convertible_to_rawacf():
+                    self._convert_rawacf_to_rawacf()
+            else:
+                self._sdarn_dmap_records = BorealisV1Convert.rawacf_to_dmap(self.borealis_filename)
         else:  # nothing else is currently supported
             raise borealis_exceptions.BorealisConversionTypesError(
                 self.sdarn_filename, self.borealis_filetype,
