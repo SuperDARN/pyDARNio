@@ -78,7 +78,7 @@ class BorealisV1Read:
         return records, metadata
 
     @staticmethod
-    def read_as_xarray(filename: str):
+    def records_as_xarray(filename: str):
         try:
             import xarray as xr
             datasets = list()
@@ -151,7 +151,7 @@ class BorealisV1Read:
         return rec_dict
 
     @staticmethod
-    def read_arrays_as_xarray(filename: str):
+    def arrays_as_xarray(filename: str):
         """
         Reads in the file as array-formatted fields, using xarray.
         """
