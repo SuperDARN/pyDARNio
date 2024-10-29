@@ -126,7 +126,7 @@ class BorealisV1Read:
                     if k == 'bfiq_data':
                         bfiq_indices.extend([i] * data.shape[1] * data.shape[2])
                         data = data.reshape((data.shape[0], -1, data.shape[3]))
-                    if k in ['beam_nums', 'beam_azms', 'rx_main_phases', 'rx_intf_phases', 'tx_antenna_phases']:
+                    if k in ['beam_nums', 'beam_azms', 'rx_main_excitations', 'rx_intf_excitations', 'tx_excitations']:
                         data = data.flatten()
                     if k in ['intf_acfs', 'main_acfs', 'xcfs']:
                         data = data.reshape((-1,) + data.shape[1:])
@@ -219,8 +219,8 @@ class BorealisV1Read:
             "rawrf_data": ["rx_antennas", "sqn_timestamps", "sample_time"],
             "rx_center_freq": [],
             "rx_sample_rate": [],
-            "rx_main_phases": ["beam_nums", "rx_main_antennas"],
-            "rx_intf_phases": ["beam_nums", "rx_intf_antennas"],
+            "rx_main_excitations": ["beam_nums", "rx_main_antennas"],
+            "rx_intf_excitations": ["beam_nums", "rx_intf_antennas"],
             "samples_data_type": [],
             "scan_start_marker": ["aveperiod"],
             "scheduling_mode": [],
@@ -230,7 +230,7 @@ class BorealisV1Read:
             "station": [],
             "station_location": ["coordinates"],
             "tau_spacing": [],
-            "tx_antenna_phases": ["aveperiod", "tx_antennas"],
+            "tx_excitations": ["aveperiod", "tx_antennas"],
             "tx_pulse_len": [],
             "xcfs": ["beam_nums", "range_gates", "lag_numbers"]
         }
@@ -556,10 +556,10 @@ class BorealisV1Convert:
             # If present, txpow is a bitfield mapping of whether each antenna was transmitting. Antenna 15 is the
             # MSB, and Antenna 0 the LSB. Since txpow is a signed int in DMAP, -1 means all antennas transmitting.
             txpow = np.uint16()
-            if 'tx_antenna_phases' not in record_dict.keys():
-                raise ValueError(f'"tx_antenna_phases" not in record: {record_dict.keys()}')
-            for i in range(len(record_dict['tx_antenna_phases'])):
-                if np.abs(record_dict['tx_antenna_phases'][i]) > 0:
+            if 'tx_excitations' not in record_dict.keys():
+                raise ValueError(f'"tx_excitations" not in record: {record_dict.keys()}')
+            for i in range(len(record_dict['tx_excitations'])):
+                if np.abs(record_dict['tx_excitations'][i]) > 0:
                     txpow += 1 << i
 
             start_time = datetime.utcfromtimestamp(record_dict['sqn_timestamps'][0])
