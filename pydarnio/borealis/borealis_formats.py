@@ -2490,6 +2490,28 @@ class BorealisBfiq(BorealisBfiqv0_6):
             })
         return unshared_fields_dims
 
+    @classmethod
+    def site_specific_fields_generate(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        fields_generate = super().site_specific_fields_generate()
+        fields_generate['data_descriptors'] = lambda arrays, record_num: np.bytes_(
+                ['num_antenna_arrays', 'num_sequences', 'num_beams', 'num_samps']
+        )
+        return fields_generate
+
+    @classmethod
+    def array_specific_fields_generate(cls):
+        """
+        See BaseFormat class for description and use of this method.
+        """
+        fields_generate = super().array_specific_fields_generate()
+        fields_generate['data_descriptors'] = lambda records: np.bytes_(
+            ['num_records', 'num_antenna_arrays', 'max_num_sequences', 'max_num_beams', 'num_samps']
+        )
+        return fields_generate
+
 
 class BorealisAntennasIq(BorealisAntennasIqv0_6):
     """
