@@ -137,9 +137,11 @@ class BorealisRead():
             elif 'borealis_git_hash' in f[keys[0]].attrs.keys():
                 version = f[keys[0]].attrs['borealis_git_hash']
             elif 'borealis_git_hash' in f[keys[0]].keys():
-                version = f[keys[0]]['borealis_git_hash'][()][:].decode('utf-8')
+                version = f[keys[0]]['borealis_git_hash'][()][:]
             else:
                 raise borealis_exceptions.BorealisVersionError("Unable to determine Borealis version")
+        if isinstance(version, bytes):
+            version = version.decode('utf-8')
         self.version = [int(x) for x in version.lstrip('v').split('-')[0].split('.')]
         # version is 'v0.6.1-abcdefg' or similar
 
@@ -380,6 +382,8 @@ class BorealisWrite():
             version = borealis_data['borealis_git_hash']
         else:
             version = borealis_data[0]['borealis_git_hash']
+        if isinstance(version, bytes):
+            version = version.decode('utf-8')
         self.version = [int(x) for x in version.lstrip('v').split('-')[0].split('.')]
 
         if self.version[0] < 1:
