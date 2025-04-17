@@ -1,10 +1,10 @@
 # DMap structured SuperDARN data file I/O
----
 
 Data Map (DMap) is a binary self-describing format that was developed by Rob Barnes. 
 This format is currently the primary format used by SuperDARN. 
 For more information on DMap please see [RST Documentation](https://radar-software-toolkit-rst.readthedocs.io/en/latest/).
 Types of files used by SuperDARN which are usually accessed in DMap format are:
+
 - IQDAT
 - RAWACF
 - FITACF
@@ -14,63 +14,88 @@ Types of files used by SuperDARN which are usually accessed in DMap format are:
 
 This tutorial will focus on reading in DMap structured files using pyDARNio, including how to read compressed files and access common data fields.
 
-## Reading with SDarnRead
+## The basics
 
-The basic code to read in a DMap structured file is as follows:
+The basic code to read and write a DMap structured file is as follows:
 ```python
 import pydarnio
 
-file = "path/to/file"
-reader = pydarnio.SDarnRead(file)
+file = "path/to/rawacf_file"
+data = pydarnio.read_rawacf(file)
+outfile = "path/to/outfile.rawacf"
+pydarnio.write_rawacf(data, outfile)
 ```
-which puts the file contents into a Python object called `reader`. 
+which puts the file contents into `data`, then writes out to `"path/to/outfile.rawacf". `data` will be a list of dictionaries, 
+where each dictionary is a DMAP record. The supported reading functions are:
 
-Now you need to tell it what kind of file it is. For instance, if the file you were reading in is a FITACF file, you would write something like:
-```python
-fitacf_data = reader.read_fitacf()
-```
-where the named variable `fitacf_data` is a python dictionary list containing all the data in the file. If you were reading a different kind of file, you would need to use the methods `read_iqdat`, `read_rawacf`, `read_grid`, `read_map`, or `read_snd` for their respective filetypes.
+- `read_iqdat`, 
+- `read_rawacf`, 
+- `read_fitacf`, 
+- `read_grid`, 
+- `read_map`,  
+- `read_snd`, and
+- `read_dmap`.
 
-### Reading a compressed file
+The supported writing functions are:
 
-To read a compressed file like **bz2** (commonly used for SuperDARN data products), you will need to use [bz2 library](https://docs.python.org/3/library/bz2.html). 
-The `SDarnRead` class allows the user to provide the file data as a stream of data which is what the **bz2** returns when it reads a compressed file: 
-```python
-import bz2
-import pydarnio
-
-fitacf_file = "path/to/file.bz2"
-with bz2.open(fitacf_file) as fp:
-      fitacf_stream = fp.read()
-
-reader = pydarnio.SDarnRead(fitacf_stream, True)
-records = reader.read_fitacf()
-```
+- `write_iqdat`, 
+- `write_rawacf`,
+- `write_fitacf`, 
+- `write_grid`, 
+- `write_map`, 
+- `write_snd`, and
+- `write_dmap`.
 
 ### Accessing data fields
 To see the names of the variables you've loaded in and now have access to, try using the `keys()` method:
 ```python
-print(records[0].keys())
+print(data[0].keys())
 ```
 which will tell you all the variables in the first [0th] record.
 
 Let's say you loaded in a MAP file, and wanted to grab the cross polar-cap potentials for each record:
 ```python
+import pydarnio
 file = "20150302.n.map"
-reader = pydarnio.SDarnRead(file)
-map_data = reader.read_map()
+map_data = pydarnio.read_map(file)
 
-cpcps=[i['pot.drop'] for i in map_data]
+cpcps=[rec['pot.drop'] for rec in map_data]
 ```
-### Other Examples
+
+## I/O on a compressed file
+
+pyDARNio will handle compressing and decompressing `.bz2` files seamlessly, detecting the compression via the file extension. E.g.
+```python
+import pydarnio
+fitacf_file = "path/to/file.bz2"
+data = pydarnio.read_fitacf(fitacf_file)
+dmap.write_fitacf(data, "temp.fitacf.bz2")
+```
+will read in the compressed file, then also write out a new compressed file.
+
+## Generic I/O
+pyDARNio supports generic DMap I/O, without verifying the field names and types. The file must still
+be properly formatted as a DMap file, but otherwise no checks are conducted.
+
+**NOTE:** When using the generic writing function `write_dmap`, scalar fields will possibly be resized; e.g., the `stid`
+field may be stored as an 8-bit integer, as opposed to a 16-bit integer as usual. As such, reading with a specific method
+(e.g. `read_fitacf`) on a file written using `write_dmap` will likely not pass the DMap consistency checks.
+
+```python
+import pydarnio
+generic_file = "path/to/file"  # can be iqdat, rawacf, fitacf, grid, map, snd, and optionally .bz2 compressed
+data = pydarnio.read_dmap(generic_file)
+pydarnio.write_dmap(data, "temp.generic.fitacf")  # fitacf as an example
+data2 = pydarnio.read_rawacf("temp.generic.fitacf")  # This will likely fail due to different types for scalar fields
+```
+
+## Other Examples
 
 Other examples of using pyDARNio with file reading is for reading in multiple 2-hour files, sorting them, and concatenating the data together.
 For example, you may do something like this, using the **glob** library:
 
 ```python
-import bz2 
 import pydarnio 
-
 from glob import glob
 
 fitacf_files = glob('path/to/fitacf/files/<date>*<radar>*.fitacf.bz2')
@@ -80,36 +105,7 @@ data = []
 fitacf_files.sort()
 print("Reading in fitacf files")
 for fitacf_file in fitacf_files:
-    with bz2.open(fitacf_file) as fp:
-        fitacf_stream = fp.read()
-
-    reader = pydarnio.SDarnRead(fitacf_stream, True)
-    records = reader.read_fitacf()
-    data += records
+    data += pydarnio.read_fitacf(fitacf_file)
 print("Reading complete...")
+dmap.write_fitacf(data, "path/to/fitacf/files/<date>.<radar>.fitacf.bz2")  # Write the concatenated data together
 ```
-
-### DMapRead
-
-In pyDARNio, there also exists a class called `DMapRead`, which you can use in place of SDarnRead to read in any generic DMap structured file. However, pyDARNio won't test its integrity as it doesn't know what file it's supposed to be. If you're reading a SuperDARN file from one of the official data mirrors, then it is best to use SDarnRead in general.
-
-## Writing with SDarnWrite
-
-Very similarly to reading, DMap files can be written to file with a few simple commands.
-
-The basic code to write out a DMap structured file is as follows:
-```python
-import pydarnio
-
-data = ... # First you must get the records from a file, using SDarnRead()
-outfile = "path/to/file"
-writer = pydarnio.SDarnWrite(data, outfile)
-```
-which conducts some basic data integrity checks and stores in the object `writer`. 
-
-Now you need to tell it what kind of file it is. For instance, if the file you were reading in is a FITACF file, you would write something like:
-```python
-writer.write_fitacf()
-```
-If you were writing a different kind of file, you would need to use the methods `write_iqdat`, `write_rawacf`, `write_grid`, `write_map` or `write_snd` for their respective filetypes.
-These method calls will also check to ensure that the `data` you pass in is valid for the given file type.

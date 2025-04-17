@@ -29,29 +29,17 @@ If wish to get access to SuperDARN data please read the [SuperDARN data access d
 Please make sure to also read the documentation on [**citing SuperDARN and pydarn**](https://pydarnio.readthedocs.io/en/latest/user/citing/). 
 
 As a quick tutorial on using pyDARNio to read a non-compressed file: 
-```python
+```python3
 import pydarnio
-
-# read a non-compressed file
 fitacf_file = '20180220.C0.rkn.stream.fitacf'
-
-# pyDARNio functions to read a fitacf file
-reader = pydarnio.SDarnRead(fitacf_file)
-records = reader.read_fitacf()
+records = pydarnio.read_fitacf(fitacf_file)
 ```
 
 or to read a compressed file:
-``` python
-import bz2
+``` python3
 import pydarnio
-# read in compressed file
-fitacf_file = '20180220.C0.rkn.stream.fitacf.bz2'
-with bz2.open(fitacf_file) as fp: 
-      fitacf_stream = fp.read()
-
-# pyDARNio functions to read a fitacf file stream
-reader = pydarnio.SDarnRead(fitacf_stream, True)
-records = reader.read_fitacf()
+fitacf_file = '20180220.C0.rkn.stream.fitacf.bz2'  # note the .bz2 compression
+records = pydarnio.read_fitacf(fitacf_file)
 ```
 
 For more information and tutorials on pyDARNio please see the [tutorial section](https://pydarnio.readthedocs.io/en/latest/)
@@ -61,7 +49,7 @@ For more information and tutorials on pyDARNio please see the [tutorial section]
 pyDARNio is always looking for testers and developers keen on learning python, github, and/or SuperDARN data visualizations! 
 Here are some ways to get started: 
 
-  - **Testing Pull Request**: to determine which [pull requests](https://github.com/SuperDARN/pyDARNio/pulls) need to be tested right away, filter them by their milestones (v1.2.0 is currently highest priority).
+  - **Testing Pull Request**: to determine which [pull requests](https://github.com/SuperDARN/pyDARNio/pulls) need to be tested right away, filter them by their milestones.
   - **Getting involved in projects**: if you are looking to help in a specific area, look at pyDARNio's [projects tab](https://github.com/SuperDARN/pyDARNio/projects). The project you are interested in will give you information on what is needed to reach completion. This includes things currently in progress, and those awaiting reviews. 
   - **Answer questions**: if you want to try your hand at answering some pyDARNio questions, or adding to the discussion, look at pyDARNio's [issues](https://github.com/SuperDARN/pyDARNio/issues) and filter by labels.
   - **Become a developer**: if you want to practice those coding skills and add to the library, look at pyDARNio [issues](https://github.com/SuperDARN/pyDARNio/issues) and filter by milestone's to see what needs to get done right away. 

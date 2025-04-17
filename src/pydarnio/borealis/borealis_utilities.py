@@ -261,9 +261,9 @@ class BorealisUtilities():
         """
         incorrect_types_check = {param: str(attributes_type_dict[param])
                                  for param in attributes_type_dict.keys()
-                                 if type(record[param]) !=
+                                 if type(record[param]) is not
                                  attributes_type_dict[param] and
-                                 record[param].shape is not None}
+                                 getattr(record[param], 'shape', None) is not None}
 
         incorrect_types_check.update({param: 'np.ndarray of ' +
                                       str(datasets_type_dict[param])
@@ -321,9 +321,9 @@ class BorealisUtilities():
 
         incorrect_types_check = {param: str(attributes_type_dict[param])
                                  for param in attributes_type_dict.keys()
-                                 if type(file_data[param]) !=
+                                 if type(file_data[param]) is not
                                  attributes_type_dict[param] and
-                                 file_data[param].shape is not None}
+                                 getattr(file_data[param], "shape", None) is not None}
 
         datasets_type_dict_keys = sorted(list(datasets_type_dict.keys()))
         np_array_types = [isinstance(file_data[param], np.ndarray) for param in
