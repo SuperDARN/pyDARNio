@@ -112,7 +112,8 @@ class BorealisV1Read:
             rec_names.remove('metadata')
             field_names = sorted(list(f[rec_names[0]].keys()))
             for metadata_name in metadata.keys():
-                field_names.remove(metadata_name)
+                if metadata_name in field_names:
+                    field_names.remove(metadata_name)
 
             fields_lists = {k: list() for k in field_names}
             for i, name in enumerate(rec_names):
@@ -185,7 +186,7 @@ class BorealisV1Read:
             "rx_main_antennas": ("main_antenna", ""),
             "rx_intf_antennas": ("intf_antenna", ""),
             "sample_time": ("sample_time", "μs"),
-            "sqn_timestamps": ("sequence", ""),
+            "sqn_timestamps": ("sqn_timestamps", ""),
             "tx_antennas": ("tx_antenna", ""),
         }
         data_fields = {
