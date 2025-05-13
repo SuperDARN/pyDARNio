@@ -268,17 +268,26 @@ class BorealisConvert(BorealisRead):
         Raises
         ------
         BorealisConversionTypesError
+        BorealisConvert2IqdatError
         """
         if self.sdarn_filetype == 'iqdat':
             if self.version[0] < 1:
-                if self._is_convertible_to_iqdat():
-                    self._convert_bfiq_to_iqdat()
+                if self.borealis_filetype != 'bfiq':
+                    raise borealis_exceptions.BorealisConversionTypesError(
+                        self.sdarn_filename, self.borealis_filetype,
+                        self.__allowed_conversions)
+                self._is_convertible_to_iqdat()  # raises Error if not convertible
+                self._convert_bfiq_to_iqdat()
             else:
                 self._sdarn_dmap_records = BorealisV1Convert.bfiq_to_dmap(self.borealis_filename)
         elif self.sdarn_filetype == 'rawacf':
             if self.version[0] < 1:
-                if self._is_convertible_to_rawacf():
-                    self._convert_rawacf_to_rawacf()
+                if self.borealis_filetype != 'rawacf':
+                    raise borealis_exceptions.BorealisConversionTypesError(
+                        self.sdarn_filename,
+                        self.borealis_filetype,
+                        self.__allowed_conversions)
+                self._convert_rawacf_to_rawacf()
             else:
                 self._sdarn_dmap_records = BorealisV1Convert.rawacf_to_dmap(self.borealis_filename)
         else:  # nothing else is currently supported
@@ -286,147 +295,25 @@ class BorealisConvert(BorealisRead):
                 self.sdarn_filename, self.borealis_filetype,
                 self.__allowed_conversions)
 
-    def _is_convertible_to_iqdat(self) -> bool:
+    def _is_convertible_to_iqdat(self):
         """
         Checks if the file is convertible to iqdat.
 
         The file is convertible if:
-            - the origin filetype is bfiq
-            - the blanked_samples array = pulses array for all records
             - the pulse_phase_offset array contains all zeroes for all records
 
         Raises
         ------
-        BorealisConversionTypesError
         BorealisConvert2IqdatError
-
-        Returns
-        -------
-        True if convertible to the IQDAT format
         """
-        if self.borealis_filetype != 'bfiq':
-            raise borealis_exceptions.BorealisConversionTypesError(
-                self.sdarn_filename, self.borealis_filetype,
-                self.__allowed_conversions)
-        else:  # There are some specific things to check
-            for record_key, record in self.borealis_records.items():
-                sample_spacing = int(record['tau_spacing'] /
-                                     record['tx_pulse_len'])
-
-                # Borealis git tag version numbers. If not a tagged version,
-                # then use 255.255
-                if record['borealis_git_hash'][0] == 'v':  # tagged version, non-tagged versions have hexadecimal
-                    version = record['borealis_git_hash'].split('-')[0].split('.')
-                    borealis_major_revision = version[0][1:]  # strip off the 'v'
-                    borealis_minor_revision = version[1]
-                else:
-                    borealis_major_revision = 255
-                    borealis_minor_revision = 255
-
-                if borealis_major_revision == 0 and borealis_minor_revision <= 5:
-                    # Bfiq generated with borealis v0.5 or older
-                    blanked = record['pulses'] * sample_spacing
-                else:
-                    # Bfiq generated with borealis v0.6 or newer, or untagged version
-                    normal_blanked_1 = record['pulses'] * sample_spacing
-                    if np.array_equal(normal_blanked_1, record['blanked_samples']):
-                        # If file generated with untagged borealis version, it could be like v0.5
-                        # and still have valid blanked samples, so we check that
-                        blanked = normal_blanked_1
-                    else:
-                        normal_blanked_2 = normal_blanked_1 + 1
-                        blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
-                        blanked = np.sort(blanked)
-
-                if not np.array_equal(record['blanked_samples'], blanked):
-                    raise borealis_exceptions.\
-                            BorealisConvert2IqdatError(
-                                'Increased complexity: Borealis bfiq file'
-                                ' record {} blanked_samples {} is not correct'
-                                ' for pulses array converted to sample number '
-                                '{} * {}.'.format(record_key,
-                                                  record['blanked_samples'],
-                                                  record['pulses'],
-                                                  int(record['tau_spacing'] /
-                                                      record['tx_pulse_len'])))
-                if not all([x == 0 for x in record['pulse_phase_offset']]):
-                    raise borealis_exceptions.\
-                            BorealisConvert2IqdatError(
-                                'Increased complexity: Borealis bfiq file '
-                                'record {} pulse_phase_offset {} contains '
-                                'non-zero values.'.format(
-                                    record_key, record['pulse_phase_offset']))
-        return True
-
-    def _is_convertible_to_rawacf(self) -> bool:
-        """
-        Checks if the file is convertible to rawacf.
-
-        The file is convertible if:
-            - the origin filetype is rawacf
-            - the blanked_samples array = pulses array for all records with Borealis v0.5 or older;
-            - the blanked_samples array is the same as the pulses array * sample number, but also
-              blanks the sample after each pulse, for Borealis v0.6 or newer
-            - the pulse_phase_offset array contains all zeroes for all records
-
-        Raises
-        ------
-        BorealisConversionTypesError
-        BorealisConvert2RawacfError
-
-        Returns
-        -------
-        True if convertible to the RAWACF format
-        """
-        if self.borealis_filetype != 'rawacf':
-            raise borealis_exceptions.\
-                    BorealisConversionTypesError(self.sdarn_filename,
-                                                 self.borealis_filetype,
-                                                 self.__allowed_conversions)
-        else:  # There are some specific things to check
-            
-            for record_key, record in self.borealis_records.items():
-                sample_spacing = int(record['tau_spacing'] /
-                                     record['tx_pulse_len'])
-
-                # Borealis git tag version numbers. If not a tagged version,
-                # then use 255.255
-                if record['borealis_git_hash'][0] == 'v':  # tagged version, non-tagged versions have hexadecimal
-                    version = record['borealis_git_hash'].split('-')[0].split('.')
-                    borealis_major_revision = version[0][1:]  # strip off the 'v'
-                    borealis_minor_revision = version[1]
-                else:
-                    borealis_major_revision = 255
-                    borealis_minor_revision = 255
-
-                if borealis_major_revision == 0 and borealis_minor_revision <= 5:
-                    # Rawacf generated with borealis v0.5 or older
-                    blanked = record['pulses'] * sample_spacing
-                else:
-                    # Rawacf generated with borealis v0.6 or newer, or untagged version
-                    normal_blanked_1 = record['pulses'] * sample_spacing
-                    if np.array_equal(normal_blanked_1, record['blanked_samples']):
-                        # If file generated with untagged borealis version, it could be like v0.5
-                        # and still have valid blanked samples, so we check that
-                        blanked = normal_blanked_1
-                    else:
-                        normal_blanked_2 = normal_blanked_1 + 1
-                        blanked = np.concatenate((normal_blanked_1, normal_blanked_2))
-                        blanked = np.sort(blanked)
-
-                if not np.array_equal(record['blanked_samples'], blanked):
-                    raise borealis_exceptions.\
-                            BorealisConvert2RawacfError(
-                                'Increased complexity: Borealis rawacf file'
-                                ' record {} blanked_samples {} is not correct'
-                                ' for pulses array converted to sample number '
-                                '{} * {}.'.format(record_key,
-                                                  record['blanked_samples'],
-                                                  record['pulses'],
-                                                  int(record['tau_spacing'] /
-                                                      record['tx_pulse_len'])))
-
-        return True
+        for record_key, record in self.borealis_records.items():
+            if not all([x == 0 for x in record['pulse_phase_offset']]):
+                raise borealis_exceptions.\
+                        BorealisConvert2IqdatError(
+                            'Borealis bfiq file '
+                            'record {} pulse_phase_offset {} contains '
+                            'non-zero values.'.format(
+                                record_key, record['pulse_phase_offset']))
 
     def _convert_bfiq_to_iqdat(self):
         """
