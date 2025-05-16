@@ -850,8 +850,9 @@ class BorealisConvert(BorealisRead):
                             range(0, data_dimensions[1]))
                             ).astype(np.int16),
                 'acfd': correlation_dict['main_acfs'],
-                'xcfd': correlation_dict['xcfs']
             }
+            if 'xcfs' in correlation_dict:
+                sdarn_record_dict['xcfd'] = correlation_dict['xcfs']
             record_dict_list.append(sdarn_record_dict)
 
         return record_dict_list
