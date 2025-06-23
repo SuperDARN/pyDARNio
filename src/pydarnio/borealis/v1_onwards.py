@@ -127,7 +127,7 @@ class BorealisV1Read:
                     if k == 'bfiq_data':
                         bfiq_indices.extend([i] * data.shape[1] * data.shape[2])
                         data = data.reshape((data.shape[0], -1, data.shape[3]))
-                    if k in ['beam_nums', 'beam_azms', 'rx_main_excitations', 'rx_intf_excitations', 'tx_excitations']:
+                    if k in ['beam_nums', 'beam_azms', 'tx_excitations']:
                         data = data.flatten()
                     if k in ['intf_acfs', 'main_acfs', 'xcfs']:
                         data = data.reshape((-1,) + data.shape[1:])
@@ -138,6 +138,7 @@ class BorealisV1Read:
             if k in ['antennas_iq_data', 'bfiq_data', 'rawrf_data']:
                 rec_dict[k] = np.concatenate(v, axis=1)
             elif k in ['beam_nums', 'beam_azms', 'pulse_phase_offset', 'sqn_timestamps',
+                       'rx_main_excitations', 'rx_intf_excitations',
                        'intf_acfs', 'main_acfs', 'xcfs']:
                 rec_dict[k] = np.concatenate(v, axis=0)
             else:
