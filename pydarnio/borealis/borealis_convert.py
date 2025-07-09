@@ -46,7 +46,7 @@ import numpy as np
 from datetime import datetime
 from typing import Union
 
-from pydarnio import (borealis_exceptions, BorealisRead, write_iqdat, write_rawacf)
+import pydarnio
 
 pyDARNio_log = logging.getLogger('pyDARNio')
 
@@ -97,7 +97,7 @@ code_to_stid = {
 }
 
 
-class BorealisConvert(BorealisRead):
+class BorealisConvert(pydarnio.BorealisRead):
     """
     Class for converting Borealis filetypes to SDARN DMap filetypes.
 
@@ -217,7 +217,7 @@ class BorealisConvert(BorealisRead):
             if borealis_slice_id is not None:
                 self._borealis_slice_id = int(borealis_slice_id)
             else:
-                raise borealis_exceptions.BorealisStructureError(
+                raise pydarnio.borealis_exceptions.BorealisStructureError(
                     'The slice_id could not be found in the file: Borealis '
                     'files produced before Borealis v0.5 must provide the '
                     'slice_id value to the BorealisConvert class.') from kerr
@@ -228,12 +228,12 @@ class BorealisConvert(BorealisRead):
             self._sdarn_filetype = self.__allowed_conversions[
                     self.borealis_filetype]
         except KeyError:
-            raise borealis_exceptions.BorealisConversionTypesError(
+            raise pydarnio.borealis_exceptions.BorealisConversionTypesError(
                 self.sdarn_filename, self.borealis_filetype,
                 self.__allowed_conversions)
 
         if self.borealis_filename == self.sdarn_filename:
-            raise borealis_exceptions.ConvertFileOverWriteError(
+            raise pydarnio.borealis_exceptions.ConvertFileOverWriteError(
                     self.borealis_filename)
         self._write_to_sdarn()
 
@@ -298,9 +298,9 @@ class BorealisConvert(BorealisRead):
 
         self._convert_records_to_dmap()
         if self.sdarn_filetype == 'iqdat':
-            write_iqdat(self.sdarn_dict, self.sdarn_filename)
+            pydarnio.write_iqdat(self.sdarn_dict, self.sdarn_filename)
         elif self.sdarn_filetype == 'rawacf':
-            write_rawacf(self.sdarn_dict, self.sdarn_filename)
+            pydarnio.write_rawacf(self.sdarn_dict, self.sdarn_filename)
         return self.sdarn_filename
 
     def _convert_records_to_dmap(self):
@@ -319,7 +319,7 @@ class BorealisConvert(BorealisRead):
             if self._is_convertible_to_rawacf():
                 self._convert_rawacf_to_rawacf()
         else:  # nothing else is currently supported
-            raise borealis_exceptions.BorealisConversionTypesError(
+            raise pydarnio.borealis_exceptions.BorealisConversionTypesError(
                 self.sdarn_filename, self.borealis_filetype,
                 self.__allowed_conversions)
 
@@ -342,7 +342,7 @@ class BorealisConvert(BorealisRead):
         True if convertible to the IQDAT format
         """
         if self.borealis_filetype != 'bfiq':
-            raise borealis_exceptions.BorealisConversionTypesError(
+            raise pydarnio.borealis_exceptions.BorealisConversionTypesError(
                 self.sdarn_filename, self.borealis_filetype,
                 self.__allowed_conversions)
         else:  # There are some specific things to check
@@ -376,7 +376,7 @@ class BorealisConvert(BorealisRead):
                         blanked = np.sort(blanked)
 
                 if not np.array_equal(record['blanked_samples'], blanked):
-                    raise borealis_exceptions.\
+                    raise pydarnio.borealis_exceptions.\
                             BorealisConvert2IqdatError(
                                 'Increased complexity: Borealis bfiq file'
                                 ' record {} blanked_samples {} is not correct'
@@ -387,7 +387,7 @@ class BorealisConvert(BorealisRead):
                                                   int(record['tau_spacing'] /
                                                       record['tx_pulse_len'])))
                 if not all([x == 0 for x in record['pulse_phase_offset']]):
-                    raise borealis_exceptions.\
+                    raise pydarnio.borealis_exceptions.\
                             BorealisConvert2IqdatError(
                                 'Increased complexity: Borealis bfiq file '
                                 'record {} pulse_phase_offset {} contains '
@@ -416,7 +416,7 @@ class BorealisConvert(BorealisRead):
         True if convertible to the RAWACF format
         """
         if self.borealis_filetype != 'rawacf':
-            raise borealis_exceptions.\
+            raise pydarnio.borealis_exceptions.\
                     BorealisConversionTypesError(self.sdarn_filename,
                                                  self.borealis_filetype,
                                                  self.__allowed_conversions)
@@ -452,7 +452,7 @@ class BorealisConvert(BorealisRead):
                         blanked = np.sort(blanked)
 
                 if not np.array_equal(record['blanked_samples'], blanked):
-                    raise borealis_exceptions.\
+                    raise pydarnio.borealis_exceptions.\
                             BorealisConvert2RawacfError(
                                 'Increased complexity: Borealis rawacf file'
                                 ' record {} blanked_samples {} is not correct'
@@ -507,7 +507,7 @@ class BorealisConvert(BorealisRead):
                 recs.extend(record_dict_list)
             self._sdarn_dict = recs
         except Exception as e:
-            raise borealis_exceptions.BorealisConvert2IqdatError(e) from e
+            raise pydarnio.borealis_exceptions.BorealisConvert2IqdatError(e) from e
 
     @staticmethod
     def __convert_bfiq_record(borealis_slice_id: int,
@@ -769,7 +769,7 @@ class BorealisConvert(BorealisRead):
                 recs.extend(record_dict_list)
             self._sdarn_dict = recs
         except Exception as e:
-            raise borealis_exceptions.BorealisConvert2RawacfError(e) from e
+            raise pydarnio.borealis_exceptions.BorealisConvert2RawacfError(e) from e
 
     @staticmethod
     def __convert_rawacf_record(borealis_slice_id: int,
