@@ -544,11 +544,11 @@ class IntegrationBorealisSDARN(unittest.TestCase):
         os.remove(self.iqdat_site_darn_file)
         os.remove(self.bfiq_file)
 
-        for record_num, record in enumerate(array_converter.sdarn_dict):
+        for record_num, record in enumerate(array_converter.dmap_records):
             dictionaries_are_same =\
                     self.check_dictionaries_are_same(record,
                                                      site_converter.
-                                                     sdarn_dict[record_num])
+                                                     dmap_records[record_num])
             self.assertTrue(dictionaries_are_same)
 
         del (array_converter, site_converter, darn_reader, iqdat_site_records,
@@ -584,11 +584,11 @@ class IntegrationBorealisSDARN(unittest.TestCase):
         os.remove(self.rawacf_site_darn_file)
         os.remove(self.rawacf_file)
 
-        for record_num, record in enumerate(array_converter.sdarn_dict):
+        for record_num, record in enumerate(array_converter.dmap_records):
             dictionaries_are_same =\
                     self.check_dictionaries_are_same(record,
                                                      site_converter.
-                                                     sdarn_dict[record_num])
+                                                     dmap_records[record_num])
             self.assertTrue(dictionaries_are_same)
 
         del (array_converter, site_converter, darn_reader, rawacf_site_records,
