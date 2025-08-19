@@ -20,30 +20,38 @@ def read_dispatcher(source: Union[str, bytes], fmt: str, mode: str) -> Union[lis
     fmt: str
         DMAP format being read. One of `["dmap", "iqdat", "rawacf", "fitacf", "grid", "map", "snd"]`.
     mode: str
-        Mode in which to read the data, either `strict` or `lax`. In `strict` mode, any corruption
+        Mode in which to read the data, either `strict`, `lax`, or `sniff`. In `strict` mode, any corruption
         in the data will raise an error. In `lax` mode, all valid records will be returned in a tuple along with
-        the byte index of `source` where the corruption starts.
+        the byte index of `source` where the corruption starts. In `sniff` mode, `source` must be a `str`, and
+        only the first record will be read.
 
     Returns
     -------
     If `mode` is `strict`, returns `list[dict]` which is the parsed records.
     If `mode` is `lax`, returns `(list[dict], None | int)`, where the first element is the records which were parsed,
     and the second is the byte index where `source` was no longer a valid record of type `fmt`.
+    If `mode` is `sniff`, returns `dict` of the first record.
     """
     if fmt not in ["dmap", "iqdat", "rawacf", "fitacf", "grid", "map", "snd"]:
         raise ValueError(
             f"invalid fmt `{fmt}`: expected one of ['dmap', 'iqdat', 'rawacf', 'fitacf', 'grid', 'map', 'snd']"
         )
-    fn_name = f"read_{fmt}"
-    if isinstance(source, bytes):
-        fn_name += "_bytes"
-    elif not isinstance(source, str):
+
+    if mode not in ["strict", "lax", "sniff"]:
+        raise ValueError(f"invalid mode `{mode}`: expected `strict`, `lax`, or `sniff`")
+
+    if mode == "sniff" and not isinstance(source, str):
+        raise TypeError(f"invalid type for `source` {type(source)} in `sniff` mode: expected `str`")
+
+    if not isinstance(source, bytes) and not isinstance(source, str):
         raise TypeError(f"invalid type for `source` {type(source)}: expected `str` or `bytes`")
 
-    if mode == "lax":
-        fn_name += "_lax"
-    elif mode != "strict":
-        raise ValueError(f"invalid mode `{mode}`: expected `strict` or `lax`")
+    fn_name = (
+        f"{'sniff' if mode == 'sniff' else 'read'}"
+        f"_{fmt}"
+        f"{'_bytes' if isinstance(source, bytes) else ''}"
+        f"{'_lax' if mode == 'lax' else ''}"
+    )
 
     return getattr(dmap, fn_name)(source)
 
@@ -84,15 +92,17 @@ def read_dmap(source: Union[str, bytes], mode: str = "strict") -> Union[list[dic
         Where to read data from. If input is of type `str`, this is interpreted as the path to a file.
         If input is of type `bytes`, this is interpreted as the raw data itself.
     mode: str
-        Mode in which to read the data, either "strict" (default) or "lax". In "strict" mode, any corruption
+        Mode in which to read the data, either "strict" (default), "lax", or "sniff". In "strict" mode, any corruption
         in the data will raise an error. In "lax" mode, all valid records will be returned in a tuple along with
-        the byte index of `source` where the corruption starts.
+        the byte index of `source` where the corruption starts. In "sniff" mode, `source` must be a path, and
+        only the first record will be read.
 
     Returns
     -------
     If `mode` is `strict`, returns `list[dict]` which is the parsed records.
     If `mode` is `lax`, returns `(list[dict], None | int)`, where the first element is the records which were parsed,
     and the second is the byte index where `source` was no longer a valid record of type `fmt`.
+    If `mode` is `sniff`, returns `dict`, which is the first record.
     """
     return read_dispatcher(source, "dmap", mode)
 
@@ -107,15 +117,17 @@ def read_iqdat(source: Union[str, bytes], mode: str = "strict") -> Union[list[di
         Where to read data from. If input is of type `str`, this is interpreted as the path to a file.
         If input is of type `bytes`, this is interpreted as the raw data itself.
     mode: str
-        Mode in which to read the data, either "strict" (default) or "lax". In "strict" mode, any corruption
+        Mode in which to read the data, either "strict" (default), "lax", or "sniff". In "strict" mode, any corruption
         in the data will raise an error. In "lax" mode, all valid records will be returned in a tuple along with
-        the byte index of `source` where the corruption starts.
+        the byte index of `source` where the corruption starts. In "sniff" mode, `source` must be a path, and
+        only the first record will be read.
 
     Returns
     -------
     If `mode` is `strict`, returns `list[dict]` which is the parsed records.
     If `mode` is `lax`, returns `(list[dict], None | int)`, where the first element is the records which were parsed,
     and the second is the byte index where `source` was no longer a valid record of type `fmt`.
+    If `mode` is `sniff`, returns `dict`, which is the first record.
     """
     return read_dispatcher(source, "iqdat", mode)
 
@@ -130,15 +142,17 @@ def read_rawacf(source: Union[str, bytes], mode: str = "strict") -> Union[list[d
         Where to read data from. If input is of type `str`, this is interpreted as the path to a file.
         If input is of type `bytes`, this is interpreted as the raw data itself.
     mode: str
-        Mode in which to read the data, either "strict" (default) or "lax". In "strict" mode, any corruption
+        Mode in which to read the data, either "strict" (default), "lax", or "sniff". In "strict" mode, any corruption
         in the data will raise an error. In "lax" mode, all valid records will be returned in a tuple along with
-        the byte index of `source` where the corruption starts.
+        the byte index of `source` where the corruption starts. In "sniff" mode, `source` must be a path, and
+        only the first record will be read.
 
     Returns
     -------
     If `mode` is `strict`, returns `list[dict]` which is the parsed records.
     If `mode` is `lax`, returns `(list[dict], None | int)`, where the first element is the records which were parsed,
     and the second is the byte index where `source` was no longer a valid record of type `fmt`.
+    If `mode` is `sniff`, returns `dict`, which is the first record.
     """
     return read_dispatcher(source, "rawacf", mode)
 
@@ -153,15 +167,17 @@ def read_fitacf(source: Union[str, bytes], mode: str = "strict") -> Union[list[d
         Where to read data from. If input is of type `str`, this is interpreted as the path to a file.
         If input is of type `bytes`, this is interpreted as the raw data itself.
     mode: str
-        Mode in which to read the data, either "strict" (default) or "lax". In "strict" mode, any corruption
+        Mode in which to read the data, either "strict" (default), "lax", or "sniff". In "strict" mode, any corruption
         in the data will raise an error. In "lax" mode, all valid records will be returned in a tuple along with
-        the byte index of `source` where the corruption starts.
+        the byte index of `source` where the corruption starts. In "sniff" mode, `source` must be a path, and
+        only the first record will be read.
 
     Returns
     -------
     If `mode` is `strict`, returns `list[dict]` which is the parsed records.
     If `mode` is `lax`, returns `(list[dict], None | int)`, where the first element is the records which were parsed,
     and the second is the byte index where `source` was no longer a valid record of type `fmt`.
+    If `mode` is `sniff`, returns `dict`, which is the first record.
     """
     return read_dispatcher(source, "fitacf", mode)
 
@@ -176,15 +192,17 @@ def read_grid(source: Union[str, bytes], mode: str = "strict") -> Union[list[dic
         Where to read data from. If input is of type `str`, this is interpreted as the path to a file.
         If input is of type `bytes`, this is interpreted as the raw data itself.
     mode: str
-        Mode in which to read the data, either "strict" (default) or "lax". In "strict" mode, any corruption
+        Mode in which to read the data, either "strict" (default), "lax", or "sniff". In "strict" mode, any corruption
         in the data will raise an error. In "lax" mode, all valid records will be returned in a tuple along with
-        the byte index of `source` where the corruption starts.
+        the byte index of `source` where the corruption starts. In "sniff" mode, `source` must be a path, and
+        only the first record will be read.
 
     Returns
     -------
     If `mode` is `strict`, returns `list[dict]` which is the parsed records.
     If `mode` is `lax`, returns `(list[dict], None | int)`, where the first element is the records which were parsed,
     and the second is the byte index where `source` was no longer a valid record of type `fmt`.
+    If `mode` is `sniff`, returns `dict`, which is the first record.
     """
     return read_dispatcher(source, "grid", mode)
 
@@ -199,15 +217,17 @@ def read_map(source: Union[str, bytes], mode: str = "strict") -> Union[list[dict
         Where to read data from. If input is of type `str`, this is interpreted as the path to a file.
         If input is of type `bytes`, this is interpreted as the raw data itself.
     mode: str
-        Mode in which to read the data, either "strict" (default) or "lax". In "strict" mode, any corruption
+        Mode in which to read the data, either "strict" (default), "lax", or "sniff". In "strict" mode, any corruption
         in the data will raise an error. In "lax" mode, all valid records will be returned in a tuple along with
-        the byte index of `source` where the corruption starts.
+        the byte index of `source` where the corruption starts. In "sniff" mode, `source` must be a path, and
+        only the first record will be read.
 
     Returns
     -------
     If `mode` is `strict`, returns `list[dict]` which is the parsed records.
     If `mode` is `lax`, returns `(list[dict], None | int)`, where the first element is the records which were parsed,
     and the second is the byte index where `source` was no longer a valid record of type `fmt`.
+    If `mode` is `sniff`, returns `dict`, which is the first record.
     """
     return read_dispatcher(source, "map", mode)
 
@@ -222,15 +242,17 @@ def read_snd(source: Union[str, bytes], mode: str = "strict") -> Union[list[dict
         Where to read data from. If input is of type `str`, this is interpreted as the path to a file.
         If input is of type `bytes`, this is interpreted as the raw data itself.
     mode: str
-        Mode in which to read the data, either "strict" (default) or "lax". In "strict" mode, any corruption
+        Mode in which to read the data, either "strict" (default), "lax", or "sniff". In "strict" mode, any corruption
         in the data will raise an error. In "lax" mode, all valid records will be returned in a tuple along with
-        the byte index of `source` where the corruption starts.
+        the byte index of `source` where the corruption starts. In "sniff" mode, `source` must be a path, and
+        only the first record will be read.
 
     Returns
     -------
     If `mode` is `strict`, returns `list[dict]` which is the parsed records.
     If `mode` is `lax`, returns `(list[dict], None | int)`, where the first element is the records which were parsed,
     and the second is the byte index where `source` was no longer a valid record of type `fmt`.
+    If `mode` is `sniff`, returns `dict`, which is the first record.
     """
     return read_dispatcher(source, "snd", mode)
 
