@@ -132,6 +132,17 @@ As a note, this binary data can be compressed ~2x typically using zlib, or with 
 useful if sending data over a network where speed and bandwidth must be considered. Note that the binary writing functions
 don't compress automatically, an external package like `zlib` or `bzip2` must be used.
 
+## File "sniffing"
+If you only want to inspect a file, without actually needing access to all of the data, you can use the `read_[type]`
+functions in `"sniff"` mode. This will only read in the first record from a file, and works on both compressed and 
+non-compressed files. Note that this mode does not work with bytes objects directly.
+
+```python
+import pydarnio
+path = "path/to/file"
+first_rec = pydarnio.read_dmap(path, mode="sniff")
+```
+
 ## Other Examples
 
 Other examples of using pyDARNio with file reading is for reading in multiple 2-hour files, sorting them, and concatenating the data together.
