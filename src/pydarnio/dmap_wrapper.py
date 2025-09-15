@@ -42,10 +42,18 @@ def read_dispatcher(source: Union[str, bytes], fmt: str, mode: str) -> Union[lis
 
     if mode == "sniff" and not isinstance(source, str):
         raise TypeError(f"invalid type for `source` {type(source)} in `sniff` mode: expected `str`")
-
+    
     if not isinstance(source, bytes) and not isinstance(source, str):
         raise TypeError(f"invalid type for `source` {type(source)}: expected `str` or `bytes`")
 
+    # Construct the darn-dmap function name dynamically based on parameters:
+    # fn_name = [sniff|read]_[fmt][_bytes][_lax]
+    # All possibilites for, e.g., a FITACF file:
+    #   read_fitacf
+    #   read_fitacf_bytes
+    #   read_fitacf_lax
+    #   read_fitacf_bytes_lax
+    #   sniff_fitacf
     fn_name = (
         f"{'sniff' if mode == 'sniff' else 'read'}"
         f"_{fmt}"
@@ -79,7 +87,7 @@ def write_dispatcher(source: list[dict], fmt: str, outfile: Union[None, str]) ->
     elif isinstance(outfile, str):
         getattr(dmap, f"write_{fmt}")(source, outfile)
     else:
-        raise TypeError(f"invalid type for `outfile` {type(source)}: expected `str` or `None`")
+        raise TypeError(f"invalid type for `outfile` {type(outfile)}: expected `str` or `None`")
 
 
 def read_dmap(source: Union[str, bytes], mode: str = "strict") -> Union[list[dict], tuple[list[dict], Union[None, int]]]:
