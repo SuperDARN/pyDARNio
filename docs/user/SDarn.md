@@ -21,13 +21,14 @@ The basic code to read and write a DMap structured file is as follows:
 import pydarnio
 
 file = "path/to/rawacf_file"
-data = pydarnio.read_rawacf(file)
+data, _ = pydarnio.read_rawacf(file)  # returns `tuple[list[dict], Optional[int]]`
 outfile = "path/to/outfile.rawacf"
 pydarnio.write_rawacf(data, outfile)  # writes binary data to `outfile`
 raw_bytes = pydarnio.write_rawacf(data)  # returns a `bytes` object
 ```
-which puts the file contents into `data`, then writes out to `"path/to/outfile.rawacf". `data` will be a list of dictionaries, 
-where each dictionary is a DMAP record. The supported reading functions are:
+`pydarnio.read_rawacf(...)` reads the file into a list of dictionaries, returning the list as well as the byte where any corrupted records start.
+
+The supported reading functions are:
 
 - `read_iqdat`, 
 - `read_rawacf`, 
@@ -58,18 +59,18 @@ Let's say you loaded in a MAP file, and wanted to grab the cross polar-cap poten
 ```python
 import pydarnio
 file = "20150302.n.map"
-map_data = pydarnio.read_map(file)
+map_data, _ = pydarnio.read_map(file)
 
 cpcps=[rec['pot.drop'] for rec in map_data]
 ```
 
 ## I/O on a bz2 compressed file
 
-pyDARNio will handle compressing and decompressing `.bz2` files seamlessly, detecting the compression via the file extension. E.g.
+pyDARNio will handle compressing and decompressing `.bz2` files seamlessly, detecting the compression automatically. E.g.
 ```python
 import pydarnio
 fitacf_file = "path/to/file.bz2"
-data = pydarnio.read_fitacf(fitacf_file)
+data, _ = pydarnio.read_fitacf(fitacf_file)
 pydarnio.write_fitacf(data, "temp.fitacf.bz2")
 ```
 will read in the compressed file, then also write out a new compressed file. Note that compression on the writing side
@@ -86,18 +87,22 @@ field may be stored as an 8-bit integer, as opposed to a 16-bit integer as usual
 ```python
 import pydarnio
 generic_file = "path/to/file"  # can be iqdat, rawacf, fitacf, grid, map, snd, and optionally .bz2 compressed
-data = pydarnio.read_dmap(generic_file)
+data, _ = pydarnio.read_dmap(generic_file)
 pydarnio.write_dmap(data, "temp.generic.fitacf")  # fitacf as an example
-data2 = pydarnio.read_rawacf("temp.generic.fitacf")  # This will fail due to different types for scalar fields
+data2, bad_byte = pydarnio.read_rawacf("temp.generic.fitacf")  # This will fail due to different types for scalar fields
+assert bad_byte == 0  # The first record should be corrupted, i.e. not be a valid FITACF record
+assert len(data2) == 0  # No valid records encountered
 ```
 
 ## Handling corrupted data files
 The self-describing data format of DMap files makes it susceptible to corruption. The metadata fields which describe
 how to interpret the following bytes are very important, and so any corruption will lead to the remainder of the file being
-effectively useless. The I/O functions described above will raise an error if a corrupted record is encountered. However,
-in certain use cases, the non-corrupted data before the bad record may be of use. As such, a lax read can be done by
-specifying the `mode` parameter to the reading functions. These functions will not error on corrupted records in `lax` mode, 
-but rather return all the good records, as well as the byte where the corrupted records start.
+effectively useless. pyDARNio is able to handle corruption in two ways. The keyword argument `mode` of the `read_rawacf`, etc.
+functions allows you to choose how to handle corrupt records. 
+
+In `"lax"` mode (the default), no error is raised if a corrupt file is read, and the byte where the corrupted records start is 
+returned along with the non-corrupted records. 
+In `"strict"` mode, the I/O functions will raise an error if a corrupted record is encountered. 
 
 ```python
 import pydarnio
@@ -113,6 +118,26 @@ assert bad_byte is None
 In both uses of the above example, `data` will be a list of all records extracted from the file, but may be
 considerably smaller than the file.
 
+```python
+import pydarnio
+
+corrupted_file = "path/to/file"
+try:
+    data = pydarnio.read_dmap(corrupted_file, mode="strict")
+    had_error = False
+except:
+    had_error = True
+assert had_error
+
+good_file = "path/to/file"
+try:
+    data = pydarnio.read_dmap(good_file, mode="strict")
+    had_error = False
+except:
+    had_error = True
+assert had_error is False
+```
+
 ## Stream I/O
 pyDARNio also can conduct read/write operations from/to Python `bytes` objects directly. These bytes must be formatted in 
 accordance with the DMap format. Simply pass in a `bytes` object to any of the `read_[type]` functions instead of a path
@@ -121,11 +146,11 @@ and the input will be parsed.
 While not the recommended way to read data from a DMap file, the following example shows the use of these byte I/O functions:
 ```python
 import pydarnio
-file = "path/to/file"
+file = "path/to/file.fitacf"
 with open(file, 'rb') as f:  # 'rb' specifies to open the binary (b) file as read-only (r)
     raw_bytes = f.read()  # reads the file in its entirety
-data = pydarnio.read_dmap(raw_bytes)
-binary_data = pydarnio.write_dmap(data)
+data, _ = pydarnio.read_dmap(raw_bytes)
+binary_data = pydarnio.write_fitacf(data)
 assert binary_data == raw_bytes
 ```
 As a note, this binary data can be compressed ~2x typically using zlib, or with another compression utility. This is quite 
@@ -159,7 +184,7 @@ data = []
 fitacf_files.sort()
 print("Reading in fitacf files")
 for fitacf_file in fitacf_files:
-    data += pydarnio.read_fitacf(fitacf_file)
+    data += pydarnio.read_fitacf(fitacf_file)[0]  # ignore the bytes where corruption may start
 print("Reading complete...")
 pydarnio.write_fitacf(data, "path/to/fitacf/files/<date>.<radar>.fitacf.bz2")  # Write the concatenated data together
 ```
