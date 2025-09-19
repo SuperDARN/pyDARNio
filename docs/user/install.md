@@ -4,8 +4,8 @@ author(s) Marina Schmidt-->
 ---
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) 
-[![Python 3.7](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/superdarn/pyDARNio)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/SuperDARN/pyDARNio)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4009470.svg)](https://doi.org/10.5281/zenodo.4009470)
 
 
@@ -32,10 +32,8 @@ You can check your python version with
 pyDARNio's setup will download the following dependencies: 
 
 - [Git](https://git-scm.com/) (For developers)
-- [pip3](https://help.dreamhost.com/hc/en-us/articles/115000699011-Using-pip3-to-install-Python3-modules)
+- [darn-dmap](https://github.com/SuperDARNCanada/dmap)
 - [NumPy](https://numpy.org/)
-- [pathlib2](https://docs.python.org/dev/library/pathlib.html)
-- [PyYAML](https://pyyaml.org/wiki/PyYAMLDocumentation)
 - [h5py](https://www.h5py.org/)
 
 ## Virtual Environments
@@ -56,14 +54,14 @@ Instructions can be found here [virtual environment](https://packaging.python.or
 
 !!! Note
     If you have multiple versions of python 3 on your machine, you can access a specific version by: `python<version number>`. 
-    For example, if you want to install python 3.7 virtual environment: `python3.7 -m pip install --user virtualenv`.
+    For example, if you want to install python 3.8 virtual environment: `python3.8 -m pip install --user virtualenv`.
 
 ### Anaconda Virtual Environment
 Instructions can be found here [conda environment](https://uoa-eresearch.github.io/eresearch-cookbook/recipe/2014/11/20/conda/) and installing [anaconda](https://docs.anaconda.com/anaconda/install/)
 
-1. `$ conda create -n yourenvname python=3.7 anaconda`
+1. `$ conda create -n yourenvname python=3.8 anaconda`
 2. `$ conda activate yourenvname`
-* `$ pip install pydarnio`
+3. `$ pip install pydarnio`
 
 #### Adding the environment to PyCharm
 
@@ -95,7 +93,7 @@ To install:
 `$ pip3 install . --user`
 
 !!! Note
-    If `pip --version` is pointing to python 3.7+ then you can use `pip install . --user` instead. 
+    If `pip --version` is pointing to python 3.8+ then you can use `pip install . --user` instead. 
 
 !!! Warning
     Do not install pyDARNio with `python setup.py install` as this may install other libraries pyDARNio requires in a local directory causing issues down the road.
@@ -119,7 +117,7 @@ $ mkdir venvs
 $ virtualenv -p python3.8 ~/venvs/py38
 $ echo "source $HOME/venvs/py38/bin/activate" >> ~/.bashrc
 ```
-Then open a new terminal and you should see `(pyy38)` in the prompt. 
+Then open a new terminal and you should see `(py38)` in the prompt. 
 
 Credit to this solution is Ashton Reimer, more details on the [issue #37](https://github.com/SuperDARN/pyDARNio/issues/37)
 

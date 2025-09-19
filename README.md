@@ -1,18 +1,18 @@
 ![pyDARNio](https://raw.githubusercontent.com/SuperDARN/pyDARNio/master/docs/imgs/pydarnio_logo.png)
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) 
-[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-360/) 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/superdarn/pyDARNio)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/SuperDARN/pyDARNio)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4009470.svg)](https://doi.org/10.5281/zenodo.4009470)
 
 Python data IO library for the Super Dual Auroral Radar Network (SuperDARN).
 
 ## Changelog
 
-## Version 1.3 - Release!
+## Version 2.0 - Release!
 
-This release includes changes to support Borealis v0.7 files,
-``snd`` files, and removes the deprecated ``deepdish`` dependency.
+This release includes changes to support Borealis v1.0, files,
+the ``srng`` field in DMAP files, and uses ``darn-dmap`` to greatly increase DMAP I/O speeds.
 
 ## Documentation
 
@@ -32,14 +32,14 @@ As a quick tutorial on using pyDARNio to read a non-compressed file:
 ```python3
 import pydarnio
 fitacf_file = '20180220.C0.rkn.stream.fitacf'
-records = pydarnio.read_fitacf(fitacf_file)
+records, _ = pydarnio.read_fitacf(fitacf_file)
 ```
 
 or to read a compressed file:
 ``` python3
 import pydarnio
 fitacf_file = '20180220.C0.rkn.stream.fitacf.bz2'  # note the .bz2 compression
-records = pydarnio.read_fitacf(fitacf_file)
+records, _ = pydarnio.read_fitacf(fitacf_file)
 ```
 
 For more information and tutorials on pyDARNio please see the [tutorial section](https://pydarnio.readthedocs.io/en/latest/)
