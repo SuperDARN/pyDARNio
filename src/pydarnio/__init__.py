@@ -42,7 +42,7 @@ from .exceptions.warning_formatting import standard_warning_format
 from .exceptions.warning_formatting import only_message_warning_format
 
 # DMap I/O
-from dmap import (
+from .dmap_wrapper import (
     read_iqdat,
     read_rawacf,
     read_fitacf,
