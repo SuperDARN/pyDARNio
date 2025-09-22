@@ -4,7 +4,6 @@ Data Map (DMap) is a binary self-describing format that was developed by Rob Bar
 This format is currently the primary format used by SuperDARN. 
 For more information on DMap please see [RST Documentation](https://radar-software-toolkit-rst.readthedocs.io/en/latest/).
 Types of files used by SuperDARN which are usually accessed in DMap format are:
-
 - IQDAT
 - RAWACF
 - FITACF
