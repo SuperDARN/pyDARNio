@@ -20,36 +20,7 @@ supplemented by the additional permissions listed below.
 
 """
 
-from os import path
-from setuptools import setup, find_packages
-import sys
-from subprocess import check_call
-from setuptools.command.install import install, orig
-
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
-
+import setuptools
 
 # Setup information
-setup(
-    name="pydarnio",
-    version="1.3",
-    long_description=long_description,
-    long_description_content_type='text/markdown',
-    description="Python library for reading and writing SuperDARN data",
-    url='https://github.com/SuperDARN/pyDARNio.git',
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
-        'Programming Language :: Python :: 3.8'],
-    python_requires='>=3.8',
-    packages=find_packages(exclude=['docs', 'test']),
-    author="SuperDARN",
-    include_package_data=True,
-    setup_requires=['pyyaml', 'numpy',
-                    'h5py>=3.11.0', 'pathlib2'],
-    # pyyaml library install
-    install_requires=['pyyaml', 'numpy',
-                      'h5py>=3.11.0', 'pathlib2']
-)
+setuptools.setup()
