@@ -10,41 +10,42 @@ HDF5, see the website of the [HDF Group](www.hdfgroup.org).
 
 The Borealis software writes data files in HDF5 format. The files written on
 site are written record-by-record, in a similar style to the SuperDARN standard
-dmap format. These files are named with a .site extension and are said to be
-`'site'` structured.
+dmap format. As of Borealis v1.0, this is the only structure of HDF5 file supported by Borealis.
 
-After recording, the files are array restructured using pyDARNio, for distribution.
-The restructuring is done to make the files more human-readable, and it also
-reduces the file size. After restructuring the files are said to be `'array'`
-structured.
+## Structure of the data
 
-Restructuring reduces repetition by writing file-wide parameters only once,
-and writing integration-specific parameters in arrays where the first
-dimension is the record index.
+Prior to Borealis v1.0, two structures of data file were supported: "site" and "array". The site
+structure stores data record-by-record, with some metadata fields redundantly stored in each
+record of the file. To reduce file sizes, array-structured files were created. These files
+group all like-data from across records into single datasets, zero-padding where necessary to 
+create numpy arrays. Static metadata fields are stored only once. Site-structured files are denoted
+with an additional `.site` suffix to the file extension. As of Borealis v1.0, the conventional file naming
+has been changed, so all files end in the `.h5` file extension. This is both for brevity and to distinguish
+between the vastly different formats by the file name alone. 
 
 The restructuring process is fully built into the IO so that if you would like to see
 the record-by-record data, you can simply return the record's attribute of the
 IO class for any Borealis file. Similarly, if you would like to see the data in
 the arrays format, return the arrays attribute. This works regardless of how
-the original file was structured.
+the original file was structured. For Borealis v1.0 files, I/O is only conducted when
+either the `records` or `arrays` attribute is accessed, returning the data in the respective
+structure in memory. 
+
+## File types
 
 In addition to file structure, there are various types of data sets (file types)
 that can be produced by Borealis. The file types that can be produced are:
-
 
 - `'rawrf'`
 This is the raw samples at the receive bandwidth rate. This is rarely
 produced and only would be done by request.
 
-
 - `'antennas_iq'`
 Downsampled data from individual antennas, i and q samples.
-
 
 - `'bfiq'`
 Beamformed i and q samples. Typically two array data sets are included,
 for main array and interferometer array.
-
 
 - `'rawacf'`
 The correlated data given as lags x ranges, for the two arrays.
@@ -58,7 +59,7 @@ BorealisRead class takes 3 parameters:
 
 - `filename`,
 - `borealis_filetype`, and
-- `borealis_file_structure` (optional but recommended).
+- `borealis_file_structure` (optional but recommended for v0.x data, unused for v1.0 onwards).
 
 The BorealisRead class can return either array or site structured data,
 regardless of the file's structure. Note that if you are returning the structure
@@ -85,7 +86,7 @@ record_names = borealis_reader.record_names
 array_data = borealis_reader.arrays
 ```
 
-If you don't supply the borealis_file_structure parameter, the reader will
+For v0.x data, if you don't supply the borealis_file_structure parameter, the reader will
 attempt to read the file as array structured first (as this should be the most
 common structure available to the user), and following failure will attempt to
 read as site structured.
@@ -129,6 +130,9 @@ and site structured files (they vary slightly), see the Borealis documentation
 
 ## Writing with BorealisWrite
 
+!!! Warning
+    Writing Borealis v1.0 data is not supported
+
 The BorealisWrite class takes 4 parameters:
 
 - `filename`,
@@ -161,3 +165,25 @@ writer = pydarnio.BorealisWrite(my_file, my_rawacf_data, 'rawacf')
 
 print(writer.borealis_file_structure)  # to check the file structure written
 ```
+
+## Reading data in with xarray
+
+Borealis v1.0 data can be read in using the [xarray](https://docs.xarray.dev/en/stable/) library.
+To do so, you must install pydarnio with the optional `xarray` dependencies.
+This can be done using `pip install pydarnio[xarray]`.
+
+Two flavours of xarray I/O are supported: record-by-record, or with field grouped together across records.
+
+```python
+import pydarnio
+infile = "/path/to/data.rawacf.h5"
+
+# Read in record-by-record (returns list[xarray.Dataset])
+dsets = pydarnio.BorealisV1Read.records_as_xarray(infile)
+
+# Read in with data grouped together across records (returns xarray.Dataset)
+ds = pydarnio.BorealisV1Read.arrays_as_xarray(infile)
+```
+
+The xarray I/O provides an extremely useful interface for exploring data files,
+selecting/slicing data, and plotting data.

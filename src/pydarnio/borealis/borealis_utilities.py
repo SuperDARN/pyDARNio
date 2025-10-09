@@ -261,9 +261,9 @@ class BorealisUtilities():
         """
         incorrect_types_check = {param: str(attributes_type_dict[param])
                                  for param in attributes_type_dict.keys()
-                                 if type(record[param]) !=
+                                 if type(record[param]) is not
                                  attributes_type_dict[param] and
-                                 record[param].shape is not None}
+                                 getattr(record[param], 'shape', None) is not None}
 
         incorrect_types_check.update({param: 'np.ndarray of ' +
                                       str(datasets_type_dict[param])
@@ -321,9 +321,9 @@ class BorealisUtilities():
 
         incorrect_types_check = {param: str(attributes_type_dict[param])
                                  for param in attributes_type_dict.keys()
-                                 if type(file_data[param]) !=
+                                 if type(file_data[param]) is not
                                  attributes_type_dict[param] and
-                                 file_data[param].shape is not None}
+                                 getattr(file_data[param], "shape", None) is not None}
 
         datasets_type_dict_keys = sorted(list(datasets_type_dict.keys()))
         np_array_types = [isinstance(file_data[param], np.ndarray) for param in
@@ -638,3 +638,47 @@ class BorealisUtilities():
             ppo = rec['pulse_phase_offset']
             if ppo.shape != rec['pulses'].shape:  # The field is broken, was empty when written to file and so was restructured improperly
                 rec['pulse_phase_offset'] = np.zeros(rec['pulses'].shape, dtype=np.float32)
+
+
+# 3 letter radar code, mapped to station id for SDarn files conversion.
+code_to_stid = {
+    "tst": 0,
+    "gbr": 1,
+    "sch": 2,
+    "kap": 3,
+    "hal": 4,
+    "sas": 5,
+    "pgr": 6,
+    "kod": 7,
+    "sto": 8,
+    "pyk": 9,
+    "han": 10,
+    "san": 11,
+    "sys": 12,
+    "sye": 13,
+    "tig": 14,
+    "ker": 15,
+    "ksr": 16,
+    "unw": 18,
+    "zho": 19,
+    "mcm": 20,
+    "fir": 21,
+    "sps": 22,
+    "bpk": 24,
+    "wal": 32,
+    "bks": 33,
+    "hok": 40,
+    "hkw": 41,
+    "inv": 64,
+    "rkn": 65,
+    "cly": 66,
+    "dce": 96,
+    "svb": 128,
+    "fhw": 204,
+    "fhe": 205,
+    "cvw": 206,
+    "cve": 207,
+    "adw": 208,
+    "ade": 209,
+    "ekb": 512,
+}
