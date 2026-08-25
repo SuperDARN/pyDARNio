@@ -9,10 +9,16 @@ Python data IO library for the Super Dual Auroral Radar Network (SuperDARN).
 
 ## Changelog
 
-## Version 2.0 - Release!
+## Version 2.1 - Release!
 
-This release includes changes to support Borealis v1.0, files,
-the ``srng`` field in DMAP files, and uses ``darn-dmap`` to greatly increase DMAP I/O speeds.
+This release includes changes to support ``darn-dmap`` up to version 0.8.2
+This includes: 
+  - removal of wrapper code deemed unnecessary 
+  - addition of the ``widetx`` field
+  - updates for ``mode`` options
+  - ``indices`` option replacing ``sniff`` which returns the subset of records you request
+  - bz2 compression when returning bytes object
+  - bz2 compression detection rather than relying on file name
 
 ## Documentation
 
