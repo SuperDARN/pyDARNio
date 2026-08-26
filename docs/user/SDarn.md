@@ -19,7 +19,7 @@ The basic code to read and write a DMap structured file is as follows:
 ```python
 import pydarnio
 
-file = "path/to/rawacf_file"
+file = "path/to/infile.rawacf"
 data, _ = pydarnio.read_rawacf(file)  # returns `tuple[list[dict], Optional[int]]`
 outfile = "path/to/outfile.rawacf"
 pydarnio.write_rawacf(data, outfile)  # writes binary data to `outfile`
@@ -77,15 +77,16 @@ will only be done when writing to file, as the detection is done based on the fi
 
 ## Generic I/O
 pyDARNio supports generic DMap I/O, without verifying the field names and types. The file must still
-be properly formatted as a DMap file, but otherwise no checks are conducted.
+be properly formatted as a DMap file, but otherwise no checks are conducted that the data contains the correct fields in the correct formats.
 
 **NOTE:** When using the generic writing function `write_dmap`, scalar fields will possibly be resized; e.g., the `stid`
 field may be stored as an 8-bit integer, as opposed to a 16-bit integer as usual. As such, reading with a specific method
-(e.g. `read_fitacf`) on a file written using `write_dmap` will likely not pass the DMap consistency checks.
+(e.g. `read_fitacf`) on a file written using `write_dmap` will likely not pass the DMap consistency checks. Only use `write_dmap`
+for your local data needs - not to be used in official distribution channels.
 
 ```python
 import pydarnio
-generic_file = "path/to/file"  # can be iqdat, rawacf, fitacf, grid, map, snd, and optionally .bz2 compressed
+generic_file = "path/to/file.dmap"  # can be iqdat, rawacf, fitacf, grid, map, snd, and optionally .bz2 compressed
 data, _ = pydarnio.read_dmap(generic_file)
 pydarnio.write_dmap(data, "temp.generic.fitacf")  # fitacf as an example
 data2, bad_byte = pydarnio.read_rawacf("temp.generic.fitacf")  # This will fail due to different types for scalar fields
@@ -158,13 +159,20 @@ don't compress automatically, an external package like `zlib` or `bzip2` must be
 
 ## File "sniffing"
 If you only want to inspect a file, without actually needing access to all of the data, you can use the `read_[type]`
-functions in `"sniff"` mode. This will only read in the first record from a file, and works on both compressed and 
-non-compressed files. Note that this mode does not work with bytes objects directly.
+functions with keyword `indices`. This will only read the given indices records from a file, and works on both compressed and 
+non-compressed files. The `indices` keyword works with a tuple or a list input, the example below shows how to return the first
+record only.
 
 ```python
 import pydarnio
 path = "path/to/file"
-first_rec = pydarnio.read_dmap(path, mode="sniff")
+first_rec = pydarnio.read_fitacf(path, indices = (0,))
+```
+
+```python
+import pydarnio
+path = "path/to/another/file"
+tenth_recs = pydarnio.read_rawacf(path, indices = [0,10,20,30])
 ```
 
 ## Other Examples
@@ -183,7 +191,7 @@ data = []
 fitacf_files.sort()
 print("Reading in fitacf files")
 for fitacf_file in fitacf_files:
-    data += pydarnio.read_fitacf(fitacf_file)[0]  # ignore the bytes where corruption may start
+    data += pydarnio.read_fitacf(fitacf_file)[0]  # ignore the return for where corruption may start
 print("Reading complete...")
 pydarnio.write_fitacf(data, "path/to/fitacf/files/<date>.<radar>.fitacf.bz2")  # Write the concatenated data together
 ```
