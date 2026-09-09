@@ -23,10 +23,6 @@ You can check your python version with
 `$ python --version` or 
 `$ python3 --version`
 
-!!! Important 
-    It is recommended to install pyDARNio via `pip`; however, please cite via the [DOI for the release](https://doi.org/10.5281/zenodo.4009470) 
-
-
 ## Dependencies
 
 pyDARNio's setup will download the following dependencies: 
@@ -37,49 +33,12 @@ pyDARNio's setup will download the following dependencies:
 - [h5py](https://www.h5py.org/)
 
 ## Virtual Environments
-It is recommended to install pyDARNio in one of the suggested virtual environments if you have multiple python/pip 3 version on your computer, or do not want to affect the main system's python libraries. 
+Installation of pyDARNio in a virtual environment is recommended in most cases. 
 
-The following virtual environments have been tested by pyDARNio developers:"
-
-### pip Virtual Environment
-Instructions can be found here [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
-
-1. `$ python3 -m pip install --user virtualenv`  
-2. `$ python3 -m virtualenv <environment name>`  
-* `$ source <environment name>/bin/activate`
-* `$ pip install pydarnio`
-
-!!! Note
-    If you have already installed `pydarnio` you can use `pip3 install --upgrade pydarnio`
-
-!!! Note
-    If you have multiple versions of python 3 on your machine, you can access a specific version by: `python<version number>`. 
-    For example, if you want to install python 3.8 virtual environment: `python3.8 -m pip install --user virtualenv`.
-
-### Anaconda Virtual Environment
-Instructions can be found here [conda environment](https://uoa-eresearch.github.io/eresearch-cookbook/recipe/2014/11/20/conda/) and installing [anaconda](https://docs.anaconda.com/anaconda/install/)
-
-1. `$ conda create -n yourenvname python=3.8 anaconda`
-2. `$ conda activate yourenvname`
-3. `$ pip install pydarnio`
-
-#### Adding the environment to PyCharm
-
-To set the project interpreter to the anaconda environment:
-
-1. File -> Settings -> Project Folder -> Project Interpreter
-2. Click the project Interpreter drop down list and click on show all.
-* If you don't see the environment you wish to use click the plus sign on the right side bar named "Add"
-* Select "Conda Environment" on the left side menu.
-* Click "Existing Environment" and give the interpreter field the path to your environment's python.exe and apply.
-
-## Local Install
+## Installation Steps
 **pip3 install**
 
-`pip3 install --user pydarnio`
-
-## System Install 
-`sudo pip3 install pydarnio`
+`pip3 install pydarnio`
 
 ## Installing for Development 
 `$ git clone https://github.com/superdarn/pyDARNio`
@@ -90,13 +49,7 @@ Change directories to pyDARNio
 
 To install: 
 
-`$ pip3 install . --user`
-
-!!! Note
-    If `pip --version` is pointing to python 3.8+ then you can use `pip install . --user` instead. 
-
-!!! Warning
-    Do not install pyDARNio with `python setup.py install` as this may install other libraries pyDARNio requires in a local directory causing issues down the road.
+`$ pip3 install .`
     
 ## Troubleshooting
 

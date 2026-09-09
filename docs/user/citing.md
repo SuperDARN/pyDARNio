@@ -1,4 +1,5 @@
-If pyDARNio contributes to a project that leads to a scientific publication, please acknowledge this fact by citing the software and SuperDARN.  
+If pyDARNio contributes to a project that leads to a scientific publication, please acknowledge this fact by citing the software and SuperDARN.
+If used in conjunction with pyDARN, a pyDARN citation is sufficient.
 
 # How to cite SuperDARN
 
@@ -24,35 +25,11 @@ Possible services:
 
 # Citing pyDARNio
 
-## Bibtex
+## DOI 
 
-```latex
-@Misc = [pydarnio,
-author={Schmidt, M.T. and Detwiller, M.H. and
-Billet, D.D. and 
-Bland, E. C. and 
-Burrell, A. G. and 
-Kotyk, K. and
-Peters, D. GO. and 
-Reimer, A. S. and 
-Sterne, K. T. and
-Thomas, E. G.}, 
-title={py{DARN}io},
-month=jan,
-year=2020,
-doi=[],
-url={}
-] 
-```
+pyDARNio [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4009470.svg)](https://doi.org/10.5281/zenodo.4009470)
 
-## DOI's 
-
-- pyDARNio v1.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4009471.svg)](https://doi.org/10.5281/zenodo.4009471)
-- pyDARNio v1.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4792463.svg)](https://doi.org/10.5281/zenodo.4792463)
-- pyDARNio v1.1.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5914211.svg)](https://doi.org/10.5281/zenodo.5914211)
-- pyDARNio v1.2 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7380553.svg)](https://doi.org/10.5281/zenodo.7380553)
-- pyDARNio v1.2.1 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7615720.svg)](https://doi.org/10.5281/zenodo.7615720)
-- pyDARNio v1.3 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13151925.svg)](https://doi.org/10.5281/zenodo.13151925)
+Each version has it's own DOI - please check the Zenodo webpage if you would like to cite a specific version.
 
 ## Acknowledgements
 
@@ -65,6 +42,9 @@ Stéfan van der Walt, S. Chris Colbert and Gaël Varoquaux. The NumPy Array: A S
 
 #### H5PY
 A. Collette, Python and HDF5, O'Reilly (2014) (http://shop.oreilly.com/product/0636920030249.do)
+
+#### darn-dmap
+R.Rohel at SuperDARN Canada developed the Rust code behind the newest versions of pyDARNio. This library is maintinaed by SuperDARN Canada.
 
 
 
