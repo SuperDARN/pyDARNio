@@ -235,7 +235,8 @@ class BorealisV1Read:
             "tau_spacing": [],
             "tx_excitations": ["aveperiod", "tx_antennas"],
             "tx_pulse_len": [],
-            "xcfs": ["beam_nums", "range_gates", "lag_numbers"]
+            "xcfs": ["beam_nums", "range_gates", "lag_numbers"],
+            "widetx": []
         }
 
         data_arrays = dict()
@@ -368,6 +369,13 @@ class BorealisV1Convert:
 
             start_time = datetime.utcfromtimestamp(record_dict['sqn_timestamps'][0])
 
+            # Wide TX introduced in RST v5.1 for denoting wide beam
+            # transmission - set to zero if not present
+            if 'widetx' not in record_dict.keys():
+                wide_tx = 0
+            else:
+                wide_tx = record_dict['widetx']
+
             # flattening done in convert_to_dmap_datastructures
             sdarn_record_dict = {
                 'radar.revision.major': np.int8(borealis_major_revision),
@@ -451,6 +459,7 @@ class BorealisV1Convert:
                 'tnoise': np.zeros(record_dict['num_sequences'], dtype=np.float32),
                 'toff': np.array([i * offset for i in range(record_dict['num_sequences'])], dtype=np.int32),
                 'tsze': np.array([offset] * record_dict['num_sequences'], dtype=np.int32),
+                'widetx': np.int16(wide_tx),
                 'data': int_data
             }
             record_dict_list.append(sdarn_record_dict)
@@ -565,6 +574,13 @@ class BorealisV1Convert:
                 if np.abs(record_dict['tx_excitations'][i]) > 0:
                     txpow += 1 << i
 
+            # Wide TX introduced in RST v5.1 for denoting wide beam
+            # transmission - set to zero if not present
+            if 'widetx' not in record_dict.keys():
+                wide_tx = 0
+            else:
+                wide_tx = record_dict['widetx']
+
             start_time = datetime.utcfromtimestamp(record_dict['sqn_timestamps'][0])
             sdarn_record_dict = {
                 'radar.revision.major': np.int8(borealis_major_revision),
@@ -630,6 +646,7 @@ class BorealisV1Convert:
                 # list from 0 to num_ranges
                 'slist': np.array(list(range(0, data_dimensions[1]))).astype(np.int16),
                 'acfd': correlation_dict['main_acfs'],
+                'widetx': np.int16(wide_tx),
             }
             if 'xcfs' in correlation_dict:
                 sdarn_record_dict['xcfd'] = correlation_dict['xcfs']

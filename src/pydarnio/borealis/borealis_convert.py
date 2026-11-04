@@ -460,6 +460,13 @@ class BorealisConvert(BorealisRead):
             else:
                 lp_sw = record_dict['lp_status_word']
 
+            # Wide TX introduced in RST v5.1 for denoting wide beam
+            # transmission - set to zero if not present
+            if 'widetx' not in record_dict.keys():
+                wide_tx = 0
+            else:
+                wide_tx = record_dict['widetx']
+
             # flattening done in convert_to_dmap_datastructures
             sdarn_record_dict = {
                 'radar.revision.major': np.int8(borealis_major_revision),
@@ -583,6 +590,7 @@ class BorealisConvert(BorealisRead):
                                  dtype=np.int32),
                 'tsze': np.array([offset] * record_dict['num_sequences'],
                                  dtype=np.int32),
+                'widetx': np.int16(wide_tx),
                 'data': int_data
             }
             record_dict_list.append(sdarn_record_dict)
@@ -754,6 +762,13 @@ class BorealisConvert(BorealisRead):
                     if np.abs(record_dict['tx_antenna_phases'][i]) > 0:
                         txpow += 1 << i
 
+            # Wide TX introduced in RST v5.1 for denoting wide beam
+            # transmission - set to zero if not present
+            if 'widetx' not in record_dict.keys():
+                wide_tx = 0
+            else:
+                wide_tx = record_dict['widetx']
+
             sdarn_record_dict = {
                 'radar.revision.major': np.int8(borealis_major_revision),
                 'radar.revision.minor': np.int8(borealis_minor_revision),
@@ -850,6 +865,7 @@ class BorealisConvert(BorealisRead):
                             range(0, data_dimensions[1]))
                             ).astype(np.int16),
                 'acfd': correlation_dict['main_acfs'],
+                'widetx': np.int16(wide_tx),
             }
             if 'xcfs' in correlation_dict:
                 sdarn_record_dict['xcfd'] = correlation_dict['xcfs']
