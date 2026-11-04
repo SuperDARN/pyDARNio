@@ -235,7 +235,8 @@ class BorealisV1Read:
             "tau_spacing": [],
             "tx_excitations": ["aveperiod", "tx_antennas"],
             "tx_pulse_len": [],
-            "xcfs": ["beam_nums", "range_gates", "lag_numbers"]
+            "xcfs": ["beam_nums", "range_gates", "lag_numbers"],
+            "widetx": [],
         }
 
         data_arrays = dict()
