@@ -236,7 +236,7 @@ class BorealisV1Read:
             "tx_excitations": ["aveperiod", "tx_antennas"],
             "tx_pulse_len": [],
             "xcfs": ["beam_nums", "range_gates", "lag_numbers"],
-            "widetx": [],
+            "widetx": []
         }
 
         data_arrays = dict()
